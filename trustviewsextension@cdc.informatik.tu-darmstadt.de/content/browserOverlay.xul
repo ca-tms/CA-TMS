@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css" href="chrome://trustviewsextension/skin/browserOverlay.css" ?>
+
+<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/browserOverlay.dtd">
+
+<overlay id="trustviewsextension-browser-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/javascript" src="chrome://trustviewsextension/content/browserOverlay.js" />
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="trustviewsextension-string-bundle" src="chrome://trustviewsextension/locale/browserOverlay.properties" />
+    </stringbundleset>
+
+    
+    
+</overlay>

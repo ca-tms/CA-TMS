@@ -1,0 +1,5 @@
+content   trustviewsextension                content/
+skin      trustviewsextension  classic/1.0   skin/
+locale    trustviewsextension  en-US         locale/en-US/
+
+overlay chrome://browser/content/browser.xul  chrome://trustviewsextension/content/browserOverlay.xul
