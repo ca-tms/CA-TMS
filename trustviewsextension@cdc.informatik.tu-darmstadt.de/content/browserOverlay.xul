@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
-<?xml-stylesheet type="text/css" href="chrome://trustviewsextension/skin/browserOverlay.css" ?>
+<?xml-stylesheet type="text/css" href="chrome://trustviewsextension/skin/toolbarButton.css" ?>
 
-<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/browserOverlay.dtd">
+<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
 
 <overlay id="trustviewsextension-browser-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script type="application/javascript" src="chrome://trustviewsextension/content/browserOverlay.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/setupNamespace.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/ui.js" />
 
     <stringbundleset id="stringbundleset">
-        <stringbundle id="trustviewsextension-string-bundle" src="chrome://trustviewsextension/locale/browserOverlay.properties" />
+        <stringbundle id="trustviewsextension-string-bundle" src="chrome://trustviewsextension/locale/strings.properties" />
     </stringbundleset>
 
-    
+    <toolbarpalette id="BrowserToolbarPalette">
+        <toolbarbutton id="trustviewsextension-toolbarbutton" class="toolbarbutton-1" label="&trustviewsextension.toolbarbutton.label;" oncommand="TVE.UI.toolbarbuttonClick(event);" />
+    </toolbarpalette>
     
 </overlay>

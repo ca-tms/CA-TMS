@@ -4,12 +4,3 @@
 if("undefined" == typeof(TVE)) {
     var TVE = {};
 };
-
-/**
- * Controls the browser overlay.
- */
-TVE.BrowserOverlay = {
-    
-    
-    
-};
