@@ -4,7 +4,7 @@
 TVE.UI = {
     
     toolbarbuttonClick : function(event) {
-        alert("That works!");
+        TVE.CertHandler.getCert();
     }
     
 };

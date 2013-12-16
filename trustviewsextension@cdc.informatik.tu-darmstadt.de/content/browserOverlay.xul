@@ -9,6 +9,7 @@
 
     <script type="application/javascript" src="chrome://trustviewsextension/content/setupNamespace.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/ui.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/certHandler.js" />
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="trustviewsextension-string-bundle" src="chrome://trustviewsextension/locale/strings.properties" />
