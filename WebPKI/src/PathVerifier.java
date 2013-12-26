@@ -7,7 +7,7 @@ import java.security.cert.*;
 public class PathVerifier {
 	public PathVerifier()
 	{}
-	public  X509Certificate getCert(String path) throws IOException, CertificateException
+	public X509Certificate getCert(String path) throws IOException, CertificateException
 	{
 		InputStream inStream;
 		inStream = new FileInputStream(path);
@@ -50,7 +50,7 @@ public class PathVerifier {
 		
 		public  boolean PathValid( CertPath path)
 		{
-			X509Certificate issuer,object;
+			X509Certificate issuer,subject;
 			List<X509Certificate> list = (List<X509Certificate>) path.getCertificates();
 			
 			if(list.isEmpty())
@@ -69,9 +69,9 @@ public class PathVerifier {
 			for(int i=1 ;i<list.size();i++)
 			{
 				pbk=issuer.getPublicKey();
-				object=list.get(i);
+				subject=list.get(i);
 				try {
-					object.verify(pbk);
+					subject.verify(pbk);
 				} catch (InvalidKeyException e) {
 
 					e.printStackTrace();
@@ -98,7 +98,7 @@ public class PathVerifier {
 				{return true;}
 				
 				issuer=list.get(i);
-				object=list.get(i+1);
+				subject=list.get(i+1);
 			}
 			return true;
 		}
