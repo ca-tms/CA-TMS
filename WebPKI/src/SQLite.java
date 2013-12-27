@@ -2,6 +2,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -41,8 +42,9 @@ public class SQLite {
 		String sigalg;
 		String issuer;
 		String subject;
-		Date notbefore;
-		Date notafter;
+		String publickey;
+		java.sql.Date notbefore;
+		java.sql.Date notafter;
 		
 
 		
@@ -63,14 +65,15 @@ public class SQLite {
 			sigalg=Cert.getSigAlgName();
 			issuer=Cert.getIssuerDN().getName();
 			subject=Cert.getSubjectDN().getName();
-			notbefore=Cert.getNotBefore();
-			notafter=Cert.getNotAfter();
+			publickey=Cert.getPublicKey().toString();
+			notbefore = new java.sql.Date(Cert.getNotBefore().getTime());
+			notafter = new java.sql.Date(Cert.getNotAfter().getTime());
 			
 			Statement stat = conn.createStatement();
 	
 			
 
-			String qeuery= "insert into Certificates values("+version+","+serialnum+",'"+sigalg+"','"+issuer+"','"+subject+"','"+notbefore+"','"+notafter+"','"+filepath+"');";
+			String qeuery= "insert into Certificates values((SELECT max(ID) FROM Certificates)+1,"+version+","+serialnum+",'"+sigalg+"','"+issuer+"','"+subject+"','"+publickey+"','"+notbefore+"','"+notafter+"','"+filepath+"');";
 	
 					stat.executeUpdate(qeuery);
 			
@@ -91,10 +94,46 @@ public class SQLite {
 			e.printStackTrace();
 		}
 		
-		
-		
-		
 	}
+	
+	
+	public void InsertTA(PublicKey k,String ca,int[] S,float[] Okl,float[] Oit)
+	{
+		String publickey;
+		String Ss="";
+		String Okls="";
+		String Oits="";
+		
+		publickey=k.toString();
+		
+		for(int i=0;i<S.length;i++)
+		{Ss=Ss+S[i]+",";}
+		
+		for(int i=0;i<3;i++)
+		{Okls=Okls+Okl[i]+",";}
+		
+		for(int i=0;i<3;i++)
+		{Oits=Oits+Oit[i]+",";}
+		
+		
+		Statement stat;
+		try {
+			stat = conn.createStatement();
+
+			String qeuery= "insert into Assessment values('"+publickey+"','"+ca+"','"+Ss+"','"+Okls+"','"+Oits+"');";
+
+					stat.executeUpdate(qeuery);
+			
+		} catch (SQLException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+		}
+		
+		
+
+	}
+	
+	
 	
 	public void showCertInfo(String Path)
 	{
@@ -148,6 +187,7 @@ public class SQLite {
 		}
 	}//end showCertInfo
 	public void PrintHex(byte data[],int len)
+
 	{
 		int i;
 		int tmp;
@@ -181,13 +221,54 @@ public class SQLite {
 	
 	
 
+	
+
 	public static void main(String[] args) {
 		
 		SQLite sql=new SQLite();
 		
 			
-			sql.InsertCert("E:\\Haixin\\Desktop\\1.cer");
+			//sql.InsertCert("E:\\Haixin\\Desktop\\1.cer");
+		InputStream inStream;
+
+		
 			
+			try {
+				inStream = new FileInputStream("E:\\Haixin\\Desktop\\1.cer");
+				CertificateFactory cf = CertificateFactory.getInstance("X.509");
+				
+				X509Certificate Cert = (X509Certificate)cf.generateCertificate(inStream);
+				inStream.close();
+				
+				
+				PublicKey k;
+				k=Cert.getPublicKey();
+				
+				String ca= Cert.getIssuerDN().getName();
+				
+				int Ss[]=new int[1] ;
+				Ss[0]=1;
+				
+				float Okls[]={(float)0.1,(float)0.2,(float)0.3};
+				
+				
+				float Oits[]={(float)0.4,(float)0.5,(float)0.6};
+				
+				sql.InsertTA(k, ca, Ss, Okls, Oits);
+				
+				
+				
+			} catch (FileNotFoundException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			} catch (CertificateException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
+		
 	
 			
 		
