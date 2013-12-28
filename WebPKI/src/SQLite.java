@@ -16,12 +16,14 @@ public class SQLite {
 	 * 
 	 */
 	Connection conn;
+	Statement stat;
 
 	public SQLite() {
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
 		    conn= DriverManager.getConnection("jdbc:sqlite:WebPKI.db");
+		    stat = conn.createStatement();
 			 
 		} catch (ClassNotFoundException e) {
 			// TODO 自动生成的 catch 块
@@ -33,6 +35,33 @@ public class SQLite {
 		
 	}
 	
+	
+	public X509Certificate LoadCert(String filepath)
+	{
+		InputStream inStream;
+		X509Certificate Cert=null;
+		
+		try {
+			inStream = new FileInputStream(filepath);
+			CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			
+			 Cert = (X509Certificate)cf.generateCertificate(inStream);
+			inStream.close();
+			
+			
+			
+		} catch (FileNotFoundException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+		} catch (CertificateException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+		}
+		return Cert;
+	}
 	
 	public void InsertCert(String filepath)
 	{
@@ -48,18 +77,9 @@ public class SQLite {
 		
 
 		
-		InputStream inStream;
 		try {
+			X509Certificate Cert=LoadCert(filepath);
 		
-			
-			inStream = new FileInputStream(filepath);
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			
-			X509Certificate Cert = (X509Certificate)cf.generateCertificate(inStream);
-			inStream.close();
-			
-			
-			
 			version=Cert.getVersion();
 			serialnum=Cert.getSerialNumber().intValue();
 			sigalg=Cert.getSigAlgName();
@@ -69,9 +89,6 @@ public class SQLite {
 			notbefore = new java.sql.Date(Cert.getNotBefore().getTime());
 			notafter = new java.sql.Date(Cert.getNotAfter().getTime());
 			
-			Statement stat = conn.createStatement();
-	
-			
 
 			String qeuery= "insert into Certificates values((SELECT max(ID) FROM Certificates)+1,"+version+","+serialnum+",'"+sigalg+"','"+issuer+"','"+subject+"','"+publickey+"','"+notbefore+"','"+notafter+"','"+filepath+"');";
 	
@@ -79,16 +96,6 @@ public class SQLite {
 			
 			
 			
-			
-		} catch (FileNotFoundException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO 自动生成的 catch 块
 			e.printStackTrace();
@@ -109,16 +116,19 @@ public class SQLite {
 		for(int i=0;i<S.length;i++)
 		{Ss=Ss+S[i]+",";}
 		
-		for(int i=0;i<3;i++)
-		{Okls=Okls+Okl[i]+",";}
+		if(Okl==null)
+			Okls="unknown";
+			else
+		{for(int i=0;i<3;i++)
+		{Okls=Okls+Okl[i]+",";}}
 		
 		for(int i=0;i<3;i++)
 		{Oits=Oits+Oit[i]+",";}
 		
 		
-		Statement stat;
+		
 		try {
-			stat = conn.createStatement();
+			
 
 			String qeuery= "insert into Assessment values('"+publickey+"','"+ca+"','"+Ss+"','"+Okls+"','"+Oits+"');";
 
@@ -132,6 +142,150 @@ public class SQLite {
 		
 
 	}
+	
+	
+	public boolean isKCAExisted(PublicKey k,String ca)
+	{
+		
+		
+		
+		try {
+			
+
+			String qeuery= "SELECT COUNT(*) FROM Assessment WHERE k='"+k.toString()+"' AND ca='"+ca+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(1)==0)
+				return false;
+			else
+				return true;
+			
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	public boolean isRootCA(String ca)
+	{
+		
+		try {
+			
+
+			String qeuery= "SELECT Issuer,Subject FROM Certificates WHERE Subject='"+ca+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(!rs.next())
+			{System.out.println("Certificate not existed");
+				return false;}
+			else
+			{
+				if(rs.getString("Issuer").equals(rs.getString("Subject")))
+					return true;
+				else
+					return false;
+			}
+				
+			
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	public String getCertSet(PublicKey k)
+	{
+	
+		try {
+			
+			String S="";
+			String qeuery= "SELECT *, count(ID) FROM Certificates WHERE PublicKey='"+k.toString()+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Certificate for the Key not existed");
+				return "";}
+			
+			 while (rs.next()){
+				 S=S+rs.getInt(1)+",";
+			 }
+				
+			return S;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return "";
+		}
+	}
+	
+	public String getCertIssuer(PublicKey k,String subject)
+	{	
+		String iss=null;
+	
+		try {
+			
+			String qeuery= "SELECT Issuer, count(Issuer) FROM Certificates WHERE PublicKey='"+k.toString()+"' AND Subject='"+subject+"';";
+
+
+			 ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Certificate for the Key not existed");
+				return iss;}
+				
+			return rs.getString(1);
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return iss;
+		}
+	}
+	
+	public int getCertID(PublicKey k,String subject)
+	{	
+		int id=-1;
+	
+		try {
+			
+			String qeuery= "SELECT ID, count(ID) FROM Certificates WHERE PublicKey='"+k.toString()+"' AND Subject='"+subject+"';";
+
+
+			 ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Certificate for the Key not existed");
+				return id;}
+				
+			return rs.getInt(1);
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return id;
+		}
+	}
+	
+	
+	public ResultSet getSameIssuerOitSet(String issuer)
+	{ 	ResultSet rs=null;
+try {
+			
+			String qeuery= "SELECT Oit ,COUNT(Oit) FROM Assessment a left join Certificates c on a.k=c.PublicKey AND a.ca=c.Subject WHERE c.Issuer='"+issuer+"';";
+
+			 rs = stat.executeQuery(qeuery);
+		
+				
+			return rs;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return rs;
+		}
+	}
+	
+	
+	
 	
 	
 	
@@ -228,13 +382,12 @@ public class SQLite {
 		SQLite sql=new SQLite();
 		
 			
-			//sql.InsertCert("E:\\Haixin\\Desktop\\1.cer");
 		InputStream inStream;
 
 		
 			
 			try {
-				inStream = new FileInputStream("E:\\Haixin\\Desktop\\1.cer");
+				inStream = new FileInputStream("E:\\Haixin\\Desktop\\2.cer");
 				CertificateFactory cf = CertificateFactory.getInstance("X.509");
 				
 				X509Certificate Cert = (X509Certificate)cf.generateCertificate(inStream);
@@ -244,19 +397,25 @@ public class SQLite {
 				PublicKey k;
 				k=Cert.getPublicKey();
 				
-				String ca= Cert.getIssuerDN().getName();
+				String ca= Cert.getSubjectDN().getName();
+				String issuer= Cert.getIssuerDN().getName();
 				
 				int Ss[]=new int[1] ;
 				Ss[0]=1;
 				
-				float Okls[]={(float)0.1,(float)0.2,(float)0.3};
+				float Okls[]={(float)1.0,(float)1.0,(float)1.0};
 				
 				
-				float Oits[]={(float)0.4,(float)0.5,(float)0.6};
+				float[] Oits= new float[3];
 				
-				sql.InsertTA(k, ca, Ss, Okls, Oits);
+				//sql.InsertTA(k, ca, Ss, Okls, Oits);
+			//	sql.InsertCert("E:\\Haixin\\Desktop\\5.cer");
+				//System.out.print(sql.getCertSet(k));
+				String rs= sql.getCertIssuer(k, ca);
 				
 				
+					System.out.println(rs);
+			
 				
 			} catch (FileNotFoundException e) {
 				// TODO 自动生成的 catch 块
@@ -269,6 +428,7 @@ public class SQLite {
 				e.printStackTrace();
 			}
 		
+	
 	
 			
 		
