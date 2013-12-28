@@ -9,7 +9,15 @@ TVE.CertHandler = {
         secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl and certificate status
         let sslStatus = secUI.SSLStatus;
         let serverCert = sslStatus.serverCert;
-        let rawDER = serverCert.getRawDER(new Object()); // get byte array, representing cert in DER format
+        
+        // store certificate chain in array
+        let certChain = [];         // as JavaScript objects
+        let rawDERcertChain = [];   // as byte arrays, representing cert in DER format
+        // server's certificate is the first one, root CA's certificate is the last one
+        for(let i = 0; i < serverCert.getChain().length; i++) {
+            certChain[i] = serverCert.getChain().queryElementAt(i, Components.interfaces.nsIX509Cert);
+            rawDERcertChain[i] = certChain[i].getRawDER(new Object());
+        }
         
     }
     
