@@ -32,7 +32,7 @@ public class HttpLite {
     }
 
 	public static void main(String[] args) throws IOException {
-		// TODO ×Ô¶¯Éú³ÉµÄ·½·¨´æ¸ù
+		// TODO ï¿½Ô¶ï¿½ï¿½ï¿½ÉµÄ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         new HttpLite().service();
 	}
 
@@ -61,8 +61,8 @@ class HttpHandler implements Runnable {
             socketChannel.read(buffer);
             buffer.flip();
             String request = decode(buffer);
-            StringBuffer sb = new StringBuffer("HTTP/1.1 0 OK\r\n");
-            sb.append("Content-Type:text/html\r\n\r\n");
+            StringBuffer sb = new StringBuffer("HTTP/1.1 200 OK\r\n");
+            sb.append("Content-Type: text/html\r\n\r\n");
             socketChannel.write(encode(sb.toString()));
             FileInputStream in = null;
            
@@ -85,8 +85,7 @@ class HttpHandler implements Runnable {
     private Charset charset = Charset.forName("GBK");
  
     private ByteBuffer encode(String string) {
-        return ByteBuffer.allocate(string.length() * 2).get(
-                string.getBytes(charset));
+        return ByteBuffer.wrap(string.getBytes(charset));
     }
  
     private String decode(ByteBuffer buffer) {
