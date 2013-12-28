@@ -9,6 +9,7 @@ TVE.CertHandler = {
         secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl and certificate status
         let sslStatus = secUI.SSLStatus;
         let serverCert = sslStatus.serverCert;
+        let rawDER = serverCert.getRawDER(new Object()); // get byte array, representing cert in DER format
         
     }
     
