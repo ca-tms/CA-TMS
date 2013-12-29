@@ -104,14 +104,17 @@ public class SQLite {
 	}
 	
 	
-	public void InsertTA(PublicKey k,String ca,int[] S,float[] Okl,float[] Oit)
+	public boolean InsertTA(PublicKey k,String ca,int[] S,float[] Okl,float[] Oit)
 	{
 		String publickey;
 		String Ss="";
 		String Okls="";
 		String Oits="";
+		String qeuery;
 		
 		publickey=k.toString();
+		
+
 		
 		for(int i=0;i<S.length;i++)
 		{Ss=Ss+S[i]+",";}
@@ -129,14 +132,21 @@ public class SQLite {
 		
 		try {
 			
-
-			String qeuery= "insert into Assessment values('"+publickey+"','"+ca+"','"+Ss+"','"+Okls+"','"+Oits+"');";
+			qeuery= "SELECT count(*) FROM Assessment WHERE k='"+publickey+"' AND ca='"+ca+"';";
+			ResultSet rs = stat.executeQuery(qeuery);
+			
+			if(rs.getInt(1)>0)
+			{System.out.println("Certificate for the Key not existed");
+				return false;}
+			
+		 qeuery= "insert into Assessment values('"+publickey+"','"+ca+"','"+Ss+"','"+Okls+"','"+Oits+"');";
 
 					stat.executeUpdate(qeuery);
-			
+					return true;
 		} catch (SQLException e) {
 			// TODO 自动生成的 catch 块
 			e.printStackTrace();
+			return false;
 		}
 		
 		
@@ -196,6 +206,41 @@ public class SQLite {
 		}
 	}
 	
+	public float[] split(String input)
+	{
+		String[] out=null;
+		
+		if(!input.contains(","))
+			return null;
+		
+		out = input.split(","); 
+		
+		float result[]= new float[out.length];
+		for(int i=0;i<out.length;i++)
+		{
+			result[i]=Float.parseFloat(out[i]);
+		}
+		
+		return result;
+	}
+	
+	public int[] splitint(String input)
+	{
+		String[] out=null;
+		
+		if(!input.contains(","))
+			return null;
+		
+		out = input.split(","); 
+		
+		int result[]= new int[out.length];
+		for(int i=0;i<out.length;i++)
+		{
+			result[i]=Integer.parseInt(out[i]);
+		}
+		
+		return result;
+	}
 	
 	public String getCertSet(PublicKey k)
 	{
@@ -265,7 +310,34 @@ public class SQLite {
 			return id;
 		}
 	}
+
 	
+	//return int means =1 Trusted, =-1 Untrusted, =0 unknown
+	public int isCertVaild(X509Certificate Cert)
+	{	
+		
+	
+		try {
+			
+			String qeuery= "SELECT count(ID) FROM Tcert t left join Certificates c on t.TID=c.ID WHERE SerialNum='"+Cert.getSerialNumber().intValue()+"' AND Issuer='"+Cert.getIssuerDN().getName()+"';";
+
+
+			 ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(1)>=1)
+				return 1;
+			
+			 qeuery= "SELECT count(ID) FROM uTcert t left join Certificates c on t.uTID=c.ID WHERE SerialNum='"+Cert.getSerialNumber().intValue()+"' AND Issuer='"+Cert.getIssuerDN().getName()+"';";
+	
+			 if(rs.getInt(1)>=1)
+					return -1;
+			 
+			 return 0;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return 0;
+		}
+	}
 	
 	public ResultSet getSameIssuerOitSet(String issuer)
 	{ 	ResultSet rs=null;
@@ -284,10 +356,81 @@ try {
 		}
 	}
 	
+	public float[] getAssOkl(PublicKey k,String ca)
+	{
 	
+		try {
+			
+			
+			String qeuery= "SELECT Okl , COUNT(Okl) FROM Assessment WHERE PublicKey='"+k.toString()+"' AND Subject='"+ca+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Assessment for the Key not existed");
+				return null;}
+			
+			 float[] res=new float[3];
+			 res=split(rs.getString(1));
+				
+			return res;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
+	public float[] getAssOit(PublicKey k,String ca)
+	{
 	
+		try {
+			
+			
+			String qeuery= "SELECT Oit , COUNT(Oit) FROM Assessment WHERE PublicKey='"+k.toString()+"' AND Subject='"+ca+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Assessment for the Key not existed");
+				return null;}
+			
+			 float[] res=new float[3];
+			 res=split(rs.getString(1));
+				
+			return res;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
+	public TrustAss getAss(PublicKey k,String ca)
+	{
+try {
+			
+		TrustAss TA;
+			String qeuery= "SELECT * , COUNT(Oit) FROM Assessment WHERE PublicKey='"+k.toString()+"' AND Subject='"+ca+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Assessment for the Key not existed");
+				return null;}
+			
+			 
+			float[] Okl,Oit;
+			int[] s;
+			 s=splitint(rs.getString(3));
+			 Okl=split(rs.getString(4));
+			 Oit=split(rs.getString(5));
+			 
+			 TA=new TrustAss(k,ca,s,Okl,Oit);
+			return TA;
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	public void showCertInfo(String Path)
 	{
