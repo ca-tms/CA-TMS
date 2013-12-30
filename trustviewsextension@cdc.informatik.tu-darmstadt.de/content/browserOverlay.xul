@@ -10,6 +10,8 @@
     <script type="application/javascript" src="chrome://trustviewsextension/content/setupNamespace.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/ui.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/certHandler.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/sslListener.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/init.js" />
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="trustviewsextension-string-bundle" src="chrome://trustviewsextension/locale/strings.properties" />

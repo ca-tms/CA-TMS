@@ -19,6 +19,8 @@ TVE.CertHandler = {
             rawDERcertChain[i] = certChain[i].getRawDER(new Object());
         }
         
+        return serverCert;
+        
     }
     
 };
