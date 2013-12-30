@@ -39,6 +39,9 @@ class TrustAss{
 	public int[] getS() {
 		return S;
 	}
+	public void setS(int[] s) {
+		S = s;
+	}
 	public float[] getOkl() {
 		return Okl;
 	}
@@ -160,6 +163,30 @@ public class Trust {
 		{
 			if(a[i]==b) return true;
 		}
+		return false;
+	}
+	
+	public int[] insertint(int[] a, int b)
+	{
+		int[] result = new int[a.length+1];
+		for(int i=0;i<a.length;i++)
+		{
+			result[i]=a[i];
+		}
+		result[a.length]=b;
+		return result;
+	}
+	
+	public boolean withinTL(List<TrustAss> TL, TrustAss TA)
+	{
+		TrustAss temp;
+		for(int i=1;i<=TL.size();i++)
+		{
+			temp=TL.get(i);
+			if(temp.getK().equals(TA.getK())&&temp.getCa().equals(TA.getCa()))
+				return true;
+		}
+		
 		return false;
 	}
 	
@@ -288,8 +315,9 @@ public class Trust {
 	public void UpdateView(CertPath path,int R,List<TrustAss> TL/*,List of Validation???*/)
 	{
 		List<X509Certificate> list = (List<X509Certificate>) path.getCertificates();
-		TrustAss temp;
+		TrustAss Assi,Assii;
 		int id;
+		int[] Si;
 		////////1////////////////////////
 		if(R==0)
 			return;
@@ -299,14 +327,34 @@ public class Trust {
 		{
 			for(int i=1;i<=list.size();i++)
 			{
-				temp=sql.getAss(list.get(i).getPublicKey(),list.get(i).getSubjectDN().getName());
+				Assi=sql.getAss(list.get(i).getPublicKey(),list.get(i).getSubjectDN().getName());
 				id=sql.getCertID(list.get(i).getPublicKey(),list.get(i).getSubjectDN().getName());
-				if(!within(temp.getS(),id))
+				if(!within(Assi.getS(),id))
 				{
-					
+		/////////////////3a//////////////////////////////////
+					Si=insertint(Assi.getS(),id);
+					Assi.setS(Si);
+		/////////////////3a//////////////////////////////////		
+		/////////////////3b//////////////////////////////////
+					if(withinTL(TL,Assi))
+						sql.InsertTA(Assi.getK(), Assi.getCa(), Assi.getS(), Assi.getOkl(), Assi.getOit());
 				}
-			}
-		}
+	/////////////////3b/////////////////////////////////////
+	/////////////////3c/////////////////////////////////////	
+				Assii=sql.getAss(list.get(i+1).getPublicKey(),list.get(i+1).getSubjectDN().getName());
+				if(withinTL(TL,Assii))
+				{
+					//update oiti with positive experience
+				}
+	/////////////////3c/////////////////////////////////////
+			}//for ,3
+		}//if ,3
+		
+		if(R<0)
+		{
+			// don't know jet how to deal with the VS1...VSn
+			//the whole step 4 is to be done
+		}//if ,4
 	}
 	
 	
