@@ -26,10 +26,10 @@ public class SQLite {
 		    stat = conn.createStatement();
 			 
 		} catch (ClassNotFoundException e) {
-			// TODO 自动生成的 catch 块
+			
 			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO 自动生成的 catch 块
+
 			e.printStackTrace();
 		}
 		
@@ -51,13 +51,10 @@ public class SQLite {
 			
 			
 		} catch (FileNotFoundException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
 		} catch (CertificateException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
 		}
 		return Cert;
@@ -97,7 +94,7 @@ public class SQLite {
 			
 			
 		} catch (SQLException e) {
-			// TODO 自动生成的 catch 块
+			
 			e.printStackTrace();
 		}
 		
@@ -144,7 +141,7 @@ public class SQLite {
 					stat.executeUpdate(qeuery);
 					return true;
 		} catch (SQLException e) {
-			// TODO 自动生成的 catch 块
+			
 			e.printStackTrace();
 			return false;
 		}
@@ -432,6 +429,32 @@ try {
 		}
 	}
 	
+	public void untrustCert(X509Certificate Cert)
+	{
+try {
+			
+		
+			String qeuery= "SELECT ID , COUNT(Oit) FROM Certificates WHERE SerialNum='"+Cert.getSerialNumber().intValue()+"' AND Issuer='"+Cert.getIssuerDN().getName()+"';";
+
+			ResultSet rs = stat.executeQuery(qeuery);
+			if(rs.getInt(2)==0)
+			{System.out.println("Certificate not existed");
+				return ;}
+			
+			 
+		int id=rs.getInt(1);
+		
+		 qeuery= "insert into uTcert values("+id+");";
+
+			stat.executeUpdate(qeuery);
+		
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			return ;
+		}
+	}
+	
 	public void showCertInfo(String Path)
 	{
 		try
@@ -561,13 +584,13 @@ try {
 			
 				
 			} catch (FileNotFoundException e) {
-				// TODO 自动生成的 catch 块
+	
 				e.printStackTrace();
 			} catch (CertificateException e) {
-				// TODO 自动生成的 catch 块
+
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO 自动生成的 catch 块
+				
 				e.printStackTrace();
 			}
 		
