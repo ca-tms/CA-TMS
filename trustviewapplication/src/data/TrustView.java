@@ -2,6 +2,7 @@ package data;
 
 import java.security.Principal;
 import java.security.PublicKey;
+import java.util.Collection;
 
 import data.sqlite.SQLiteBackedTrustView;
 
@@ -22,9 +23,9 @@ public abstract class TrustView {
 
 	public abstract TrustAssessment getAssessment(PublicKey k, Principal ca);
 
-	public abstract Iterable<TrustAssessment> getAssessments();
+	public abstract Collection<TrustAssessment> getAssessments();
 
-	public abstract Iterable<TrustCertificate> getTrustedCertificates();
+	public abstract Collection<TrustCertificate> getTrustedCertificates();
 
-	public abstract Iterable<TrustCertificate> getUntrustedCertificates();
+	public abstract Collection<TrustCertificate> getUntrustedCertificates();
 }

@@ -2,6 +2,7 @@ package data.sqlite;
 
 import java.security.Principal;
 import java.security.PublicKey;
+import java.util.Collection;
 import java.util.Collections;
 
 import data.TrustCertificate;
@@ -22,19 +23,19 @@ public class SQLiteBackedTrustView extends TrustView {
 	}
 
 	@Override
-	public Iterable<TrustAssessment> getAssessments() {
+	public Collection<TrustAssessment> getAssessments() {
 		//TODO: implement
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<TrustCertificate> getTrustedCertificates() {
+	public Collection<TrustCertificate> getTrustedCertificates() {
 		//TODO: implement
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<TrustCertificate> getUntrustedCertificates() {
+	public Collection<TrustCertificate> getUntrustedCertificates() {
 		//TODO: implement
 		return Collections.emptyList();
 	}
