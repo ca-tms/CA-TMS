@@ -2,15 +2,19 @@ package util;
 
 public final class Option<T> {
 	private final T value;
-	
+
 	public Option() {
 		this.value = null;
 	}
-	
+
 	public Option(T value) {
 		this.value = value;
 	}
-	
+
+	public boolean isSet() {
+		return value != null;
+	}
+
 	public T get() {
 		if (value == null)
 			throw new OptionNotSetException();

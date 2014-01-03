@@ -17,7 +17,7 @@ public class TrustAssessment {
 	private final Principal ca;
 
 	// certificates for k
-	private final Set<Certificate> S;
+	private final Set<TrustCertificate> S;
 
 	// opinion whether k belongs to ca (key legitimacy)
 	private final Option<CertainTrust> o_kl;
@@ -26,7 +26,7 @@ public class TrustAssessment {
 	// (issuer trust in ca, when using k)
 	private final CertainTrust o_it;
 
-	public TrustAssessment(PublicKey k, Principal ca, Set<Certificate> S,
+	public TrustAssessment(PublicKey k, Principal ca, Set<TrustCertificate> S,
 			Option<CertainTrust> o_kl, CertainTrust o_it) {
 		this.k = k;
 		this.ca = ca;
@@ -35,7 +35,7 @@ public class TrustAssessment {
 		this.o_it = o_it;
 	}
 
-	public TrustAssessment(PublicKey k, Principal ca, Certificate S,
+	public TrustAssessment(PublicKey k, Principal ca, TrustCertificate S,
 			Option<CertainTrust> o_kl, CertainTrust o_it) {
 		this.k = k;
 		this.ca = ca;
@@ -53,7 +53,7 @@ public class TrustAssessment {
 		return ca;
 	}
 
-	public Set<Certificate> getS() {
+	public Set<TrustCertificate> getS() {
 		return S;
 	}
 

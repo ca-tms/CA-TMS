@@ -18,9 +18,13 @@ public abstract class TrustView {
 		return getAssessment(k, ca) != null;
 	}
 
-	public abstract TrustAssessment setAssessment(TrustAssessment assessment);
+	public abstract void setAssessment(TrustAssessment assessment);
 
 	public abstract TrustAssessment getAssessment(PublicKey k, Principal ca);
 
 	public abstract Iterable<TrustAssessment> getAssessments();
+
+	public abstract Iterable<TrustCertificate> getTrustedCertificates();
+
+	public abstract Iterable<TrustCertificate> getUntrustedCertificates();
 }

@@ -3,9 +3,8 @@ package buisness;
 import java.security.Principal;
 import java.security.PublicKey;
 import java.security.cert.CertPath;
-import java.security.cert.X509Certificate;
 
-import data.Certificate;
+import data.TrustCertificate;
 import data.TrustAssessment;
 import data.TrustView;
 
@@ -20,8 +19,11 @@ public class TrustComputation {
 		this.trustView = trustView;
 	}
 
-	public void updateAssessment(PublicKey k, Principal ca, Certificate S,
-			boolean isKeyLegitimate) {
+	public void updateAssessment(TrustCertificate S, boolean isKeyLegitimate) {
+		// determine k and ca
+		PublicKey k = S.getPublicKey();
+		Principal ca = S.getSubject();
+
 		if (trustView.hasTrustAssessment(k, ca))
 			return;
 
@@ -34,7 +36,7 @@ public class TrustComputation {
 		int n = 0;
 		double f = 0.0;
 		for (TrustAssessment assessment : trustView.getAssessments())
-			for (Certificate S_i : assessment.getS())
+			for (TrustCertificate S_i : assessment.getS())
 				if (S_i.getIssuer().equals(S.getIssuer())) {
 					f += assessment.getO_it().getExpectation();
 					n++;
@@ -47,14 +49,11 @@ public class TrustComputation {
 
 	public void processX509CertPath(CertPath path, boolean isLegitimateAnchor) {
 		boolean firstCert = true;
-		for (java.security.cert.Certificate cert : path.getCertificates())
-			if (cert instanceof X509Certificate) {
-				X509Certificate x509cert = (X509Certificate) cert;
-				updateAssessment(
-						cert.getPublicKey(), x509cert.getIssuerDN(),
-						Certificate.fromX509Certificate(x509cert),
-						firstCert && isLegitimateAnchor);
-				firstCert = false;
-			}
+		for (java.security.cert.Certificate cert : path.getCertificates()) {
+			updateAssessment(
+					TrustCertificate.fromCertificate(cert),
+					firstCert && isLegitimateAnchor);
+			firstCert = false;
+		}
 	}
 }
