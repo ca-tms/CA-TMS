@@ -26,23 +26,35 @@ public class TrustAssessment {
 	// (issuer trust in ca, when using k)
 	private final CertainTrust o_it;
 
+	// count of positive experiences
+	private int positive;
+
+	// count of positive experiences
+	private int negative;
+
 	public TrustAssessment(PublicKey k, Principal ca, Set<TrustCertificate> S,
-			Option<CertainTrust> o_kl, CertainTrust o_it) {
+			Option<CertainTrust> o_kl, CertainTrust o_it,
+			int positive, int negative) {
 		this.k = k;
 		this.ca = ca;
 		this.S = S;
 		this.o_kl = o_kl;
 		this.o_it = o_it;
+		this.positive = positive;
+		this.negative = negative;
 	}
 
 	public TrustAssessment(PublicKey k, Principal ca, TrustCertificate S,
-			Option<CertainTrust> o_kl, CertainTrust o_it) {
+			Option<CertainTrust> o_kl, CertainTrust o_it,
+			int positive, int negative) {
 		this.k = k;
 		this.ca = ca;
 		this.S = new HashSet<>();
 		this.S.add(S);
 		this.o_kl = o_kl;
 		this.o_it = o_it;
+		this.positive = positive;
+		this.negative = negative;
 	}
 
 	public PublicKey getK() {
@@ -63,5 +75,21 @@ public class TrustAssessment {
 
 	public CertainTrust getO_it() {
 		return o_it;
+	}
+
+	public int getPositive() {
+		return positive;
+	}
+
+	public int getNegative() {
+		return negative;
+	}
+
+	public void incPositive() {
+		positive++;
+	}
+
+	public void incNegative() {
+		negative++;
 	}
 }

@@ -15,8 +15,8 @@ public abstract class TrustView {
 		return instance;
 	}
 
-	public boolean hasTrustAssessment(PublicKey k, Principal ca) {
-		return getAssessment(k, ca) != null;
+	public TrustAssessment getAssessment(TrustCertificate S) {
+		return getAssessment(S.getPublicKey(), S.getSubject());
 	}
 
 	public abstract void setAssessment(TrustAssessment assessment);
@@ -28,4 +28,8 @@ public abstract class TrustView {
 	public abstract Collection<TrustCertificate> getTrustedCertificates();
 
 	public abstract Collection<TrustCertificate> getUntrustedCertificates();
+
+	public abstract void setTrustedCertificate(TrustCertificate S);
+
+	public abstract void setUntrustedCertificate(TrustCertificate S);
 }

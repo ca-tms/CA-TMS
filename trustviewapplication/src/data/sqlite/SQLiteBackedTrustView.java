@@ -39,4 +39,14 @@ public class SQLiteBackedTrustView extends TrustView {
 		//TODO: implement
 		return Collections.emptyList();
 	}
+
+	@Override
+	public void setTrustedCertificate(TrustCertificate S) {
+		//TODO: implement
+	}
+
+	@Override
+	public void setUntrustedCertificate(TrustCertificate S) {
+		//TODO: implement
+	}
 }
