@@ -55,14 +55,15 @@ public class TrustComputation {
 		if (R == ValidationResult.TRUSTED)
 			for (int i = 0; i < p.size() - 1; i++) {
 				TrustAssessment assessment = pAssessments.get(i);
-				TrustAssessment nextAssessment = pAssessments.get(i + 1);
+				TrustAssessment nextAssessment = i + 1 < pAssessments.size()
+						? pAssessments.get(i + 1) : null;
 
 				// add C to S
 				assessment.getS().add(p.get(i));
 
 				// if next assessment is in TL,
 				// update the current assessment with a positive experience
-				if (TL.contains(nextAssessment)) {
+				if (nextAssessment != null && TL.contains(nextAssessment)) {
 					assessment.incPositive();
 					trustView.setAssessment(assessment);
 				}
@@ -82,15 +83,17 @@ public class TrustComputation {
 
 			for (int i = 0; i < h - 1; i++) {
 				TrustAssessment assessment = pAssessments.get(i);
-				TrustAssessment nextAssessment = pAssessments.get(i + 1);
+				TrustAssessment nextAssessment = i + 1 < pAssessments.size()
+						? pAssessments.get(i + 1) : null;
 
 				// add C to S
 				assessment.getS().add(p.get(i));
 
 				// if next assessment is in TL or next C is not in next S,
 				// update the current assessment with a positive experience
-				if (TL.contains(nextAssessment) ||
-						!nextAssessment.getS().contains(p.get(i + 1))) {
+				if (nextAssessment != null &&
+						(TL.contains(nextAssessment) ||
+						 !nextAssessment.getS().contains(p.get(i + 1)))) {
 					assessment.incPositive();
 					trustView.setAssessment(assessment);
 				}
@@ -117,50 +120,54 @@ public class TrustComputation {
 		}
 	}
 
-	//TODO: VS: validation services need to implemented, just a placeholder input
 	public ValidationResult validate(CertPath p, double l, double rc,
+			Iterable<Object> VS) {
+		List<? extends Certificate> certs = p.getCertificates();
+		List<TrustCertificate> path = new ArrayList<>(certs.size());
+		for (Certificate cert : certs)
+			path.add(TrustCertificate.fromCertificate(cert));
+		return validate(path, l, rc, VS);
+	}
+
+	//TODO: VS: validation services need to implemented, just a placeholder input
+	public ValidationResult validate(List<TrustCertificate> p, double l, double rc,
 			Iterable<Object> VS) {
 		Set<TrustCertificate> trustedCertificates =
 				new HashSet<TrustCertificate>(trustView.getTrustedCertificates());
 		Set<TrustCertificate> untrustedCertificates =
 				new HashSet<TrustCertificate>(trustView.getUntrustedCertificates());
 
-		List<? extends Certificate> certs = p.getCertificates();
-		List<TrustCertificate> path = new ArrayList<>(certs.size());
-		for (Certificate cert : certs)
-			path.add(TrustCertificate.fromCertificate(cert));
-
 		// check if C_n is already trusted
-		if (trustedCertificates.contains(path.get(path.size() - 1)))
+		if (trustedCertificates.contains(p.get(p.size() - 1)))
 			return ValidationResult.TRUSTED;
 
 		// check if p contains untrusted certificate
-		for (TrustCertificate cert : path)
+		for (TrustCertificate cert : p)
 			if (untrustedCertificates.contains(cert))
 				return ValidationResult.UNTRUSTED;
 
 		// update trust assessments
-		List<TrustAssessment> TL = new ArrayList<>(path.size() - 1);
-		List<TrustAssessment> pathAssessments = new ArrayList<>(path.size() - 1);
-		for (int i = 0; i < path.size() - 1; i++) {
-			TrustAssessment assessment = trustView.getAssessment(path.get(i));
+		List<TrustAssessment> TL = new ArrayList<>(p.size() - 1);
+		List<TrustAssessment> pAssessments = new ArrayList<>(p.size() - 1);
+		for (int i = 0; i < p.size() - 1; i++) {
+			TrustAssessment assessment = trustView.getAssessment(p.get(i));
 			if (assessment == null)
-				TL.add(assessment = createAssessment(path.get(i), i == 0));
-			pathAssessments.add(assessment);
+				TL.add(assessment = createAssessment(p.get(i), i == 0));
+			pAssessments.add(assessment);
 		}
 
 		// determine h (maximum i which the key is legitimate for)
 		int h = 0;
-		for (int i = 0; i < path.size() - 1; i++) {
-			CertainTrust o_it = pathAssessments.get(i).getO_it();
+		for (int i = 0; i < p.size() - 1; i++) {
+			CertainTrust o_it = pAssessments.get(i).getO_it();
 			if (o_it.getT() == 1.0 && o_it.getC() == 1.0 && o_it.getF() == 1.0)
 				h = i;
 		}
 
 		// compute o_kl for C_n
 		CertainTrust o_kl = null;
-		for (int i = h; i < path.size() - 1; i++) {
-			CertainTrust o_it = pathAssessments.get(i).getO_it();
+		for (int i = h; i < p.size() - 1; i++) {
+			CertainTrust o_it = pAssessments.get(i).getO_it();
 			o_kl = o_kl == null ? o_it : o_kl.AND(o_it);
 		}
 
@@ -178,7 +185,7 @@ public class TrustComputation {
 			result = ValidationResult.UNKNOWN;
 		}
 
-		updateView(path, pathAssessments, result, TL);
+		updateView(p, pAssessments, result, TL);
 		return result;
 	}
 }

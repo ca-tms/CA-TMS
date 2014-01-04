@@ -57,6 +57,36 @@ public class TrustAssessment {
 		this.negative = negative;
 	}
 
+	@Override
+	public TrustAssessment clone() {
+		return o_kl.isSet()
+				? new TrustAssessment(
+						k, ca, new HashSet<>(S),
+						new Option<CertainTrust>(o_kl.get().clone()), o_it.clone(),
+						positive, negative)
+				: new TrustAssessment(
+						k, ca, new HashSet<>(S),
+						new Option<CertainTrust>(), o_it.clone(),
+						positive, negative);
+	}
+
+	@Override
+	public String toString() {
+		String str = "";
+		for (TrustCertificate s : S)
+			str += str.isEmpty() ? s : ", " + s;
+		str = "{" + str + "}, ";
+
+		str += o_kl.isSet()
+				? "(" + o_kl.get().getT() + ", " + o_kl.get().getC() + ", " +
+				        o_kl.get().getF() + ")"
+				: "unknown";
+
+		return "(" + k + ", " + ca + ", " + str + ", (" +
+		       o_it.getT() + ", " + o_it.getC() + ", " + o_it.getF() + "), " +
+		       positive + ", " + negative + ")";
+	}
+
 	public PublicKey getK() {
 		return k;
 	}
