@@ -11,6 +11,7 @@
     <script type="application/javascript" src="chrome://trustviewsextension/content/ui.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/certHandler.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/sslListener.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/ctmsCommunicator.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/init.js" />
 
     <stringbundleset id="stringbundleset">

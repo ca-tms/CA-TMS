@@ -56,7 +56,7 @@ public class WebServer {
 //				System.out.println(socket.getInetAddress() + ":" + socket.getPort());
 
 				StringBuilder stringBuilder = new StringBuilder();
-				ByteBuffer buffer = ByteBuffer.allocate(1024);
+				ByteBuffer buffer = ByteBuffer.allocate(32768);
 
 				while (socketChannel.read(buffer) > 0) {
 					buffer.flip();

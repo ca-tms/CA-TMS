@@ -14,12 +14,18 @@ TVE.SSLListener = {
 
     onSecurityChange: function(aWebProgress, aRequest, aState) {
         
-        // if it's HTTPS and the request is still pending
-        if((aState & Components.interfaces.nsIWebProgressListener.STATE_IS_SECURE) && aRequest.isPending()) {
+        let validationResult = TVE.CertHandler.getValidationResult(aState);
+        
+        if(validationResult == "valid" && aRequest.isPending()) {
             
-            // TODO: do something usefull here
+            let rawChain = TVE.CertHandler.getRawChain();
+            let secLevel = 0.8;      // currently some magic numbers
+            let reqCertainty = 0.8;
             
-        } else if(aState & Components.interfaces.nsIWebProgressListener.STATE_IS_BROKEN) {
+            let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel, reqCertainty);
+            alert(ctmsResult);
+            
+        } else if(validationResult == "unknown") {
             alert("State is Broken");
         }
         

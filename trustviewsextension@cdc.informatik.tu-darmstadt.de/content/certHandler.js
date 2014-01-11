@@ -3,8 +3,7 @@
  */
 TVE.CertHandler = {
     
-    getCert : function() {
-        
+    getRawChain : function() {
         let secUI = window.getBrowser().selectedBrowser.securityUI; // get securityUI
         secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl and certificate status
         let sslStatus = secUI.SSLStatus;
@@ -19,8 +18,16 @@ TVE.CertHandler = {
             rawDERcertChain[i] = certChain[i].getRawDER(new Object());
         }
         
-        return serverCert;
-        
+        return rawDERcertChain;
+    },
+    
+    getValidationResult : function(secState) {
+        if(secState & Components.interfaces.nsIWebProgressListener.STATE_IS_INSECURE)
+            return "invalid";
+        if(secState & Components.interfaces.nsIWebProgressListener.STATE_IS_BROKEN)
+            return "unknown";
+        if(secState & Components.interfaces.nsIWebProgressListener.STATE_IS_SECURE)
+            return "valid";
     }
     
 };
