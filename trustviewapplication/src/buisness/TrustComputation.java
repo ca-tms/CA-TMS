@@ -52,26 +52,42 @@ public class TrustComputation {
 
 	private void updateView(List<TrustCertificate> p, List<TrustAssessment> pAssessments,
 			ValidationResult R, List<TrustAssessment> TL) {
-		if (R == ValidationResult.TRUSTED)
+		if (R == ValidationResult.TRUSTED) {
 			for (int i = 0; i < p.size() - 1; i++) {
+				boolean updateTrustView = false;
 				TrustAssessment assessment = pAssessments.get(i);
 				TrustAssessment nextAssessment = i + 1 < pAssessments.size()
 						? pAssessments.get(i + 1) : null;
 
-				// add C to S
-				assessment.getS().add(p.get(i));
+				// if C is not in S, add C to S
+				if (!assessment.getS().contains(p.get(i))) {
+					assessment.getS().add(p.get(i));
+					updateTrustView = true;
+				}
 
-				// if next assessment is in TL,
+				// if this is the second last certificate in the chain
+				// or the next assessment is in TL
+				// or the next C is not in the next S
+				// for the next trust assessment
 				// update the current assessment with a positive experience
-				if (nextAssessment != null && TL.contains(nextAssessment)) {
+				if (i == p.size() - 2 ||
+						(nextAssessment != null &&
+							(TL.contains(nextAssessment) ||
+								!nextAssessment.getS().contains(p.get(i + 1))))) {
 					assessment.incPositive();
-					trustView.setAssessment(assessment);
+					updateTrustView = true;
 				}
 
 				// if assessment is in TL, add assessment to the view
 				else if (TL.contains(assessment))
+					updateTrustView = true;
+
+				if (updateTrustView)
 					trustView.setAssessment(assessment);
 			}
+
+			trustView.setTrustedCertificate(p.get(p.size() - 1));
+		}
 
 		if (R == ValidationResult.UNTRUSTED) {
 			// determine h (maximum i which is not a new assessment)
@@ -81,39 +97,60 @@ public class TrustComputation {
 				if (!TL.contains(pAssessments.get(i)))
 					h = i;
 
-			for (int i = 0; i < h - 1; i++) {
+			for (int i = 0; i < h; i++) {
+				boolean updateTrustView = false;
 				TrustAssessment assessment = pAssessments.get(i);
 				TrustAssessment nextAssessment = i + 1 < pAssessments.size()
 						? pAssessments.get(i + 1) : null;
 
-				// add C to S
-				assessment.getS().add(p.get(i));
+				// if C is not in S, add C to S
+				if (!assessment.getS().contains(p.get(i))) {
+					assessment.getS().add(p.get(i));
+					updateTrustView = true;
+				}
 
-				// if next assessment is in TL or next C is not in next S,
+				// if the next assessment is in TL
+				// or the next C is not in the next S,
 				// update the current assessment with a positive experience
 				if (nextAssessment != null &&
 						(TL.contains(nextAssessment) ||
 						 !nextAssessment.getS().contains(p.get(i + 1)))) {
 					assessment.incPositive();
-					trustView.setAssessment(assessment);
+					updateTrustView = true;
 				}
 
 				// if assessment is in TL, add assessment to the view
 				else if (TL.contains(assessment))
+					updateTrustView = true;
+
+				if (updateTrustView)
 					trustView.setAssessment(assessment);
 			}
 
-			// if assessment at position h is in TL, add assessment to the view
-			if (TL.contains(pAssessments.get(h)))
-				trustView.setAssessment(pAssessments.get(h));
+			boolean updateTrustView = false;
+			TrustAssessment assessment = pAssessments.get(h);
+
+			// if C at position h is not in S at position h,
+			// add it to the set
+			if (!assessment.getS().contains(p.get(h))) {
+				assessment.getS().add(p.get(h));
+				updateTrustView = true;
+			}
+
+			// if assessment at position h is in TL,
+			// add the assessment to the view
+			if (TL.contains(assessment))
+				updateTrustView = true;
 
 			// If C at position h+1 is not an untrusted certificate,
 			// update the assessment with a negative experience
 			if (!trustView.getUntrustedCertificates().contains(p.get(h + 1))) {
-				TrustAssessment assessment = pAssessments.get(h);
 				assessment.incNegative();
-				trustView.setAssessment(assessment);
+				updateTrustView = true;
 			}
+
+			if (updateTrustView)
+				trustView.setAssessment(assessment);
 
 			// add C at position h+1 as untrusted certificate
 			trustView.setUntrustedCertificate(p.get(h + 1));
@@ -137,7 +174,7 @@ public class TrustComputation {
 		Set<TrustCertificate> untrustedCertificates =
 				new HashSet<TrustCertificate>(trustView.getUntrustedCertificates());
 
-		// check if C_n is already trusted
+		// check if the last certificate is already trusted
 		if (trustedCertificates.contains(p.get(p.size() - 1)))
 			return ValidationResult.TRUSTED;
 
