@@ -2,6 +2,7 @@ package data;
 
 import java.security.Principal;
 import java.security.PublicKey;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,39 +23,28 @@ public class TrustAssessment {
 	// opinion whether k belongs to ca (key legitimacy)
 	private final Option<CertainTrust> o_kl;
 
-	// opinion on the trust in ca to issue trustworthy certificates
-	// (issuer trust in ca, when using k)
-	private final CertainTrust o_it;
+	// opinion on the trust in ca to issue trustworthy certificates for CAs
+	// (issuer trust in ca, when using k to sign CAs)
+	private final CertainTrust o_it_ca;
 
-	// count of positive experiences
-	private int positive;
-
-	// count of positive experiences
-	private int negative;
+	// opinion on the trust in ca to issue trustworthy certificates for end entities
+	// (issuer trust in ca, when using k to sign end entities)
+	private final CertainTrust o_it_ee;
 
 	public TrustAssessment(PublicKey k, Principal ca, Set<TrustCertificate> S,
-			Option<CertainTrust> o_kl, CertainTrust o_it,
-			int positive, int negative) {
+			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
 		this.k = k;
 		this.ca = ca;
 		this.S = S;
 		this.o_kl = o_kl;
-		this.o_it = o_it;
-		this.positive = positive;
-		this.negative = negative;
+		this.o_it_ca = o_it_ca;
+		this.o_it_ee = o_it_ee;
 	}
 
 	public TrustAssessment(PublicKey k, Principal ca, TrustCertificate S,
-			Option<CertainTrust> o_kl, CertainTrust o_it,
-			int positive, int negative) {
-		this.k = k;
-		this.ca = ca;
-		this.S = new HashSet<>();
-		this.S.add(S);
-		this.o_kl = o_kl;
-		this.o_it = o_it;
-		this.positive = positive;
-		this.negative = negative;
+			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
+		this(k, ca, new HashSet<>(Collections.singleton(S)),
+		     o_kl, o_it_ca, o_it_ee);
 	}
 
 	@Override
@@ -62,12 +52,12 @@ public class TrustAssessment {
 		return o_kl.isSet()
 				? new TrustAssessment(
 						k, ca, new HashSet<>(S),
-						new Option<CertainTrust>(o_kl.get().clone()), o_it.clone(),
-						positive, negative)
+						new Option<CertainTrust>(o_kl.get().clone()),
+						o_it_ca.clone(), o_it_ee.clone())
 				: new TrustAssessment(
 						k, ca, new HashSet<>(S),
-						new Option<CertainTrust>(), o_it.clone(),
-						positive, negative);
+						new Option<CertainTrust>(),
+						o_it_ca.clone(), o_it_ee.clone());
 	}
 
 	@Override
@@ -83,8 +73,8 @@ public class TrustAssessment {
 				: "unknown";
 
 		return "(" + k + ", " + ca + ", " + str + ", (" +
-		       o_it.getT() + ", " + o_it.getC() + ", " + o_it.getF() + "), " +
-		       positive + ", " + negative + ")";
+		       o_it_ca.getT() + ", " + o_it_ca.getC() + ", " + o_it_ca.getF() + "), (" +
+		       o_it_ee.getT() + ", " + o_it_ee.getC() + ", " + o_it_ee.getF() + "))";
 	}
 
 	public PublicKey getK() {
@@ -103,23 +93,11 @@ public class TrustAssessment {
 		return o_kl;
 	}
 
-	public CertainTrust getO_it() {
-		return o_it;
+	public CertainTrust getO_it_ca() {
+		return o_it_ca;
 	}
 
-	public int getPositive() {
-		return positive;
-	}
-
-	public int getNegative() {
-		return negative;
-	}
-
-	public void incPositive() {
-		positive++;
-	}
-
-	public void incNegative() {
-		negative++;
+	public CertainTrust getO_it_ee() {
+		return o_it_ee;
 	}
 }

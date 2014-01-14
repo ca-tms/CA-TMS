@@ -5,6 +5,7 @@ import java.security.PublicKey;
 import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,14 @@ import CertainTrust.CertainTrust;
 public class TrustComputation {
 	private final TrustView trustView;
 
+	// TODO: parameters should be configurable (stored in the database)
+//	private final double lmin = 0.6;
+//	private final double lmed = 0.8;
+//	private final double lmax = 0.95;
+	private final double maxF = 0.8;
+	private final int opinionN = 10;
+//	private final int fixkl = 3;
+
 	public TrustComputation(TrustView trustView) {
 		this.trustView = trustView;
 	}
@@ -32,22 +41,39 @@ public class TrustComputation {
 
 		// determine o_kl
 		Option<CertainTrust> o_kl = isLegitimateRoot
-				? new Option<CertainTrust>(new CertainTrust(1.0, 1.0, 1.0, 1))
+				? new Option<CertainTrust>(new CertainTrust(1.0, 1.0, 1.0, opinionN))
 				: new Option<CertainTrust>();
 
 		// determine o_it
-		int n = 0;
-		double f = 0.0;
-		for (TrustAssessment assessment : trustView.getAssessments())
-			for (TrustCertificate S_i : assessment.getS())
-				if (S_i.getIssuer().equals(S.getIssuer())) {
-					f += assessment.getO_it().getExpectation();
-					n++;
-					break;
-				}
-		CertainTrust o_it = new CertainTrust(0.5, 0.0, n == 0 ? 0.5 : f / n, 1);
+		Collection<TrustAssessment> assessments = trustView.getAssessments();
+		CertainTrust o_it_ca = null, o_it_ee = null;
 
-		return new TrustAssessment(k, ca, S, o_kl, o_it, 0, 0);
+		for (TrustAssessment assessment : assessments)
+			if (assessment.getCa().equals(ca)) {
+				o_it_ca = assessment.getO_it_ca();
+				o_it_ee = assessment.getO_it_ee();
+				break;
+			}
+
+		if (o_it_ca == null || o_it_ee == null) {
+			int n = 0;
+			double f_ca = 0.0, f_ee = 0.0;
+			for (TrustAssessment assessment : assessments)
+				for (TrustCertificate S_i : assessment.getS())
+					if (S_i.getIssuer().equals(S.getIssuer())) {
+						f_ca += assessment.getO_it_ca().getExpectation();
+						f_ee += assessment.getO_it_ee().getExpectation();
+						n++;
+						break;
+					}
+
+			o_it_ca = new CertainTrust(
+					0.5, 0.0, n == 0 ? 0.5 : Math.min(maxF, f_ca / n), opinionN);
+			o_it_ee = new CertainTrust(
+					0.5, 0.0, n == 0 ? 0.5 : Math.min(maxF, f_ee / n), opinionN);
+		}
+
+		return new TrustAssessment(k, ca, S, o_kl, o_it_ca, o_it_ee);
 	}
 
 	private void updateView(List<TrustCertificate> p, List<TrustAssessment> pAssessments,
@@ -70,11 +96,14 @@ public class TrustComputation {
 				// or the next C is not in the next S
 				// for the next trust assessment
 				// update the current assessment with a positive experience
-				if (i == p.size() - 2 ||
-						(nextAssessment != null &&
+				if (i == p.size() - 2) {
+					assessment.getO_it_ee().addR(1);
+					updateTrustView = true;
+				}
+				else if (nextAssessment != null &&
 							(TL.contains(nextAssessment) ||
-								!nextAssessment.getS().contains(p.get(i + 1))))) {
-					assessment.incPositive();
+								!nextAssessment.getS().contains(p.get(i + 1)))) {
+					assessment.getO_it_ca().addR(1);
 					updateTrustView = true;
 				}
 
@@ -115,7 +144,7 @@ public class TrustComputation {
 				if (nextAssessment != null &&
 						(TL.contains(nextAssessment) ||
 						 !nextAssessment.getS().contains(p.get(i + 1)))) {
-					assessment.incPositive();
+					assessment.getO_it_ca().addR(1);
 					updateTrustView = true;
 				}
 
@@ -145,7 +174,10 @@ public class TrustComputation {
 			// If C at position h+1 is not an untrusted certificate,
 			// update the assessment with a negative experience
 			if (!trustView.getUntrustedCertificates().contains(p.get(h + 1))) {
-				assessment.incNegative();
+				if (h < p.size() - 2)
+					assessment.getO_it_ca().addS(1);
+				else
+					assessment.getO_it_ee().addS(1);
 				updateTrustView = true;
 			}
 
@@ -157,17 +189,17 @@ public class TrustComputation {
 		}
 	}
 
-	public ValidationResult validate(CertPath p, double l, double rc,
+	public ValidationResult validate(CertPath p, double l,
 			Iterable<Object> VS) {
 		List<? extends Certificate> certs = p.getCertificates();
 		List<TrustCertificate> path = new ArrayList<>(certs.size());
 		for (Certificate cert : certs)
 			path.add(TrustCertificate.fromCertificate(cert));
-		return validate(path, l, rc, VS);
+		return validate(path, l, VS);
 	}
 
 	//TODO: VS: validation services need to implemented, just a placeholder input
-	public ValidationResult validate(List<TrustCertificate> p, double l, double rc,
+	public ValidationResult validate(List<TrustCertificate> p, double l,
 			Iterable<Object> VS) {
 		Set<TrustCertificate> trustedCertificates =
 				new HashSet<TrustCertificate>(trustView.getTrustedCertificates());
@@ -196,15 +228,21 @@ public class TrustComputation {
 		// determine h (maximum i which the key is legitimate for)
 		int h = 0;
 		for (int i = 0; i < p.size() - 1; i++) {
-			CertainTrust o_it = pAssessments.get(i).getO_it();
-			if (o_it.getT() == 1.0 && o_it.getC() == 1.0 && o_it.getF() == 1.0)
-				h = i;
+			Option<CertainTrust> o_kl_opt = pAssessments.get(i).getO_kl();
+			if (o_kl_opt.isSet()) {
+				CertainTrust o_kl = o_kl_opt.get();
+				if (o_kl.getT() == 1.0 && o_kl.getC() == 1.0 && o_kl.getF() == 1.0)
+					h = i;
+			}
 		}
 
-		// compute o_kl for C_n
+		// compute o_kl for last C
 		CertainTrust o_kl = null;
 		for (int i = h; i < p.size() - 1; i++) {
-			CertainTrust o_it = pAssessments.get(i).getO_it();
+			TrustAssessment assessment = pAssessments.get(i);
+			CertainTrust o_it = i < p.size() - 2
+					? assessment.getO_it_ca()
+				    : assessment.getO_it_ee();
 			o_kl = o_kl == null ? o_it : o_kl.AND(o_it);
 		}
 
@@ -213,9 +251,9 @@ public class TrustComputation {
 		double exp = o_kl.getExpectation();
 		if (exp >= l)
 			result = ValidationResult.TRUSTED;
-		if (exp < l && o_kl.getC() >= rc)
+		if (exp < l && o_kl.getC() == 1)
 			result = ValidationResult.UNTRUSTED;
-		if (exp < l && o_kl.getC() < rc) {
+		if (exp < l && o_kl.getC() < 1) {
 			// query validation service
 
 			// TODO: query validation service and return consensus
