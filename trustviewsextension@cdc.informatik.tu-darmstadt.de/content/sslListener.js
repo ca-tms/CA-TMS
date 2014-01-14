@@ -21,7 +21,7 @@ TVE.SSLListener = {
             let rawChain = TVE.CertHandler.getRawChain();
             let secLevel = "medium"; // TODO: make that customizable
             
-            let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel, reqCertainty);
+            let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel);
             alert(ctmsResult);
             
         } else if(validationResult == "unknown") {
