@@ -19,8 +19,7 @@ TVE.SSLListener = {
         if(validationResult == "valid" && aRequest.isPending()) {
             
             let rawChain = TVE.CertHandler.getRawChain();
-            let secLevel = 0.8;      // currently some magic numbers
-            let reqCertainty = 0.8;
+            let secLevel = "medium"; // TODO: make that customizable
             
             let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel, reqCertainty);
             alert(ctmsResult);

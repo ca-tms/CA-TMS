@@ -3,12 +3,11 @@
  */
 TVE.CTMSCommunicator = {
     
-    requestValidation : function(certChain, validationResult, secLevel, reqCertainty) {
+    requestValidation : function(certChain, validationResult, secLevel) {
         let data = new Object();
         data.certChain = certChain;
         data.validationResult = validationResult;
         data.secLevel = secLevel;
-        data.reqCertainty = reqCertainty;
 
         let req = new XMLHttpRequest();
         req.open('POST', 'http://localhost:8084', false);
