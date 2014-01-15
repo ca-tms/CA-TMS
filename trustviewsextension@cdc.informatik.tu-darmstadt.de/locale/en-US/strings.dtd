@@ -1,1 +1,5 @@
-<!ENTITY trustviewsextension.toolbarbutton.label "Trust Views">
+<!ENTITY trustviewsextension.toolbarbutton.label    "Trust Views">
+<!ENTITY trustviewsextension.prefs.windowtitle      "Trust Views Settings">
+<!ENTITY trustviewsextension.prefs.networkpanelabel "Connection">
+<!ENTITY trustviewsextension.prefs.urllabel         "CTMS URL">
+<!ENTITY trustviewsextension.prefs.portlabel        "CTMS Port">

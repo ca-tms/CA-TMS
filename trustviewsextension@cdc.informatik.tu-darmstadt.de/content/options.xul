@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+ 
+<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
+
+<prefwindow id="trustviewsextension-prefs" title="&trustviewsextension.prefs.windowtitle;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ 
+    <prefpane id="trustviewsextension-prefs-networkpane" label="&trustviewsextension.prefs.networkpanelabel;">
+        <preferences>
+            <preference id="trustviewsextension-prefs-ctmsURL" name="extensions.trustviewsextension.ctmsURL" type="string"/>
+            <preference id="trustviewsextension-prefs-ctmsPort" name="extensions.trustviewsextension.ctmsPort" type="string"/>
+        </preferences>
+
+        <vbox align="end">
+            <hbox align="baseline">
+                <label control="trustviewsextension-prefs-ctmsURL-control" value="&trustviewsextension.prefs.urllabel;" />
+                <textbox id="trustviewsextension-prefs-ctmsURL-control" preference="trustviewsextension-prefs-ctmsURL" />
+            </hbox>
+            <hbox align="baseline">
+                <label control="trustviewsextension-prefs-ctmsPort-control" value="&trustviewsextension.prefs.portlabel;" />
+                <textbox id="trustviewsextension-prefs-ctmsPort-control" preference="trustviewsextension-prefs-ctmsPort" />
+            </hbox>
+        </vbox>
+    </prefpane>
+ 
+</prefwindow>
