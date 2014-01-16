@@ -1,28 +1,54 @@
 package services.bindings;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
+import java.security.cert.CertPath;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import buisness.TrustComputation;
+import data.TrustView;
 
 public class WebServer {
 	private static final int POOL_MULTIPLE = 4;
 	private static final int PORT = 8084;
+	private static final int TIMEOUT_MILLIS = 5000;
 
-	private ServerSocketChannel serverSocketChannel = null;
-	private ExecutorService executorService;
+	private final ServerSocketChannel serverSocketChannel;
+	private final ExecutorService executorService;
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		new WebServer().run();
 	}
 
 	public WebServer() throws IOException {
 		executorService = Executors.newFixedThreadPool(
 				Runtime.getRuntime().availableProcessors() * POOL_MULTIPLE);
+
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.socket().setReuseAddress(true);
 		serverSocketChannel.socket().bind(new InetSocketAddress(PORT));
@@ -33,52 +59,106 @@ public class WebServer {
 			try {
 				SocketChannel socketChannel = serverSocketChannel.accept();
 				if (socketChannel != null)
-					executorService.execute(new HttpHandler(socketChannel));
+					executorService.execute(new CommunicationHandler(
+							socketChannel, executorService));
 			}
 			catch (IOException e) {
 				e.printStackTrace();
 			}
 	}
 
-	static private class HttpHandler implements Runnable {
-		private static final Charset CHARSET = Charset.forName("UTF-8");
+	static private class CommunicationHandler implements Runnable {
+		private final SocketChannel socketChannel;
+		private final ExecutorService executorService;
 
-		private SocketChannel socketChannel;
+		private final static SimpleDateFormat dateFormat;
 
-		public HttpHandler(SocketChannel socketChannel) {
+		static {
+			dateFormat = new SimpleDateFormat("EEE, MMM d yyyy HH:mm:ss z");
+			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		}
+
+		public CommunicationHandler(SocketChannel socketChannel,
+				ExecutorService executorService) {
 			this.socketChannel = socketChannel;
+			this.executorService = executorService;
 		}
 
 		@Override
 		public void run() {
-			try {
-//				Socket socket = socketChannel.socket();
-//				System.out.println(socket.getInetAddress() + ":" + socket.getPort());
+			try (Reader reader = Channels.newReader(socketChannel, "UTF-8");
+			     Writer writer = Channels.newWriter(socketChannel, "UTF-8")) {
+				try {
+					if (socketChannel.socket().getInetAddress().isLoopbackAddress()) {
+						Future<JsonObject> objectFuture = executorService.submit(
+								new JsonObjectReader(reader));
 
-				StringBuilder stringBuilder = new StringBuilder();
-				ByteBuffer buffer = ByteBuffer.allocate(32768);
+						JsonObject object = objectFuture.get(
+								TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+						JsonArray chain = object.getJsonArray("certChain");
 
-				while (socketChannel.read(buffer) > 0) {
-					buffer.flip();
-					stringBuilder.append(
-							CHARSET.newDecoder().decode(buffer).toString());
-					buffer.clear();
-					break; // TODO: maybe check the HTTP header for
-					       //       Content-Length attribute and end loop when
-					       //       all content has been read or a timeout has
-					       //       expired
+						CertificateFactory factory = CertificateFactory.getInstance("X.509");
+						List<Certificate> certificates = new ArrayList<>(chain.size());
+
+						for (JsonArray jsonCert : chain.getValuesAs(JsonArray.class)) {
+							int i = 0;
+							byte[] certBytes = new byte[jsonCert.size()];
+							for (JsonNumber jsonByte : jsonCert.getValuesAs(JsonNumber.class))
+								certBytes[i++] = (byte) jsonByte.intValue();
+
+							certificates.add(factory.generateCertificate(new ByteArrayInputStream(certBytes)));
+						}
+
+						CertPath certPath = factory.generateCertPath(certificates);
+
+						String str = new TrustComputation(TrustView.getInstance()).validate(certPath, 0.8, null).toString();
+
+						writer.write(
+								"HTTP/1.1 200 OK\r\n" +
+								"Content-Type: text/plain;charset=utf-8\r\n" +
+								"Date: " + dateFormat.format(new Date()) + "\r\n" +
+								"Connection: close\r\n" +
+								"\r\n" +
+								str);
+					}
+					else {
+						System.err.println("403 Forbidden");
+						System.err.println("Request not from loopback address");
+						writer.write(
+								"HTTP/1.1 403 Forbidden\r\n" +
+								"Content-Type: text/plain;charset=utf-8\r\n" +
+								"Date: " + dateFormat.format(new Date()) + "\r\n" +
+								"Connection: close\r\n" +
+								"\r\n" +
+								"403 Forbidden\r\n" +
+								"Request not from loopback address\r\n" +
+								dateFormat.format(new Date()));
+					}
 				}
-
-				String answer =
-						"HTTP/1.1 200 OK\r\n" +
-						"Content-Type: text/html\r\n\r\n" +
-						"" +
-						"<h1>Incoming HTTP Request</h1>" +
-						"<pre>" + stringBuilder.toString() + "</pre>";
-
-				buffer = ByteBuffer.wrap(answer.getBytes(CHARSET));
-				while(buffer.hasRemaining())
-					socketChannel.write(buffer);
+				catch (TimeoutException e) {
+					System.err.println("408 Request Timeout");
+					e.printStackTrace();
+					writer.write(
+							"HTTP/1.1 408 Request Timeout\r\n" +
+							"Content-Type: text/plain;charset=utf-8\r\n" +
+							"Date: " + dateFormat.format(new Date()) + "\r\n" +
+							"Connection: close\r\n" +
+							"\r\n" +
+							"408 Request Timeout\r\n" +
+							dateFormat.format(new Date()));
+				}
+				catch (Exception e) {
+					System.err.println("500 Internal Server Error");
+					e.printStackTrace();
+					writer.write(
+							"HTTP/1.1 500 Internal Server Error\r\n" +
+							"Content-Type: text/plain;charset=utf-8\r\n" +
+							"Date: " + dateFormat.format(new Date()) + "\r\n" +
+							"Connection: close\r\n" +
+							"\r\n" +
+							"500 Internal Server Error\r\n" +
+							dateFormat.format(new Date()));
+				}
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -91,5 +171,26 @@ public class WebServer {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	static private class JsonObjectReader implements Callable<JsonObject> {
+		private final BufferedReader reader;
+
+		public JsonObjectReader(Reader reader) {
+			this.reader = reader instanceof BufferedReader
+					? (BufferedReader) reader
+					: new BufferedReader(reader);
+		}
+
+		@Override
+		public JsonObject call() throws Exception {
+			// skip lines of HTTP protocol
+			while (!reader.readLine().isEmpty());
+
+			// read JSON object
+			JsonReader jsonReader = Json.createReader(reader);
+			return jsonReader.readObject();
+		}
+
 	}
 }
