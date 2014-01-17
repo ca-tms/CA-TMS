@@ -28,10 +28,10 @@ public class TrustCertificate {
 			this.publicKey = DatatypeConverter.printBase64Binary(
 					x509cert.getPublicKey().getEncoded());
 		}
-
-		throw new UnsupportedOperationException(
-				"Cannot create a TrustCertificate from a " +
-				cert.getClass().getSimpleName());
+		else
+			throw new UnsupportedOperationException(
+					"Cannot create a TrustCertificate from a " +
+					cert.getClass().getSimpleName());
 	}
 
 	public String getIssuer() {
