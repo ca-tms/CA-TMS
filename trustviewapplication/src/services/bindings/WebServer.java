@@ -9,8 +9,6 @@ import java.net.InetSocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.security.cert.CertPath;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import javax.json.JsonReader;
 
 import buisness.TrustComputation;
 import data.Model;
+import data.TrustCertificate;
 import data.TrustView;
 
 public class WebServer {
@@ -99,7 +98,7 @@ public class WebServer {
 						JsonArray chain = object.getJsonArray("certChain");
 
 						CertificateFactory factory = CertificateFactory.getInstance("X.509");
-						List<Certificate> certificates = new ArrayList<>(chain.size());
+						List<TrustCertificate> path = new ArrayList<>(chain.size());
 
 						for (JsonArray jsonCert : chain.getValuesAs(JsonArray.class)) {
 							int i = 0;
@@ -107,17 +106,30 @@ public class WebServer {
 							for (JsonNumber jsonByte : jsonCert.getValuesAs(JsonNumber.class))
 								certBytes[i++] = (byte) jsonByte.intValue();
 
-							certificates.add(
+							path.add(new TrustCertificate(
 									factory.generateCertificate(
-											new ByteArrayInputStream(certBytes)));
+											new ByteArrayInputStream(certBytes))));
 						}
 
-						CertPath certPath = factory.generateCertPath(certificates);
-
 						String str = "(unknown)";
-						try (TrustView trustView = Model.openTrustView()) {
+
+						int attempts = 0;
+						while (true) {
+							TrustView trustView = Model.openTrustView();
 							str = new TrustComputation(trustView).validate(
-									certPath, 0.8, null).toString();
+									path, 0.8, null).toString();
+
+							try {
+								trustView.close();
+								break;
+							}
+							catch (Exception e) {
+								if (++attempts >= 60)
+									throw e;
+
+								System.err.println("TrustView update failed. Retrying ...");
+								Thread.sleep(500);
+							}
 						}
 
 						writer.write(
