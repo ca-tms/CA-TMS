@@ -4,6 +4,7 @@ import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -186,16 +187,29 @@ public class TrustComputation {
 		}
 	}
 
-	public ValidationResult validate(CertPath p, double l,
-			Iterable<Object> VS) {
-		List<? extends Certificate> certs = p.getCertificates();
-		List<TrustCertificate> path = new ArrayList<>(certs.size());
+	// first certificate in p should be the target certificate
+	// and the last one should be issued by the trust anchor
+	// the certificate representing the trust anchor should not be included in
+	// the certification path, but given as separate argument
+	// (in compliance with the official documentation for these classes)
+	public ValidationResult validate(CertPath certPath, Certificate trustAnchor,
+			double l, Iterable<Object> VS) {
+		List<? extends Certificate> certs = certPath.getCertificates();
+		List<TrustCertificate> p = new ArrayList<>(
+				Collections.<TrustCertificate>nCopies(certs.size() + 1, null));
+
+		int i = certs.size();
 		for (Certificate cert : certs)
-			path.add(new TrustCertificate(cert));
-		return validate(path, l, VS);
+			p.set(i--, new TrustCertificate(cert));
+		p.set(0, new TrustCertificate(trustAnchor));
+
+		return validate(p, l, VS);
 	}
 
 	//TODO: VS: validation services need to implemented, just a placeholder input
+	// first certificate in p should be the certificate for the trust anchor
+	// and the last one should be the target certificate
+	// (in compliance with the paper)
 	public ValidationResult validate(List<TrustCertificate> p, double l,
 			Iterable<Object> VS) {
 		Set<TrustCertificate> trustedCertificates =
