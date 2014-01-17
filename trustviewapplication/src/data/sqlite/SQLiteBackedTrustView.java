@@ -285,9 +285,22 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws SQLException {
 		isClosed = true;
-		connection.commit();
+		try {
+			getAssessment.close();
+			getAssessments.close();
+			getAssessmentsS.close();
+			setAssessment.close();
+			setAssessmentS.close();
+			getCertificateTrust.close();
+			setCertificateTrust.close();
+			connection.commit();
+		}
+		catch (SQLException e) {
+			connection.rollback();
+			throw e;
+		}
 	}
 
 	public boolean isClosed() {
