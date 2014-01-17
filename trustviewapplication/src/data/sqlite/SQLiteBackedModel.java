@@ -50,6 +50,7 @@ public class SQLiteBackedModel {
 					"S BOOLEAN NOT NULL," +
 					"PRIMARY KEY (serial, issuer))");
 
+		statement.close();
 		connection.commit();
 	}
 
