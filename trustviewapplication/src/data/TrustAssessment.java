@@ -1,7 +1,5 @@
 package data;
 
-import java.security.Principal;
-import java.security.PublicKey;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,10 +10,10 @@ import CertainTrust.CertainTrust;
 
 public class TrustAssessment {
 	// public key
-	private final PublicKey k;
+	private final String k;
 
 	// CA name
-	private final Principal ca;
+	private final String ca;
 
 	// certificates for k
 	private final Set<TrustCertificate> S;
@@ -31,7 +29,7 @@ public class TrustAssessment {
 	// (issuer trust in ca, when using k to sign end entities)
 	private final CertainTrust o_it_ee;
 
-	public TrustAssessment(PublicKey k, Principal ca, Set<TrustCertificate> S,
+	public TrustAssessment(String k, String ca, Set<TrustCertificate> S,
 			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
 		this.k = k;
 		this.ca = ca;
@@ -41,7 +39,7 @@ public class TrustAssessment {
 		this.o_it_ee = o_it_ee;
 	}
 
-	public TrustAssessment(PublicKey k, Principal ca, TrustCertificate S,
+	public TrustAssessment(String k, String ca, TrustCertificate S,
 			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
 		this(k, ca, new HashSet<>(Collections.singleton(S)),
 		     o_kl, o_it_ca, o_it_ee);
@@ -77,11 +75,11 @@ public class TrustAssessment {
 		       o_it_ee.getT() + ", " + o_it_ee.getC() + ", " + o_it_ee.getF() + "))";
 	}
 
-	public PublicKey getK() {
+	public String getK() {
 		return k;
 	}
 
-	public Principal getCa() {
+	public String getCa() {
 		return ca;
 	}
 

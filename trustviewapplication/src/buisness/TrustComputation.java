@@ -1,7 +1,5 @@
 package buisness;
 
-import java.security.Principal;
-import java.security.PublicKey;
 import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -10,14 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import data.TrustCertificate;
-import data.TrustAssessment;
-import data.TrustView;
-
 import util.Option;
 import util.ValidationResult;
-
 import CertainTrust.CertainTrust;
+import data.TrustAssessment;
+import data.TrustCertificate;
+import data.TrustView;
 
 public class TrustComputation {
 	private final TrustView trustView;
@@ -36,8 +32,8 @@ public class TrustComputation {
 
 	private TrustAssessment createAssessment(TrustCertificate S, boolean isLegitimateRoot) {
 		// determine k and ca
-		PublicKey k = S.getPublicKey();
-		Principal ca = S.getSubject();
+		String k = S.getPublicKey();
+		String ca = S.getSubject();
 
 		// determine o_kl
 		Option<CertainTrust> o_kl = isLegitimateRoot
@@ -194,7 +190,7 @@ public class TrustComputation {
 		List<? extends Certificate> certs = p.getCertificates();
 		List<TrustCertificate> path = new ArrayList<>(certs.size());
 		for (Certificate cert : certs)
-			path.add(TrustCertificate.fromCertificate(cert));
+			path.add(new TrustCertificate(cert));
 		return validate(path, l, VS);
 	}
 

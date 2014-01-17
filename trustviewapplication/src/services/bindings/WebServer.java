@@ -31,6 +31,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import buisness.TrustComputation;
+import data.Model;
 import data.TrustView;
 
 public class WebServer {
@@ -106,12 +107,18 @@ public class WebServer {
 							for (JsonNumber jsonByte : jsonCert.getValuesAs(JsonNumber.class))
 								certBytes[i++] = (byte) jsonByte.intValue();
 
-							certificates.add(factory.generateCertificate(new ByteArrayInputStream(certBytes)));
+							certificates.add(
+									factory.generateCertificate(
+											new ByteArrayInputStream(certBytes)));
 						}
 
 						CertPath certPath = factory.generateCertPath(certificates);
 
-						String str = new TrustComputation(TrustView.getInstance()).validate(certPath, 0.8, null).toString();
+						String str = "(unknown)";
+						try (TrustView trustView = Model.openTrustView()) {
+							str = new TrustComputation(trustView).validate(
+									certPath, 0.8, null).toString();
+						}
 
 						writer.write(
 								"HTTP/1.1 200 OK\r\n" +
