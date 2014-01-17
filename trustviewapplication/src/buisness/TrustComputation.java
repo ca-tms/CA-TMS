@@ -18,13 +18,14 @@ import data.TrustView;
 public class TrustComputation {
 	private final TrustView trustView;
 
-	// TODO: parameters should be configurable (stored in the database)
-//	private final double lmin = 0.6;
-//	private final double lmed = 0.8;
-//	private final double lmax = 0.95;
-	private final double maxF = 0.8;
-	private final int opinionN = 10;
-//	private final int fixkl = 3;
+	// TODO: parameters should be configurable and globally accessible
+	//       (maybe stored in the database)
+//	public static final double lmin = 0.6;
+//	public static final double lmed = 0.8;
+//	public static final double lmax = 0.95;
+	public static final double maxF = 0.8;
+	public static final int opinionN = 10;
+//	public static final int fixkl = 3;
 
 	public TrustComputation(TrustView trustView) {
 		this.trustView = trustView;

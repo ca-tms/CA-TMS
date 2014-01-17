@@ -13,8 +13,8 @@ public class SQLiteBackedModel {
 	private volatile SQLiteBackedTrustView trustView;
 
 	public SQLiteBackedModel() throws ClassNotFoundException, SQLException {
-		final String dir = Util.getDataDirectory() + File.separator + "webpki";
-		final String file = dir + File.separator + "webpki.sqlite";
+		final String dir = Util.getDataDirectory() + File.separator + "ctms";
+		final String file = dir + File.separator + "ctms.sqlite";
 
 		new File(dir).mkdirs();
 
@@ -41,15 +41,14 @@ public class SQLiteBackedModel {
 
 		statement.execute(
 				"CREATE TABLE IF NOT EXISTS certificates (" +
-					"publickey VARCHAR NOT NULL," +
+					"serial VARCHAR NOT NULL," +
 					"issuer VARCHAR NOT NULL," +
 					"subject VARCHAR NOT NULL," +
+					"publickey VARCHAR NOT NULL," +
 					"trusted BOOLEAN NOT NULL," +
 					"untrusted BOOLEAN NOT NULL," +
 					"S BOOLEAN NOT NULL," +
-//					"type VARCHAR NOT NULL," +
-//					"data BLOB NOT NULL," +
-					"PRIMARY KEY (publickey, issuer))");
+					"PRIMARY KEY (serial, issuer))");
 
 		connection.commit();
 	}
