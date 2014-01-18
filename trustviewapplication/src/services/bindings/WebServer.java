@@ -115,21 +115,23 @@ public class WebServer {
 
 						int attempts = 0;
 						while (true) {
-							TrustView trustView = Model.openTrustView();
-							str = new TrustComputation(trustView).validate(
-									path, 0.8, null).toString();
-
-							try {
-								trustView.close();
-								break;
+							try (TrustView trustView = Model.openTrustView()) {
+								str = new TrustComputation(trustView).validate(
+										path, 0.8, null).toString();
+								trustView.save();
 							}
 							catch (Exception e) {
+								if (attempts == 0)
+									e.printStackTrace();
+
 								if (++attempts >= 60)
 									throw e;
 
 								System.err.println("TrustView update failed. Retrying ...");
 								Thread.sleep(500);
+								continue;
 							}
+							break;
 						}
 
 						writer.write(
