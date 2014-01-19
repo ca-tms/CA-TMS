@@ -34,7 +34,6 @@ import data.TrustCertificate;
 import data.TrustView;
 
 public class WebServer {
-	private static final int POOL_MULTIPLE = 4;
 	private static final int PORT = 8084;
 	private static final int TIMEOUT_MILLIS = 5000;
 
@@ -46,8 +45,7 @@ public class WebServer {
 	}
 
 	public WebServer() throws IOException {
-		executorService = Executors.newFixedThreadPool(
-				Runtime.getRuntime().availableProcessors() * POOL_MULTIPLE);
+		executorService = Executors.newCachedThreadPool();
 
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.socket().setReuseAddress(true);
