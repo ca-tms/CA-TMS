@@ -11,6 +11,7 @@ public class TrustCertificate {
 	private final String issuer;
 	private final String subject;
 	private final String publicKey;
+	private final Certificate certificate;
 
 	public TrustCertificate(String serial, String issuer, String subject,
 			String publicKey) {
@@ -18,11 +19,12 @@ public class TrustCertificate {
 		this.issuer = issuer;
 		this.subject = subject;
 		this.publicKey = publicKey;
+		this.certificate = null;
 	}
 
-	public TrustCertificate(Certificate cert) {
-		if (cert instanceof X509Certificate) {
-			X509Certificate x509cert = (X509Certificate) cert;
+	public TrustCertificate(Certificate certificate) {
+		if (certificate instanceof X509Certificate) {
+			X509Certificate x509cert = (X509Certificate) certificate;
 
 			this.serial = x509cert.getSerialNumber().toString();
 			this.issuer = x509cert.getIssuerX500Principal().getName(
@@ -31,11 +33,12 @@ public class TrustCertificate {
 					X500Principal.CANONICAL);
 			this.publicKey = DatatypeConverter.printBase64Binary(
 					x509cert.getPublicKey().getEncoded());
+			this.certificate = x509cert;
 		}
 		else
 			throw new UnsupportedOperationException(
 					"Cannot create a TrustCertificate from a " +
-					cert.getClass().getSimpleName());
+					certificate.getClass().getSimpleName());
 	}
 
 	public String getSerial() {
@@ -52,6 +55,10 @@ public class TrustCertificate {
 
 	public String getPublicKey() {
 		return publicKey;
+	}
+
+	public Certificate getCertificate() {
+		return certificate;
 	}
 
 	@Override

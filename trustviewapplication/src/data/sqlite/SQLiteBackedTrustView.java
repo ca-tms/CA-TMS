@@ -51,11 +51,11 @@ public class SQLiteBackedTrustView implements TrustView {
 
 		setAssessmentS = connection.prepareStatement(
 				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, " +
-						"  COALESCE((SELECT trusted FROM certificates " +
-						"            WHERE serial=? AND issuer=?), 0)," +
-						"  COALESCE((SELECT untrusted FROM certificates " +
-						"            WHERE serial=? AND issuer=?), 0)," +
-						"  1)");
+				"  COALESCE((SELECT trusted FROM certificates " +
+				"            WHERE serial=? AND issuer=?), 0)," +
+				"  COALESCE((SELECT untrusted FROM certificates " +
+				"            WHERE serial=? AND issuer=?), 0)," +
+				"  1)");
 
 		getCertificateTrust = connection.prepareStatement(
 				"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");

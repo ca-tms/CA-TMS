@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import support.ValidationService;
 import util.Option;
 import util.ValidationResult;
 import CertainTrust.CertainTrust;
@@ -75,7 +76,7 @@ public class TrustComputation {
 	}
 
 	private void updateView(List<TrustCertificate> p, List<TrustAssessment> pAssessments,
-			ValidationResult R, List<TrustAssessment> TL) {
+			ValidationResult R, List<TrustAssessment> TL, ValidationService VS) {
 		if (R == ValidationResult.TRUSTED) {
 			for (int i = 0; i < p.size() - 1; i++) {
 				boolean updateTrustView = false;
@@ -117,11 +118,16 @@ public class TrustComputation {
 		}
 
 		if (R == ValidationResult.UNTRUSTED) {
-			// determine h (maximum i which is not a new assessment)
-			//             (TODO: or the consensus is trusted)
+			// determine h
+			// maximum i which is not a new assessment or
+			// which the validation service consensus is trusted for
 			int h = 0;
 			for (int i = 0; i < p.size() - 1; i++)
 				if (!TL.contains(pAssessments.get(i)))
+					h = i;
+			for (int i = h; i < p.size() - 1; i++)
+				if (consensus(VS.query(p.get(i).getCertificate())) ==
+						ValidationResult.TRUSTED)
 					h = i;
 
 			for (int i = 0; i < h; i++) {
@@ -187,13 +193,29 @@ public class TrustComputation {
 		}
 	}
 
+	private ValidationResult consensus(ValidationResult[] results) {
+		// currently simply a relative majority voting
+		int trusted = 0, untrusted = 0, unknown = 0;
+		for (ValidationResult result : results)
+			switch (result) {
+			case TRUSTED: trusted++; break;
+			case UNTRUSTED: untrusted++; break;
+			case UNKNOWN: unknown++; break;
+			}
+
+		return
+			trusted > untrusted && trusted > unknown ? ValidationResult.TRUSTED :
+			untrusted > unknown ? ValidationResult.UNTRUSTED :
+			ValidationResult.UNKNOWN;
+	}
+
 	// first certificate in p should be the target certificate
 	// and the last one should be issued by the trust anchor
 	// the certificate representing the trust anchor should not be included in
 	// the certification path, but given as separate argument
 	// (in compliance with the official documentation for these classes)
 	public ValidationResult validate(CertPath certPath, Certificate trustAnchor,
-			double l, Iterable<Object> VS) {
+			double l, ValidationService VS) {
 		List<? extends Certificate> certs = certPath.getCertificates();
 		List<TrustCertificate> p = new ArrayList<>(
 				Collections.<TrustCertificate>nCopies(certs.size() + 1, null));
@@ -206,12 +228,11 @@ public class TrustComputation {
 		return validate(p, l, VS);
 	}
 
-	//TODO: VS: validation services need to implemented, just a placeholder input
 	// first certificate in p should be the certificate for the trust anchor
 	// and the last one should be the target certificate
 	// (in compliance with the paper)
 	public ValidationResult validate(List<TrustCertificate> p, double l,
-			Iterable<Object> VS) {
+			ValidationService VS) {
 		Set<TrustCertificate> trustedCertificates =
 				new HashSet<TrustCertificate>(trustView.getTrustedCertificates());
 		Set<TrustCertificate> untrustedCertificates =
@@ -264,14 +285,11 @@ public class TrustComputation {
 			result = ValidationResult.TRUSTED;
 		if (exp < l && o_kl.getC() == 1)
 			result = ValidationResult.UNTRUSTED;
-		if (exp < l && o_kl.getC() < 1) {
-			// query validation service
+		if (exp < l && o_kl.getC() < 1)
+			// compute consensus of validation service
+			result = consensus(VS.query(p.get(p.size() - 1).getCertificate()));
 
-			// TODO: query validation service and return consensus
-			result = ValidationResult.UNKNOWN;
-		}
-
-		updateView(p, pAssessments, result, TL);
+		updateView(p, pAssessments, result, TL, VS);
 		return result;
 	}
 }
