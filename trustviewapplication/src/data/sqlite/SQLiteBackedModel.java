@@ -37,7 +37,7 @@ public class SQLiteBackedModel {
 					"o_it_ee_t REAL NOT NULL," +
 					"o_it_ee_c REAL NOT NULL," +
 					"o_it_ee_f REAL NOT NULL," +
-					"date DATETIME NOT NULL," +
+					"timestamp DATETIME NOT NULL," +
 					"" +
 					"CHECK (o_kl_t BETWEEN 0 AND 1)," +
 					"CHECK (o_kl_c BETWEEN 0 AND 1)," +

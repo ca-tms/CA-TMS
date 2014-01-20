@@ -27,6 +27,16 @@ public class SQLiteBackedTrustView implements TrustView {
 	private boolean isClosed = false;
 	private final Connection connection;
 
+	// TODO: this parameters should be configurable and globally accessible
+	//       (maybe stored in the database)
+	// TODO: currently the time stamp is updated only if the assessment is updated
+	//       should it be updated when the assessment is just used?
+	//       even only to initialize other assessments for the first time?
+	//       if it is inside a chain that fails to validate?
+	// TODO: Should trusted/untrusted certificates also be removed?
+	//       maybe when they expire?
+	private static final long ASSESSMENT_EXPIRATION_MILLIS = 365*24*60*60*1000;
+
 	private final PreparedStatement getAssessment;
 	private final PreparedStatement getAssessments;
 	private final PreparedStatement getAssessmentsS;
@@ -34,10 +44,13 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement setAssessmentS;
 	private final PreparedStatement getCertificateTrust;
 	private final PreparedStatement setCertificateTrust;
+	private final PreparedStatement removeAssessment;
+	private final PreparedStatement cleanCertificates;
 
 	public SQLiteBackedTrustView(Connection connection) throws SQLException {
 		this.connection = connection;
 
+		// retrieving assessments
 		getAssessment = connection.prepareStatement(
 				"SELECT * FROM assessments WHERE k=? AND ca=?");
 
@@ -47,6 +60,7 @@ public class SQLiteBackedTrustView implements TrustView {
 		getAssessmentsS = connection.prepareStatement(
 				"SELECT * FROM certificates WHERE publickey=? AND subject=? AND S=1");
 
+		// setting assessments
 		setAssessment = connection.prepareStatement(
 				"INSERT OR REPLACE INTO assessments VALUES (?, ?, ?, ?, ?, ?, " +
 				"                                           ?, ?, ?, ?, ?, ?)");
@@ -57,14 +71,23 @@ public class SQLiteBackedTrustView implements TrustView {
 				"            WHERE serial=? AND issuer=?), 0)," +
 				"  COALESCE((SELECT untrusted FROM certificates " +
 				"            WHERE serial=? AND issuer=?), 0)," +
-				"  1)");
+				"  ?)");
 
+		// retrieving certificates
 		getCertificateTrust = connection.prepareStatement(
 				"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");
 
+		// setting certificates
 		setCertificateTrust = connection.prepareStatement(
 				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, " +
 				"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
+
+		// cleaning the trust view
+		removeAssessment = connection.prepareStatement(
+				"DELETE FROM assessments WHERE k=? AND ca=?");
+
+		cleanCertificates = connection.prepareStatement(
+				"DELETE FROM certificates WHERE trusted=0 AND untrusted=0 AND S=0");
 	}
 
 	@Override
@@ -120,6 +143,7 @@ public class SQLiteBackedTrustView implements TrustView {
 		return assessment;
 	}
 
+	// this is also updating the time stamp
 	@Override
 	public void setAssessment(TrustAssessment assessment) {
 		checkClosed();
@@ -154,6 +178,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				setAssessmentS.setString(6, cert.getIssuer());
 				setAssessmentS.setString(7, cert.getSerial());
 				setAssessmentS.setString(8, cert.getIssuer());
+				setAssessmentS.setBoolean(9, true);
 				setAssessmentS.executeUpdate();
 			}
 		}
@@ -288,6 +313,44 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public void clean() {
+		checkClosed();
+		try {
+			final long nowMillis = new Date().getTime();
+			try (ResultSet result = getAssessments.executeQuery()) {
+				while (result.next())
+					if (nowMillis - result.getTimestamp(12).getTime()
+							> ASSESSMENT_EXPIRATION_MILLIS) {
+						getAssessmentsS.setString(1, result.getString(1));
+						getAssessmentsS.setString(2, result.getString(2));
+						try (ResultSet resultS = getAssessmentsS.executeQuery()) {
+							while (resultS.next()) {
+								setAssessmentS.setString(1, resultS.getString(1));
+								setAssessmentS.setString(2, resultS.getString(2));
+								setAssessmentS.setString(3, resultS.getString(3));
+								setAssessmentS.setString(4, resultS.getString(4));
+								setAssessmentS.setString(5, resultS.getString(1));
+								setAssessmentS.setString(6, resultS.getString(2));
+								setAssessmentS.setString(7, resultS.getString(1));
+								setAssessmentS.setString(8, resultS.getString(2));
+								setAssessmentS.setBoolean(9, false);
+								setAssessmentS.executeUpdate();
+							}
+						}
+
+						removeAssessment.setString(1, result.getString(1));
+						removeAssessment.setString(2, result.getString(2));
+						removeAssessment.executeUpdate();
+					}
+			}
+			cleanCertificates.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public void save() throws SQLException {
 		try {
 			connection.commit();
@@ -309,6 +372,8 @@ public class SQLiteBackedTrustView implements TrustView {
 		setAssessmentS.close();
 		getCertificateTrust.close();
 		setCertificateTrust.close();
+		removeAssessment.close();
+		cleanCertificates.close();
 	}
 
 	public boolean isClosed() {
