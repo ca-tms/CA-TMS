@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +49,7 @@ public class SQLiteBackedTrustView implements TrustView {
 
 		setAssessment = connection.prepareStatement(
 				"INSERT OR REPLACE INTO assessments VALUES (?, ?, ?, ?, ?, ?, " +
-				"                                           ?, ?, ?, ?, ?)");
+				"                                           ?, ?, ?, ?, ?, ?)");
 
 		setAssessmentS = connection.prepareStatement(
 				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, " +
@@ -140,6 +142,7 @@ public class SQLiteBackedTrustView implements TrustView {
 			setAssessment.setDouble(9, assessment.getO_it_ee().getT());
 			setAssessment.setDouble(10, assessment.getO_it_ee().getC());
 			setAssessment.setDouble(11, assessment.getO_it_ee().getF());
+			setAssessment.setTimestamp(12, new Timestamp(new Date().getTime()));
 			setAssessment.executeUpdate();
 
 			for (TrustCertificate cert : assessment.getS()) {
@@ -210,8 +213,8 @@ public class SQLiteBackedTrustView implements TrustView {
 		checkClosed();
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
-			getCertificateTrust.setInt(1, 1);
-			getCertificateTrust.setInt(2, 0);
+			getCertificateTrust.setBoolean(1, true);
+			getCertificateTrust.setBoolean(2, false);
 			try (ResultSet result = getCertificateTrust.executeQuery()) {
 				while (result.next())
 					certificates.add(new TrustCertificate(
@@ -230,8 +233,8 @@ public class SQLiteBackedTrustView implements TrustView {
 		checkClosed();
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
-			getCertificateTrust.setInt(1, 0);
-			getCertificateTrust.setInt(2, 1);
+			getCertificateTrust.setBoolean(1, false);
+			getCertificateTrust.setBoolean(2, true);
 			try (ResultSet result = getCertificateTrust.executeQuery()) {
 				while (result.next())
 					certificates.add(new TrustCertificate(
@@ -254,8 +257,8 @@ public class SQLiteBackedTrustView implements TrustView {
 			setCertificateTrust.setString(2, S.getIssuer());
 			setCertificateTrust.setString(3, S.getSubject());
 			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setInt(5, 1);
-			setCertificateTrust.setInt(6, 0);
+			setCertificateTrust.setBoolean(5, true);
+			setCertificateTrust.setBoolean(6, false);
 			setCertificateTrust.setString(7, S.getSerial());
 			setCertificateTrust.setString(8, S.getIssuer());
 			setCertificateTrust.executeUpdate();
@@ -273,8 +276,8 @@ public class SQLiteBackedTrustView implements TrustView {
 			setCertificateTrust.setString(2, S.getIssuer());
 			setCertificateTrust.setString(3, S.getSubject());
 			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setInt(5, 0);
-			setCertificateTrust.setInt(6, 1);
+			setCertificateTrust.setBoolean(5, false);
+			setCertificateTrust.setBoolean(6, true);
 			setCertificateTrust.setString(7, S.getSerial());
 			setCertificateTrust.setString(8, S.getIssuer());
 			setCertificateTrust.executeUpdate();

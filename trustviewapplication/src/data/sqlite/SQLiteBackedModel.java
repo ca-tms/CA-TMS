@@ -37,6 +37,18 @@ public class SQLiteBackedModel {
 					"o_it_ee_t REAL NOT NULL," +
 					"o_it_ee_c REAL NOT NULL," +
 					"o_it_ee_f REAL NOT NULL," +
+					"date DATETIME NOT NULL," +
+					"" +
+					"CHECK (o_kl_t BETWEEN 0 AND 1)," +
+					"CHECK (o_kl_c BETWEEN 0 AND 1)," +
+					"CHECK (o_kl_f BETWEEN 0 AND 1)," +
+					"CHECK (o_it_ca_t BETWEEN 0 AND 1)," +
+					"CHECK (o_it_ca_c BETWEEN 0 AND 1)," +
+					"CHECK (o_it_ca_f BETWEEN 0 AND 1)," +
+					"CHECK (o_it_ee_t BETWEEN 0 AND 1)," +
+					"CHECK (o_it_ee_c BETWEEN 0 AND 1)," +
+					"CHECK (o_it_ee_f BETWEEN 0 AND 1)," +
+					"" +
 					"PRIMARY KEY (k))");
 
 		statement.execute(
@@ -48,6 +60,12 @@ public class SQLiteBackedModel {
 					"trusted BOOLEAN NOT NULL," +
 					"untrusted BOOLEAN NOT NULL," +
 					"S BOOLEAN NOT NULL," +
+					"" +
+					"CHECK (S IN (0, 1))," +
+					"CHECK (trusted IN (0, 1))," +
+					"CHECK (untrusted IN (0, 1))," +
+					"CHECK (NOT (trusted = 1 AND untrusted = 1))," +
+					"" +
 					"PRIMARY KEY (serial, issuer))");
 
 		statement.close();
