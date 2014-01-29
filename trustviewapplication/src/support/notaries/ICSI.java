@@ -21,11 +21,20 @@ public class ICSI implements Notary {
 	@Override
 	public ValidationResult queryNotary(Certificate cert) {
 
-		//String hash = sha1FromCert(cert);
-		//String requestURL = hash + ".notary.icsi.berkeley.edu";
+		String hash = sha1FromCert(cert);
+		String requestURL = hash + ".notary.icsi.berkeley.edu";
+		
+		try {
+			InetAddress address = InetAddress.getByName(requestURL);
+			if(address.getHostAddress().equals("127.0.0.2")))
+			return ValidationResult.TRUSTED;
+			else
+				return ValidationResult.UNTRUSTED;
+			}
+			catch(UnknownHostException uhe) {
+			return ValidationResult.UNTRUSTED;
+			}
 
-		// TODO implement
-		return ValidationResult.TRUSTED;
 	}
 
 	/**
