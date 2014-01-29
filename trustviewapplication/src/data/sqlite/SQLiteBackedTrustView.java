@@ -364,7 +364,7 @@ public class SQLiteBackedTrustView implements TrustView {
 	@Override
 	public void close() throws SQLException {
 		isClosed = true;
-		connection.rollback();
+
 		getAssessment.close();
 		getAssessments.close();
 		getAssessmentsS.close();
@@ -374,6 +374,9 @@ public class SQLiteBackedTrustView implements TrustView {
 		setCertificateTrust.close();
 		removeAssessment.close();
 		cleanCertificates.close();
+
+		connection.rollback();
+		connection.close();
 	}
 
 	public boolean isClosed() {
