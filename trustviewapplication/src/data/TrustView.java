@@ -12,5 +12,4 @@ public interface TrustView extends AutoCloseable {
 	void setTrustedCertificate(TrustCertificate S);
 	void setUntrustedCertificate(TrustCertificate S);
 	void clean();
-	void save() throws Exception;
 }

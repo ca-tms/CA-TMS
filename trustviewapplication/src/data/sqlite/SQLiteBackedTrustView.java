@@ -24,7 +24,6 @@ import data.TrustCertificate;
 import data.TrustView;
 
 public class SQLiteBackedTrustView implements TrustView {
-	private boolean isClosed = false;
 	private final Connection connection;
 
 	// TODO: this parameters should be configurable and globally accessible
@@ -97,9 +96,9 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public TrustAssessment getAssessment(String k, String ca) {
-		checkClosed();
 		TrustAssessment assessment = null;
 		try {
+			validateDatabaseConnection();
 			getAssessment.setString(1, k);
 			getAssessment.setString(2, ca);
 			try (ResultSet result = getAssessment.executeQuery()) {
@@ -146,8 +145,8 @@ public class SQLiteBackedTrustView implements TrustView {
 	// this is also updating the time stamp
 	@Override
 	public void setAssessment(TrustAssessment assessment) {
-		checkClosed();
 		try {
+			validateDatabaseConnection();
 			setAssessment.setString(1, assessment.getK());
 			setAssessment.setString(2, assessment.getCa());
 			if (assessment.getO_kl().isSet()) {
@@ -189,9 +188,9 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public Collection<TrustAssessment> getAssessments() {
-		checkClosed();
 		List<TrustAssessment> assessments = new ArrayList<>();
 		try {
+			validateDatabaseConnection();
 			try (ResultSet result = getAssessments.executeQuery()) {
 				while (result.next()) {
 					Set<TrustCertificate> S = new HashSet<>();
@@ -235,9 +234,9 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public Collection<TrustCertificate> getTrustedCertificates() {
-		checkClosed();
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
+			validateDatabaseConnection();
 			getCertificateTrust.setBoolean(1, true);
 			getCertificateTrust.setBoolean(2, false);
 			try (ResultSet result = getCertificateTrust.executeQuery()) {
@@ -255,9 +254,9 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public Collection<TrustCertificate> getUntrustedCertificates() {
-		checkClosed();
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
+			validateDatabaseConnection();
 			getCertificateTrust.setBoolean(1, false);
 			getCertificateTrust.setBoolean(2, true);
 			try (ResultSet result = getCertificateTrust.executeQuery()) {
@@ -276,8 +275,8 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public void setTrustedCertificate(TrustCertificate S) {
-		checkClosed();
 		try {
+			validateDatabaseConnection();
 			setCertificateTrust.setString(1, S.getSerial());
 			setCertificateTrust.setString(2, S.getIssuer());
 			setCertificateTrust.setString(3, S.getSubject());
@@ -295,8 +294,8 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public void setUntrustedCertificate(TrustCertificate S) {
-		checkClosed();
 		try {
+			validateDatabaseConnection();
 			setCertificateTrust.setString(1, S.getSerial());
 			setCertificateTrust.setString(2, S.getIssuer());
 			setCertificateTrust.setString(3, S.getSubject());
@@ -314,8 +313,8 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	@Override
 	public void clean() {
-		checkClosed();
 		try {
+			validateDatabaseConnection();
 			final long nowMillis = new Date().getTime();
 			try (ResultSet result = getAssessments.executeQuery()) {
 				while (result.next())
@@ -351,7 +350,7 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public void save() throws SQLException {
+	public void close() throws SQLException {
 		try {
 			connection.commit();
 		}
@@ -359,32 +358,22 @@ public class SQLiteBackedTrustView implements TrustView {
 			connection.rollback();
 			throw e;
 		}
+		finally {
+			getAssessment.close();
+			getAssessments.close();
+			getAssessmentsS.close();
+			setAssessment.close();
+			setAssessmentS.close();
+			getCertificateTrust.close();
+			setCertificateTrust.close();
+			removeAssessment.close();
+			cleanCertificates.close();
+			connection.close();
+		}
 	}
 
-	@Override
-	public void close() throws SQLException {
-		isClosed = true;
-
-		getAssessment.close();
-		getAssessments.close();
-		getAssessmentsS.close();
-		setAssessment.close();
-		setAssessmentS.close();
-		getCertificateTrust.close();
-		setCertificateTrust.close();
-		removeAssessment.close();
-		cleanCertificates.close();
-
-		connection.rollback();
-		connection.close();
-	}
-
-	public boolean isClosed() {
-		return isClosed;
-	}
-
-	private void checkClosed() {
-		if (isClosed)
+	private void validateDatabaseConnection() throws SQLException {
+		if (connection.isClosed())
 			throw new UnsupportedOperationException(
 					"Cannot access a TrustView that is already closed.");
 	}

@@ -119,7 +119,6 @@ public class WebServer {
 								str = new TrustComputation(trustView).validate(
 										path, 0.8,
 										Service.getValidationService(executorService)).toString();
-								trustView.save();
 							}
 							catch (Exception e) {
 								if (attempts == 0)
