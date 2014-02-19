@@ -3,8 +3,6 @@
  */
 TVE.UI = {
     
-    toolbarbuttonClick : function(event) {
-        // currently no action here
-    }
+    //is this needed?
     
 };

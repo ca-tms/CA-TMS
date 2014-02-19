@@ -19,7 +19,16 @@
     </stringbundleset>
 
     <toolbarpalette id="BrowserToolbarPalette">
-        <toolbarbutton id="trustviewsextension-toolbarbutton" class="toolbarbutton-1" label="&trustviewsextension.toolbarbutton.label;" oncommand="TVE.UI.toolbarbuttonClick(event);" />
+        <toolbarbutton id="trustviewsextension-toolbarbutton" label="&trustviewsextension.toolbarbutton.label;" type="menu">
+            <menupopup>
+                <menuitem disabled="true" label="&trustviewsextension.menu.secLevel.description;" />
+                <menuitem type="radio" group="trustviewsextension-secLevel-group" label="&trustviewsextension.menu.secLevel.high;" id="trustviewsextension-secLevelMenuitem-high" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'high');" />
+                <menuitem type="radio" group="trustviewsextension-secLevel-group" label="&trustviewsextension.menu.secLevel.medium;" id="trustviewsextension-secLevelMenuitem-medium" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'medium');" />
+                <menuitem type="radio" group="trustviewsextension-secLevel-group" label="&trustviewsextension.menu.secLevel.low;" id="trustviewsextension-secLevelMenuitem-low" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'low');" />
+                <menuseparator />
+                <menuitem label="&trustviewsextension.menu.openpreferences;" oncommand="window.openDialog('chrome://trustviewsextension/content/options.xul');" />
+            </menupopup>
+        </toolbarbutton>
     </toolbarpalette>
     
 </overlay>

@@ -8,8 +8,8 @@
  
     <prefpane id="trustviewsextension-prefs-networkpane" label="&trustviewsextension.prefs.networkpanelabel;">
         <preferences>
-            <preference id="trustviewsextension-prefs-ctmsURL" name="extensions.trustviewsextension.ctmsURL" type="string"/>
-            <preference id="trustviewsextension-prefs-ctmsPort" name="extensions.trustviewsextension.ctmsPort" type="string"/>
+            <preference id="trustviewsextension-prefs-ctmsURL" name="extensions.trustviewsextension.ctmsURL" type="string" />
+            <preference id="trustviewsextension-prefs-ctmsPort" name="extensions.trustviewsextension.ctmsPort" type="string" />
         </preferences>
 
         <vbox align="end">
