@@ -1,5 +1,7 @@
 package support.notaries;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
@@ -26,14 +28,14 @@ public class ICSI implements Notary {
 		
 		try {
 			InetAddress address = InetAddress.getByName(requestURL);
-			if(address.getHostAddress().equals("127.0.0.2")))
-			return ValidationResult.TRUSTED;
+			if(address.getHostAddress().equals("127.0.0.2"))
+				return ValidationResult.TRUSTED;
 			else
 				return ValidationResult.UNTRUSTED;
-			}
-			catch(UnknownHostException uhe) {
+		}
+		catch(UnknownHostException uhe) {
 			return ValidationResult.UNTRUSTED;
-			}
+		}
 
 	}
 
