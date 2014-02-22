@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css" href="chrome://trustviewsextension/skin/warningPage.css" ?>
+
+<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
+
+<page id="trustviewsextension-error-untrusted" class="trustviewsextension-errorPage" title="&trustviewsextension.untrusted.heading;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    
+    <vbox class="trustviewsextension-errorBox trustviewsextension-errorUntrusted">
+        <description class="trustviewsextension-errorTitle">&trustviewsextension.untrusted.heading;</description>
+        <description class="trustviewsextension-errorDescription">&trustviewsextension.untrusted.description;</description>
+        <description class="trustviewsextension-solutionPreface">&trustviewsextension.untrusted.solutionpreface;</description>
+        <ul xmlns="http://www.w3.org/1999/xhtml">
+            <li>&trustviewsextension.untrusted.mistrust;</li>
+            <li>&trustviewsextension.untrusted.changelevel;</li>
+            <li>&trustviewsextension.untrusted.visit;</li>
+        </ul>
+    </vbox>
+    
+</page>

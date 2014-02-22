@@ -50,3 +50,7 @@ ul {
 li {
     margin-bottom: .5em;
 }
+
+.trustviewsextension-errorUntrusted {
+    background-image: url("chrome://global/skin/icons/sslWarning.png");
+}
