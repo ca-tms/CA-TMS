@@ -21,8 +21,12 @@ TVE.SSLListener = {
             let rawChain = TVE.CertHandler.getRawChain();
             let secLevel = TVE.Prefs.getCharPref("secLevel");
             
-            let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel);
-            alert(ctmsResult);
+            try {
+                let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel);
+                alert(ctmsResult);
+            } catch(err) {
+                gBrowser.loadURI("chrome://trustviewsextension/content/ctmsUnreachable.xul");
+            }
             
         } else if(validationResult == "unknown") {
             alert("State is Broken");

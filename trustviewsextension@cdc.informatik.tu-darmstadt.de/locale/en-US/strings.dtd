@@ -10,3 +10,9 @@
 <!ENTITY trustviewsextension.prefs.networkpanelabel        "Connection">
 <!ENTITY trustviewsextension.prefs.urllabel                "CTMS URL">
 <!ENTITY trustviewsextension.prefs.portlabel               "CTMS Port">
+
+<!ENTITY trustviewsextension.unreachable.heading           "Trust Views System Unreachable">
+<!ENTITY trustviewsextension.unreachable.description       "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
+<!ENTITY trustviewsextension.unreachable.solutionpreface   "You can try:">
+<!ENTITY trustviewsextension.unreachable.startctms         "Starting the Trust Views Webserver.">
+<!ENTITY trustviewsextension.unreachable.disableextension  "Disabling the Trust Views Extension if you don't want to use this.<br />Warning: This means, you will go without the additional security of the Trust Views System.">

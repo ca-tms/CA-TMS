@@ -4,6 +4,6 @@
     list-style-image: url("chrome://trustviewsextension/skin/toolbarButton_large.png");
 }
 
-toolbar[iconsize="small"] #myextension-button {
+toolbar[iconsize="small"] #trustviewsextension-toolbarbutton {
     list-style-image: url("chrome://trustviewsextension/skin/toolbarButton_small.png");
 }
