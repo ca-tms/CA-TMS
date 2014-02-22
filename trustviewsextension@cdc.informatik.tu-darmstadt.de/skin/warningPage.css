@@ -1,0 +1,52 @@
+@charset "UTF-8";
+
+.trustviewsextension-errorPage {
+    -moz-box-align: center;
+}
+
+.trustviewsextension-errorBox {
+    position: relative;
+    min-width: 13em;
+    max-width: 52em;
+    margin: 50px;
+    border: 1px solid ThreeDShadow;
+    border-radius: 10px;
+    padding: 3em;
+    -moz-padding-start: 30px;
+    background: url("moz-icon://stock/gtk-dialog-warning?size=dialog") left 0 no-repeat -moz-Field;
+    background-origin: content-box;
+}
+
+.trustviewsextension-errorTitle {
+    border-bottom: 1px solid ThreeDLightShadow;
+    margin: 0 0 .6em 0;
+    font-size: 160%;
+    font-weight: bold;
+    -moz-margin-start: 80px;
+}
+
+.trustviewsextension-errorDescription {
+    overflow: auto;
+    border-bottom: 1px solid ThreeDLightShadow;
+    padding-bottom: 1em;
+    font-size: 130%;
+    white-space: pre-wrap;
+    -moz-margin-start: 80px;
+}
+
+.trustviewsextension-solutionPreface {
+    -moz-margin-start: 80px;
+    -moz-padding-end: 3em;
+    margin-top: 10px;
+    font-size: 110%;
+}
+
+ul {
+    font-size: 110%;
+    -moz-margin-start: 80px;
+    list-style: square;
+}
+
+li {
+    margin-bottom: .5em;
+}
