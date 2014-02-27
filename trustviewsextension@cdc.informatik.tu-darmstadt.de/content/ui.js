@@ -3,6 +3,9 @@
  */
 TVE.UI = {
     
-    //is this needed?
+    resetPreferences : function() {
+        TVE.Prefs.clearUserPref("ctmsURL");
+        TVE.Prefs.clearUserPref("ctmsPort");
+    }
     
 };
