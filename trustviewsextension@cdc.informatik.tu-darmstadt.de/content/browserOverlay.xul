@@ -17,10 +17,6 @@
     <script type="application/javascript" src="chrome://trustviewsextension/content/ctmsCommunicator.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/init.js" />
 
-    <stringbundleset id="stringbundleset">
-        <stringbundle id="trustviewsextension-string-bundle" src="chrome://trustviewsextension/locale/strings.properties" />
-    </stringbundleset>
-
     <toolbarpalette id="BrowserToolbarPalette">
         <toolbarbutton id="trustviewsextension-toolbarbutton" label="&trustviewsextension.toolbarbutton.label;" type="menu">
             <menupopup>
