@@ -16,7 +16,7 @@ TVE.SSLListener = {
         
         let validationResult = TVE.CertHandler.getValidationResult(aState);
         
-        if(validationResult == "valid" && aRequest.isPending()) {
+        if(validationResult == "valid" && aRequest != null && aRequest.isPending() && !TVE.State.isAllowedPage(aRequest.name)) {
             
             let rawChain = TVE.CertHandler.getRawChain();
             let secLevel = TVE.Prefs.getCharPref("secLevel");
@@ -24,10 +24,10 @@ TVE.SSLListener = {
             try {
                 let ctmsResult = TVE.CTMSCommunicator.requestValidation(rawChain, validationResult, secLevel);
                 if(ctmsResult == "UNTRUSTED") {
-                    gBrowser.loadURI("chrome://trustviewsextension/content/untrustedWebsite.xul");
+                    TVE.State.untrusted(aRequest.name);
                 }
             } catch(err) {
-                gBrowser.loadURI("chrome://trustviewsextension/content/ctmsUnreachable.xul");
+                TVE.State.unreachable(aRequest.name);
             }
             
         }

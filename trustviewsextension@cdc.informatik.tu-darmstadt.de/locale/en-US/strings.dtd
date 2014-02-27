@@ -14,12 +14,15 @@
 <!ENTITY trustviewsextension.unreachable.heading           "Trust Views System Unreachable">
 <!ENTITY trustviewsextension.unreachable.description       "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
 <!ENTITY trustviewsextension.unreachable.solutionpreface   "You can try:">
-<!ENTITY trustviewsextension.unreachable.startctms         "Starting the Trust Views Webserver.">
+<!ENTITY trustviewsextension.unreachable.startctms         "Starting the Trust Views Webserver and try again.">
 <!ENTITY trustviewsextension.unreachable.disableextension  "Disabling the Trust Views Extension if you don't want to use this.<br />Warning: This means, you will go without the additional security of the Trust Views System.">
+<!ENTITY trustviewsextension.unreachable.tryagain          "Try Again">
 
 <!ENTITY trustviewsextension.untrusted.heading             "Untrusted Website">
 <!ENTITY trustviewsextension.untrusted.description         "The Trust Views System does not trust the requested website. It seems there is something wrong with the certificate, the website provided. This might be due to an untrusted certificate chain or the Trust Views System acts too paranoid.">
 <!ENTITY trustviewsextension.untrusted.solutionpreface     "You can try:">
 <!ENTITY trustviewsextension.untrusted.mistrust            "Mistrusting the website and decide to better not visit it.">
 <!ENTITY trustviewsextension.untrusted.changelevel         "Setting the security level to a lower value and try again.">
-<!ENTITY trustviewsextension.untrusted.visit               "Visiting the website anyway.">
+<!ENTITY trustviewsextension.untrusted.visit               "Visiting the website anyway. This would disable the warning for this particular page during this session.">
+<!ENTITY trustviewsextension.untrusted.tryagain            "Try Again">
+<!ENTITY trustviewsextension.untrusted.forcevisiting       "Visit the page!">

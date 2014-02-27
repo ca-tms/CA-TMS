@@ -7,9 +7,12 @@
 
 <overlay id="trustviewsextension-browser-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script type="application/javascript" src="chrome://trustviewsextension/content/setupNamespace.js" />
+    <script type="application/javascript">
+        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
+    </script>
     <script type="application/javascript" src="chrome://trustviewsextension/content/ui.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/certHandler.js" />
+    <script type="application/javascript" src="chrome://trustviewsextension/content/state.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/sslListener.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/ctmsCommunicator.js" />
     <script type="application/javascript" src="chrome://trustviewsextension/content/init.js" />

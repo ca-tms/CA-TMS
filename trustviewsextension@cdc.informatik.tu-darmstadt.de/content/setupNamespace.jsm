@@ -1,3 +1,5 @@
+var EXPORTED_SYMBOLS = ["TVE"];
+
 /**
  * Define Trust Views Extension (TVE) namespace.
  */

@@ -54,3 +54,8 @@ li {
 .trustviewsextension-errorUntrusted {
     background-image: url("chrome://global/skin/icons/sslWarning.png");
 }
+
+hbox {
+    display: block;
+    text-align: center; 
+}
