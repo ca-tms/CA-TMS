@@ -4,7 +4,7 @@
  
 <!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
 
-<prefwindow id="trustviewsextension-prefs" title="&trustviewsextension.prefs.windowtitle;" buttons="cancel, extra1" buttonlabelextra1="&trustviewsextension.prefs.resetbutton;" ondialogextra1="TVE.UI.resetPreferences();" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<prefwindow id="trustviewsextension-prefs" title="&trustviewsextension.prefs.windowtitle;" buttons="accept, cancel, extra1" buttonlabelextra1="&trustviewsextension.prefs.resetbutton;" ondialogextra1="TVE.UI.resetPreferences();" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <script type="application/javascript">
         Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
