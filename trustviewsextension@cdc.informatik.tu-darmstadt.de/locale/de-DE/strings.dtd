@@ -1,0 +1,29 @@
+<!ENTITY trustviewsextension.toolbarbutton.label           "Trust Views">
+
+<!ENTITY trustviewsextension.menu.secLevel.description     "Setze Sicherheitslevel:">
+<!ENTITY trustviewsextension.menu.secLevel.high            "hoch">
+<!ENTITY trustviewsextension.menu.secLevel.medium          "mittel">
+<!ENTITY trustviewsextension.menu.secLevel.low             "niedrig">
+<!ENTITY trustviewsextension.menu.openpreferences          "Einstellungen">
+
+<!ENTITY trustviewsextension.prefs.windowtitle             "Trust Views Einstellungen">
+<!ENTITY trustviewsextension.prefs.resetbutton             "Standard wiederherstellen">
+<!ENTITY trustviewsextension.prefs.networkpanelabel        "Verbindung">
+<!ENTITY trustviewsextension.prefs.urllabel                "CTMS URL">
+<!ENTITY trustviewsextension.prefs.portlabel               "CTMS Port">
+
+<!ENTITY trustviewsextension.unreachable.heading           "Trust Views System unerreichbar">
+<!ENTITY trustviewsextension.unreachable.description       "Das Trust Views System scheint nicht erreichbar zu sein. Möglicherweise läuft der Trust Views Webserver nicht korrekt.">
+<!ENTITY trustviewsextension.unreachable.solutionpreface   "Sie können Folgendes versuchen:">
+<!ENTITY trustviewsextension.unreachable.startctms         "Den Trust Views Webserver starten und es erneut versuchen.">
+<!ENTITY trustviewsextension.unreachable.disableextension  "Die Trust Views Erweiterung deaktivieren, wenn Sie sie nicht verwenden möchten.<br />Warnung: Das bedeutet Sie würden ohne die zusätzliche Sicherheit des Trust Views System surfen.">
+<!ENTITY trustviewsextension.unreachable.tryagain          "Nochmal versuchen">
+
+<!ENTITY trustviewsextension.untrusted.heading             "Unvertrauenswürdige Website">
+<!ENTITY trustviewsextension.untrusted.description         "Das Trust Views System vertraut der angefragten Website nicht. Es sieht so aus, als stimmt etwas mit dem von der Website ausgelieferten Zertifikat nicht. Das kann wegen einer nicht vertrauenswürdigen Zertifikatskette sein, oder das Trust Views System verhält sich zu paranoid.">
+<!ENTITY trustviewsextension.untrusted.solutionpreface     "Sie können Folgendes versuchen:">
+<!ENTITY trustviewsextension.untrusted.mistrust            "Der Website nicht vertrauen und sie besser nicht besuchen.">
+<!ENTITY trustviewsextension.untrusted.changelevel         "Das Sicherheitslevel niedriger setzen und es erneut versuchen.">
+<!ENTITY trustviewsextension.untrusted.visit               "Die Website trotzdem besuchen. Das würde die Warnung für diese Website deaktivieren, solange diese Sitzung aktiv ist.">
+<!ENTITY trustviewsextension.untrusted.tryagain            "Nochmal versuchen">
+<!ENTITY trustviewsextension.untrusted.forcevisiting       "Website trotzdem besuchen!">

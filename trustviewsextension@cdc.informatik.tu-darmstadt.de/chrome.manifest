@@ -1,6 +1,7 @@
 content   trustviewsextension                content/
 skin      trustviewsextension  classic/1.0   skin/
 locale    trustviewsextension  en-US         locale/en-US/
+locale    trustviewsextension  de-DE         locale/de-DE/
 
 overlay chrome://browser/content/browser.xul  chrome://trustviewsextension/content/browserOverlay.xul
 style chrome://global/content/customizeToolbar.xul chrome://trustviewsextension/skin/toolbarButton.css
