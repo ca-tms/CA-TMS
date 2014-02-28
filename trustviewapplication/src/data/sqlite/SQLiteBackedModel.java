@@ -75,6 +75,13 @@ public class SQLiteBackedModel {
 						"" +
 						"PRIMARY KEY (serial, issuer))");
 
+			statement.execute(
+					"CREATE TABLE IF NOT EXISTS configuration (" +
+						"key VARCHAR NOT NULL," +
+						"value VARCHAR NOT NULL," +
+						"" +
+						"PRIMARY KEY (key))");
+
 			connection.commit();
 		}
 	}
@@ -83,5 +90,11 @@ public class SQLiteBackedModel {
 		Connection connection = poolManager.getConnection();
 		connection.setAutoCommit(false);
 		return new SQLiteBackedTrustView(connection);
+	}
+
+	public SQLiteBackedConfiguration openConfiguration() throws SQLException {
+		Connection connection = poolManager.getConnection();
+		connection.setAutoCommit(false);
+		return new SQLiteBackedConfiguration(connection);
 	}
 }
