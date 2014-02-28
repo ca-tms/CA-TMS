@@ -5,8 +5,8 @@ getBrowser().addProgressListener(TVE.SSLListener);
 // on first run:
 // * add toolbarbutton automatically
 // * select default security level menuitem
-window.addEventListener("load", function() { TVE.installButton(); }, false);
-TVE.installButton = function() {
+window.addEventListener("load", function() { TVE.firstRun(); }, false);
+TVE.firstRun = function() {
     if(!TVE.Prefs.getBoolPref("firstRunDone")) {
         TVE.Prefs.setBoolPref("firstRunDone", true);
         
