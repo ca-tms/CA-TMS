@@ -13,6 +13,18 @@ public final class Model {
 
 	private Model() { }
 
+	/**
+	 * Opens a {@link TrustView} that can be used to retrieve and/or store
+	 * information and must be closed afterwards in order for any modification
+	 * made on the <code>TrustView</code> to take effect.
+	 *
+	 * Note: closing the <code>TrustView</code> may fail in case of concurrent
+	 * modifications.
+	 *
+	 * @return the open <code>TrustView</code> instance
+	 *
+	 * @throws Exception if the <code>TrustView</code> could not be opened
+	 */
 	public static TrustView openTrustView() throws Exception {
 		return getModel().openTrustView();
 	}
