@@ -11,12 +11,16 @@ import data.ConfigurationValueException;
 public class SQLiteBackedConfiguration implements Configuration {
 	private final Connection connection;
 	private final PreparedStatement getValue;
+	private final PreparedStatement setValue;
 
 	public SQLiteBackedConfiguration(Connection connection) throws SQLException {
 		this.connection = connection;
 
 		getValue = connection.prepareStatement(
 				"SELECT * FROM configuration WHERE key=?");
+
+		setValue = connection.prepareStatement(
+				"INSERT OR REPLACE INTO configuration VALUES (?, ?)");
 	}
 
 	@Override
@@ -27,7 +31,7 @@ public class SQLiteBackedConfiguration implements Configuration {
 			getValue.setString(1, key);
 			try (ResultSet result = getValue.executeQuery()) {
 				if (result.next())
-					value = result.getString(1);
+					value = result.getString(2);
 			}
 
 			T result = type.cast(
@@ -54,7 +58,15 @@ public class SQLiteBackedConfiguration implements Configuration {
 
 	@Override
 	public <T> void set(String key, T value) {
-		//TODO: implement
+		try {
+			validateDatabaseConnection();
+			setValue.setString(1, key);
+			setValue.setString(2, value.toString());
+			setValue.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
