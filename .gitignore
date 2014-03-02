@@ -3,3 +3,12 @@
 # compiled Java classes or similar stuff
 bin/
 jar/
+
+# unnecessary LaTeX output
+doc/*.aux
+doc/*.bbl
+doc/*.blg
+doc/*.log
+doc/*.out
+doc/*.synctex.gz
+doc/*.toc
