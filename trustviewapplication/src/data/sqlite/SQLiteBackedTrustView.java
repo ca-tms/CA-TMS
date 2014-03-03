@@ -13,41 +13,38 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import buisness.TrustComputation;
-
 import CertainTrust.CertainTrust;
 
 import util.Option;
 
+import data.Configuration;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
 public class SQLiteBackedTrustView implements TrustView {
 	private final Connection connection;
-
-	// TODO: this parameters should be configurable and globally accessible
-	//       (maybe stored in the database)
-	// TODO: currently the time stamp is updated only if the assessment is updated
-	//       should it be updated when the assessment is just used?
-	//       even only to initialize other assessments for the first time?
-	//       if it is inside a chain that fails to validate?
-	// TODO: Should trusted/untrusted certificates also be removed?
-	//       maybe when they expire?
-	private static final long ASSESSMENT_EXPIRATION_MILLIS = 365*24*60*60*1000;
+	private final Configuration config;
 
 	private final PreparedStatement getAssessment;
 	private final PreparedStatement getAssessments;
 	private final PreparedStatement getAssessmentsS;
 	private final PreparedStatement setAssessment;
 	private final PreparedStatement setAssessmentS;
+	private final PreparedStatement setAssessmentValid;
+	private final PreparedStatement getCertificates;
 	private final PreparedStatement getCertificateTrust;
 	private final PreparedStatement setCertificateTrust;
 	private final PreparedStatement removeAssessment;
+	private final PreparedStatement removeCertificate;
 	private final PreparedStatement cleanCertificates;
 
 	public SQLiteBackedTrustView(Connection connection) throws SQLException {
 		this.connection = connection;
+
+		// this Configuration instance must not be closed, because it shares
+		// the database connection with TrustView instance
+		config = new SQLiteBackedConfiguration(connection);
 
 		// retrieving assessments
 		getAssessment = connection.prepareStatement(
@@ -73,7 +70,13 @@ public class SQLiteBackedTrustView implements TrustView {
 				"            WHERE serial=? AND issuer=?), 0)," +
 				"  ?)");
 
+		setAssessmentValid = connection.prepareStatement(
+				"UPDATE assessments SET timestamp=? WHERE k=? AND ca=?");
+
 		// retrieving certificates
+		getCertificates = connection.prepareStatement(
+				"SELECT * FROM certificates");
+
 		getCertificateTrust = connection.prepareStatement(
 				"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");
 
@@ -85,6 +88,9 @@ public class SQLiteBackedTrustView implements TrustView {
 		// cleaning the trust view
 		removeAssessment = connection.prepareStatement(
 				"DELETE FROM assessments WHERE k=? AND ca=?");
+
+		removeCertificate = connection.prepareStatement(
+				"DELETE FROM certificates WHERE serial=? AND issuer=?");
 
 		cleanCertificates = connection.prepareStatement(
 				"DELETE FROM certificates WHERE trusted=0 AND untrusted=0 AND S=0");
@@ -100,6 +106,8 @@ public class SQLiteBackedTrustView implements TrustView {
 		TrustAssessment assessment = null;
 		try {
 			validateDatabaseConnection();
+			final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
+
 			getAssessment.setString(1, k);
 			getAssessment.setString(2, ca);
 			try (ResultSet result = getAssessment.executeQuery()) {
@@ -129,7 +137,7 @@ public class SQLiteBackedTrustView implements TrustView {
 											double s = result.getDouble(7);
 											if (!result.wasNull()) {
 												o_kl = new Option<CertainTrust>(
-														new CertainTrust(t, c, f, TrustComputation.opinionN));
+														new CertainTrust(t, c, f, opinionN));
 												o_kl.get().setRS(r, s);
 											}
 										}
@@ -141,12 +149,12 @@ public class SQLiteBackedTrustView implements TrustView {
 
 					CertainTrust o_it_ca = new CertainTrust(
 							result.getDouble(8), result.getDouble(9),
-							result.getDouble(10), TrustComputation.opinionN);
+							result.getDouble(10), opinionN);
 					o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
 
 					CertainTrust o_it_ee = new CertainTrust(
 							result.getDouble(13), result.getDouble(14),
-							result.getDouble(15), TrustComputation.opinionN);
+							result.getDouble(15), opinionN);
 					o_it_ca.setRS(result.getDouble(16), result.getDouble(17));
 
 					assessment = new TrustAssessment(
@@ -161,7 +169,6 @@ public class SQLiteBackedTrustView implements TrustView {
 		return assessment;
 	}
 
-	// this is also updating the time stamp
 	@Override
 	public void setAssessment(TrustAssessment assessment) {
 		try {
@@ -216,10 +223,26 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public void setAssessmentValid(String k, String ca) {
+		try {
+			validateDatabaseConnection();
+			setAssessmentValid.setTimestamp(1, new Timestamp(new Date().getTime()));
+			setAssessmentValid.setString(2, k);
+			setAssessmentValid.setString(3, ca);
+			setAssessmentValid.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public Collection<TrustAssessment> getAssessments() {
 		List<TrustAssessment> assessments = new ArrayList<>();
 		try {
 			validateDatabaseConnection();
+			final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
+
 			try (ResultSet result = getAssessments.executeQuery()) {
 				while (result.next()) {
 					Set<TrustCertificate> S = new HashSet<>();
@@ -247,7 +270,7 @@ public class SQLiteBackedTrustView implements TrustView {
 											double s = result.getDouble(7);
 											if (!result.wasNull()) {
 												o_kl = new Option<CertainTrust>(
-														new CertainTrust(t, c, f, TrustComputation.opinionN));
+														new CertainTrust(t, c, f, opinionN));
 												o_kl.get().setRS(r, s);
 											}
 										}
@@ -259,12 +282,12 @@ public class SQLiteBackedTrustView implements TrustView {
 
 					CertainTrust o_it_ca = new CertainTrust(
 							result.getDouble(8), result.getDouble(9),
-							result.getDouble(10), TrustComputation.opinionN);
+							result.getDouble(10), opinionN);
 					o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
 
 					CertainTrust o_it_ee = new CertainTrust(
 							result.getDouble(13), result.getDouble(14),
-							result.getDouble(15), TrustComputation.opinionN);
+							result.getDouble(15), opinionN);
 					o_it_ca.setRS(result.getDouble(16), result.getDouble(17));
 
 					assessments.add(new TrustAssessment(
@@ -368,11 +391,15 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void clean() {
 		try {
 			validateDatabaseConnection();
+			final long assessmentExpirationMillis =
+					config.get(Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
 			final long nowMillis = new Date().getTime();
+
+			// remove expired assessments
 			try (ResultSet result = getAssessments.executeQuery()) {
 				while (result.next())
 					if (nowMillis - result.getTimestamp(18).getTime()
-							> ASSESSMENT_EXPIRATION_MILLIS) {
+							> assessmentExpirationMillis) {
 						getAssessmentsS.setString(1, result.getString(1));
 						getAssessmentsS.setString(2, result.getString(2));
 						try (ResultSet resultS = getAssessmentsS.executeQuery()) {
@@ -397,7 +424,20 @@ public class SQLiteBackedTrustView implements TrustView {
 						removeAssessment.executeUpdate();
 					}
 			}
+
+			// remove certificates that are no longer needed after
+			// the removal of expired assessments
 			cleanCertificates.executeUpdate();
+
+			// remove expired certificates
+			try (ResultSet result = getCertificates.executeQuery()) {
+				while (result.next())
+					if (result.getTimestamp(6).getTime() > nowMillis) {
+						removeCertificate.setString(1, result.getString(1));
+						removeCertificate.setString(2, result.getString(2));
+						removeCertificate.executeUpdate();
+					}
+			}
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -419,8 +459,11 @@ public class SQLiteBackedTrustView implements TrustView {
 			getAssessmentsS.close();
 			setAssessment.close();
 			setAssessmentS.close();
+			setAssessmentValid.close();
+			getCertificates.close();
 			getCertificateTrust.close();
 			setCertificateTrust.close();
+			removeCertificate.close();
 			removeAssessment.close();
 			cleanCertificates.close();
 			connection.close();

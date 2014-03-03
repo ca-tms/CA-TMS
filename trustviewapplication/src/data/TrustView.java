@@ -23,10 +23,26 @@ public interface TrustView extends AutoCloseable {
 	/**
 	 * Sets the given {@link TrustAssessment} by incorporating it into the
 	 * <code>TrustView</code>, potentially overwriting a previous
-	 * <code>TrustAssessment</code> for the same CA and public key
+	 * <code>TrustAssessment</code> for the same CA and public key.
+	 *
+	 * This also updates the internal assessment time stamp used
+	 * when cleaning the trust view using {@link #clean()}.
+	 *
 	 * @param assessment the <code>TrustAssessment</code> to be set
 	 */
 	void setAssessment(TrustAssessment assessment);
+
+	/**
+	 * Sets the respective {@link TrustAssessment} to be still valid,
+	 * if it already exists in the <code>TrustView</code>.
+	 *
+	 * This updates the internal assessment time stamp used
+	 * when cleaning the trust view using {@link #clean()}.
+	 *
+	 * @param k public key for the given CA
+	 * @param ca the CA which the public key belongs to
+	 */
+	void setAssessmentValid(String k, String ca);
 
 	/**
 	 * @return a collection of all {@link TrustAssessment}s that are
@@ -59,7 +75,11 @@ public interface TrustView extends AutoCloseable {
 	void setUntrustedCertificate(TrustCertificate S);
 
 	/**
-	 * Cleans the trust view
+	 * Cleans the trust view.
+	 *
+	 * This means all expired assessments will be removed
+	 * (see {@link Configuration#ASSESSMENT_EXPIRATION_MILLIS})
+	 * as well as all certificates that left their validity period.
 	 */
 	void clean();
 }
