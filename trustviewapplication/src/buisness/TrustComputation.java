@@ -209,6 +209,12 @@ public class TrustComputation {
 			ValidationResult.UNKNOWN;
 	}
 
+	private void updateAssessmentsTimestamps(List<TrustCertificate> p) {
+		for (int i = 0; i < p.size() - 1; i++)
+			trustView.setAssessmentValid(
+					p.get(i).getPublicKey(), p.get(i).getSubject());
+	}
+
 	// first certificate in p should be the target certificate
 	// and the last one should be issued by the trust anchor
 	// the certificate representing the trust anchor should not be included in
@@ -239,13 +245,17 @@ public class TrustComputation {
 				new HashSet<TrustCertificate>(trustView.getUntrustedCertificates());
 
 		// check if the last certificate is already trusted
-		if (trustedCertificates.contains(p.get(p.size() - 1)))
+		if (trustedCertificates.contains(p.get(p.size() - 1))) {
+			updateAssessmentsTimestamps(p);
 			return ValidationResult.TRUSTED;
+		}
 
 		// check if p contains untrusted certificate
 		for (TrustCertificate cert : p)
-			if (untrustedCertificates.contains(cert))
+			if (untrustedCertificates.contains(cert)) {
+				updateAssessmentsTimestamps(p);
 				return ValidationResult.UNTRUSTED;
+			}
 
 		// update trust assessments
 		List<TrustAssessment> TL = new ArrayList<>(p.size() - 1);
@@ -290,6 +300,7 @@ public class TrustComputation {
 			result = consensus(VS.query(p.get(p.size() - 1).getCertificate()));
 
 		updateView(p, pAssessments, result, TL, VS);
+		updateAssessmentsTimestamps(p);
 		return result;
 	}
 }
