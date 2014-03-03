@@ -2,6 +2,7 @@ package data;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.DatatypeConverter;
@@ -11,14 +12,18 @@ public class TrustCertificate {
 	private final String issuer;
 	private final String subject;
 	private final String publicKey;
+	private final Date notBefore;
+	private final Date notAfter;
 	private final Certificate certificate;
 
 	public TrustCertificate(String serial, String issuer, String subject,
-			String publicKey) {
+			String publicKey, Date notBefore, Date notAfter) {
 		this.serial = serial;
 		this.issuer = issuer;
 		this.subject = subject;
 		this.publicKey = publicKey;
+		this.notBefore = notBefore;
+		this.notAfter = notAfter;
 		this.certificate = null;
 	}
 
@@ -33,6 +38,8 @@ public class TrustCertificate {
 					X500Principal.CANONICAL);
 			this.publicKey = DatatypeConverter.printBase64Binary(
 					x509cert.getPublicKey().getEncoded());
+			this.notBefore = x509cert.getNotBefore();
+			this.notAfter = x509cert.getNotAfter();
 			this.certificate = x509cert;
 		}
 		else
@@ -55,6 +62,14 @@ public class TrustCertificate {
 
 	public String getPublicKey() {
 		return publicKey;
+	}
+
+	public Date getNotBefore() {
+		return notBefore;
+	}
+
+	public Date getNotAfter() {
+		return notAfter;
 	}
 
 	public Certificate getCertificate() {

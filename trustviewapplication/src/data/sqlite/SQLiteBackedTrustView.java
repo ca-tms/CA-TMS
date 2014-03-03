@@ -62,10 +62,11 @@ public class SQLiteBackedTrustView implements TrustView {
 		// setting assessments
 		setAssessment = connection.prepareStatement(
 				"INSERT OR REPLACE INTO assessments VALUES (?, ?, ?, ?, ?, ?, " +
+				"                                           ?, ?, ?, ?, ?, ?, " +
 				"                                           ?, ?, ?, ?, ?, ?)");
 
 		setAssessmentS = connection.prepareStatement(
-				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, " +
+				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, " +
 				"  COALESCE((SELECT trusted FROM certificates " +
 				"            WHERE serial=? AND issuer=?), 0)," +
 				"  COALESCE((SELECT untrusted FROM certificates " +
@@ -78,7 +79,7 @@ public class SQLiteBackedTrustView implements TrustView {
 
 		// setting certificates
 		setCertificateTrust = connection.prepareStatement(
-				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, " +
+				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, " +
 				"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
 
 		// cleaning the trust view
@@ -110,7 +111,8 @@ public class SQLiteBackedTrustView implements TrustView {
 						while (resultS.next())
 							S.add(new TrustCertificate(
 									resultS.getString(1), resultS.getString(2),
-									resultS.getString(3), resultS.getString(4)));
+									resultS.getString(3), resultS.getString(4),
+									resultS.getTimestamp(5), resultS.getTimestamp(6)));
 					}
 
 					Option<CertainTrust> o_kl = new Option<CertainTrust>();
@@ -119,20 +121,37 @@ public class SQLiteBackedTrustView implements TrustView {
 						double c = result.getDouble(4);
 						if (!result.wasNull()) {
 							double f = result.getDouble(5);
-							if (!result.wasNull())
-								o_kl = new Option<CertainTrust>(
-										new CertainTrust(t, c, f, TrustComputation.opinionN));
+							if (!result.wasNull()) {
+								if (!result.wasNull()) {
+									double r = result.getDouble(6);
+									if (!result.wasNull()) {
+										if (!result.wasNull()) {
+											double s = result.getDouble(7);
+											if (!result.wasNull()) {
+												o_kl = new Option<CertainTrust>(
+														new CertainTrust(t, c, f, TrustComputation.opinionN));
+												o_kl.get().setRS(r, s);
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 
+					CertainTrust o_it_ca = new CertainTrust(
+							result.getDouble(8), result.getDouble(9),
+							result.getDouble(10), TrustComputation.opinionN);
+					o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
+
+					CertainTrust o_it_ee = new CertainTrust(
+							result.getDouble(13), result.getDouble(14),
+							result.getDouble(15), TrustComputation.opinionN);
+					o_it_ca.setRS(result.getDouble(16), result.getDouble(17));
+
 					assessment = new TrustAssessment(
-							result.getString(1), result.getString(2), S, o_kl,
-							new CertainTrust(
-									result.getDouble(6), result.getDouble(7),
-									result.getDouble(8), TrustComputation.opinionN),
-							new CertainTrust(
-									result.getDouble(9), result.getDouble(10),
-									result.getDouble(11), TrustComputation.opinionN));
+							result.getString(1), result.getString(2), S,
+							o_kl, o_it_ca, o_it_ee);
 				}
 			}
 		}
@@ -153,19 +172,27 @@ public class SQLiteBackedTrustView implements TrustView {
 				setAssessment.setDouble(3, assessment.getO_kl().get().getT());
 				setAssessment.setDouble(4, assessment.getO_kl().get().getC());
 				setAssessment.setDouble(5, assessment.getO_kl().get().getF());
+				setAssessment.setDouble(6, assessment.getO_kl().get().getR());
+				setAssessment.setDouble(7, assessment.getO_kl().get().getS());
 			}
 			else {
-				setAssessment.setNull(3, Types.INTEGER);
-				setAssessment.setNull(4, Types.INTEGER);
-				setAssessment.setNull(5, Types.INTEGER);
+				setAssessment.setNull(3, Types.REAL);
+				setAssessment.setNull(4, Types.REAL);
+				setAssessment.setNull(5, Types.REAL);
+				setAssessment.setNull(6, Types.REAL);
+				setAssessment.setNull(7, Types.REAL);
 			}
-			setAssessment.setDouble(6, assessment.getO_it_ca().getT());
-			setAssessment.setDouble(7, assessment.getO_it_ca().getC());
-			setAssessment.setDouble(8, assessment.getO_it_ca().getF());
-			setAssessment.setDouble(9, assessment.getO_it_ee().getT());
-			setAssessment.setDouble(10, assessment.getO_it_ee().getC());
-			setAssessment.setDouble(11, assessment.getO_it_ee().getF());
-			setAssessment.setTimestamp(12, new Timestamp(new Date().getTime()));
+			setAssessment.setDouble(8, assessment.getO_it_ca().getT());
+			setAssessment.setDouble(9, assessment.getO_it_ca().getC());
+			setAssessment.setDouble(10, assessment.getO_it_ca().getF());
+			setAssessment.setDouble(11, assessment.getO_it_ca().getR());
+			setAssessment.setDouble(12, assessment.getO_it_ca().getS());
+			setAssessment.setDouble(13, assessment.getO_it_ee().getT());
+			setAssessment.setDouble(14, assessment.getO_it_ee().getC());
+			setAssessment.setDouble(15, assessment.getO_it_ee().getF());
+			setAssessment.setDouble(16, assessment.getO_it_ee().getR());
+			setAssessment.setDouble(17, assessment.getO_it_ee().getS());
+			setAssessment.setTimestamp(18, new Timestamp(new Date().getTime()));
 			setAssessment.executeUpdate();
 
 			for (TrustCertificate cert : assessment.getS()) {
@@ -173,11 +200,13 @@ public class SQLiteBackedTrustView implements TrustView {
 				setAssessmentS.setString(2, cert.getIssuer());
 				setAssessmentS.setString(3, cert.getSubject());
 				setAssessmentS.setString(4, cert.getPublicKey());
-				setAssessmentS.setString(5, cert.getSerial());
-				setAssessmentS.setString(6, cert.getIssuer());
+				setAssessmentS.setTimestamp(5, new Timestamp(cert.getNotBefore().getTime()));
+				setAssessmentS.setTimestamp(6, new Timestamp(cert.getNotAfter().getTime()));
 				setAssessmentS.setString(7, cert.getSerial());
 				setAssessmentS.setString(8, cert.getIssuer());
-				setAssessmentS.setBoolean(9, true);
+				setAssessmentS.setString(9, cert.getSerial());
+				setAssessmentS.setString(10, cert.getIssuer());
+				setAssessmentS.setBoolean(11, true);
 				setAssessmentS.executeUpdate();
 			}
 		}
@@ -200,7 +229,8 @@ public class SQLiteBackedTrustView implements TrustView {
 						while (resultS.next())
 							S.add(new TrustCertificate(
 									resultS.getString(1), resultS.getString(2),
-									resultS.getString(3), resultS.getString(4)));
+									resultS.getString(3), resultS.getString(4),
+									resultS.getTimestamp(5), resultS.getTimestamp(6)));
 					}
 
 					Option<CertainTrust> o_kl = new Option<CertainTrust>();
@@ -209,20 +239,37 @@ public class SQLiteBackedTrustView implements TrustView {
 						double c = result.getDouble(4);
 						if (!result.wasNull()) {
 							double f = result.getDouble(5);
-							if (!result.wasNull())
-								o_kl = new Option<CertainTrust>(
-										new CertainTrust(t, c, f, TrustComputation.opinionN));
+							if (!result.wasNull()) {
+								if (!result.wasNull()) {
+									double r = result.getDouble(6);
+									if (!result.wasNull()) {
+										if (!result.wasNull()) {
+											double s = result.getDouble(7);
+											if (!result.wasNull()) {
+												o_kl = new Option<CertainTrust>(
+														new CertainTrust(t, c, f, TrustComputation.opinionN));
+												o_kl.get().setRS(r, s);
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 
+					CertainTrust o_it_ca = new CertainTrust(
+							result.getDouble(8), result.getDouble(9),
+							result.getDouble(10), TrustComputation.opinionN);
+					o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
+
+					CertainTrust o_it_ee = new CertainTrust(
+							result.getDouble(13), result.getDouble(14),
+							result.getDouble(15), TrustComputation.opinionN);
+					o_it_ca.setRS(result.getDouble(16), result.getDouble(17));
+
 					assessments.add(new TrustAssessment(
-							result.getString(1), result.getString(2), S, o_kl,
-							new CertainTrust(
-									result.getDouble(6), result.getDouble(7),
-									result.getDouble(8), TrustComputation.opinionN),
-							new CertainTrust(
-									result.getDouble(9), result.getDouble(10),
-									result.getDouble(11), TrustComputation.opinionN)));
+							result.getString(1), result.getString(2), S,
+							o_kl, o_it_ca, o_it_ee));
 				}
 			}
 		}
@@ -243,7 +290,8 @@ public class SQLiteBackedTrustView implements TrustView {
 				while (result.next())
 					certificates.add(new TrustCertificate(
 							result.getString(1), result.getString(2),
-							result.getString(3), result.getString(4)));
+							result.getString(3), result.getString(4),
+							result.getTimestamp(5), result.getTimestamp(6)));
 			}
 		}
 		catch (SQLException e) {
@@ -263,7 +311,8 @@ public class SQLiteBackedTrustView implements TrustView {
 				while (result.next())
 					certificates.add(new TrustCertificate(
 							result.getString(1), result.getString(2),
-							result.getString(3), result.getString(4)));
+							result.getString(3), result.getString(4),
+							result.getTimestamp(5), result.getTimestamp(6)));
 			}
 			return certificates;
 		}
@@ -281,10 +330,12 @@ public class SQLiteBackedTrustView implements TrustView {
 			setCertificateTrust.setString(2, S.getIssuer());
 			setCertificateTrust.setString(3, S.getSubject());
 			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setBoolean(5, true);
-			setCertificateTrust.setBoolean(6, false);
-			setCertificateTrust.setString(7, S.getSerial());
-			setCertificateTrust.setString(8, S.getIssuer());
+			setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
+			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
+			setCertificateTrust.setBoolean(7, true);
+			setCertificateTrust.setBoolean(8, false);
+			setCertificateTrust.setString(9, S.getSerial());
+			setCertificateTrust.setString(10, S.getIssuer());
 			setCertificateTrust.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -300,10 +351,12 @@ public class SQLiteBackedTrustView implements TrustView {
 			setCertificateTrust.setString(2, S.getIssuer());
 			setCertificateTrust.setString(3, S.getSubject());
 			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setBoolean(5, false);
-			setCertificateTrust.setBoolean(6, true);
-			setCertificateTrust.setString(7, S.getSerial());
-			setCertificateTrust.setString(8, S.getIssuer());
+			setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
+			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
+			setCertificateTrust.setBoolean(7, false);
+			setCertificateTrust.setBoolean(8, true);
+			setCertificateTrust.setString(9, S.getSerial());
+			setCertificateTrust.setString(10, S.getIssuer());
 			setCertificateTrust.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -318,7 +371,7 @@ public class SQLiteBackedTrustView implements TrustView {
 			final long nowMillis = new Date().getTime();
 			try (ResultSet result = getAssessments.executeQuery()) {
 				while (result.next())
-					if (nowMillis - result.getTimestamp(12).getTime()
+					if (nowMillis - result.getTimestamp(18).getTime()
 							> ASSESSMENT_EXPIRATION_MILLIS) {
 						getAssessmentsS.setString(1, result.getString(1));
 						getAssessmentsS.setString(2, result.getString(2));
@@ -328,11 +381,13 @@ public class SQLiteBackedTrustView implements TrustView {
 								setAssessmentS.setString(2, resultS.getString(2));
 								setAssessmentS.setString(3, resultS.getString(3));
 								setAssessmentS.setString(4, resultS.getString(4));
-								setAssessmentS.setString(5, resultS.getString(1));
-								setAssessmentS.setString(6, resultS.getString(2));
+								setAssessmentS.setString(5, resultS.getString(5));
+								setAssessmentS.setString(6, resultS.getString(6));
 								setAssessmentS.setString(7, resultS.getString(1));
 								setAssessmentS.setString(8, resultS.getString(2));
-								setAssessmentS.setBoolean(9, false);
+								setAssessmentS.setString(9, resultS.getString(1));
+								setAssessmentS.setString(10, resultS.getString(2));
+								setAssessmentS.setBoolean(11, false);
 								setAssessmentS.executeUpdate();
 							}
 						}

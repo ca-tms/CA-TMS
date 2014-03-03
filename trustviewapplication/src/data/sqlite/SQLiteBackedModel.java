@@ -38,23 +38,35 @@ public class SQLiteBackedModel {
 						"o_kl_t REAL," +
 						"o_kl_c REAL," +
 						"o_kl_f REAL," +
+						"o_kl_r REAL," +
+						"o_kl_s REAL," +
 						"o_it_ca_t REAL NOT NULL," +
 						"o_it_ca_c REAL NOT NULL," +
 						"o_it_ca_f REAL NOT NULL," +
+						"o_it_ca_r REAL NOT NULL," +
+						"o_it_ca_s REAL NOT NULL," +
 						"o_it_ee_t REAL NOT NULL," +
 						"o_it_ee_c REAL NOT NULL," +
 						"o_it_ee_f REAL NOT NULL," +
+						"o_it_ee_r REAL NOT NULL," +
+						"o_it_ee_s REAL NOT NULL," +
 						"timestamp DATETIME NOT NULL," +
 						"" +
 						"CHECK (o_kl_t BETWEEN 0 AND 1)," +
 						"CHECK (o_kl_c BETWEEN 0 AND 1)," +
 						"CHECK (o_kl_f BETWEEN 0 AND 1)," +
+						"CHECK (o_kl_r >= 0)," +
+						"CHECK (o_kl_s >= 0)," +
 						"CHECK (o_it_ca_t BETWEEN 0 AND 1)," +
 						"CHECK (o_it_ca_c BETWEEN 0 AND 1)," +
 						"CHECK (o_it_ca_f BETWEEN 0 AND 1)," +
+						"CHECK (o_it_ca_r >= 0)," +
+						"CHECK (o_it_ca_s >= 0)," +
 						"CHECK (o_it_ee_t BETWEEN 0 AND 1)," +
 						"CHECK (o_it_ee_c BETWEEN 0 AND 1)," +
 						"CHECK (o_it_ee_f BETWEEN 0 AND 1)," +
+						"CHECK (o_it_ee_r >= 0)," +
+						"CHECK (o_it_ee_s >= 0)," +
 						"" +
 						"PRIMARY KEY (k))");
 
@@ -64,6 +76,8 @@ public class SQLiteBackedModel {
 						"issuer VARCHAR NOT NULL," +
 						"subject VARCHAR NOT NULL," +
 						"publickey VARCHAR NOT NULL," +
+						"notbefore DATETIME NOT NULL," +
+						"notafter DATETIME NOT NULL," +
 						"trusted BOOLEAN NOT NULL," +
 						"untrusted BOOLEAN NOT NULL," +
 						"S BOOLEAN NOT NULL," +
