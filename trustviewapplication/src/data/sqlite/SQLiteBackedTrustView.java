@@ -155,7 +155,7 @@ public class SQLiteBackedTrustView implements TrustView {
 					CertainTrust o_it_ee = new CertainTrust(
 							result.getDouble(13), result.getDouble(14),
 							result.getDouble(15), opinionN);
-					o_it_ca.setRS(result.getDouble(16), result.getDouble(17));
+					o_it_ee.setRS(result.getDouble(16), result.getDouble(17));
 
 					assessment = new TrustAssessment(
 							result.getString(1), result.getString(2), S,
@@ -288,7 +288,7 @@ public class SQLiteBackedTrustView implements TrustView {
 					CertainTrust o_it_ee = new CertainTrust(
 							result.getDouble(13), result.getDouble(14),
 							result.getDouble(15), opinionN);
-					o_it_ca.setRS(result.getDouble(16), result.getDouble(17));
+					o_it_ee.setRS(result.getDouble(16), result.getDouble(17));
 
 					assessments.add(new TrustAssessment(
 							result.getString(1), result.getString(2), S,
