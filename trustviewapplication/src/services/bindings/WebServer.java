@@ -31,6 +31,7 @@ import javax.json.JsonReader;
 import support.Service;
 
 import buisness.TrustComputation;
+import data.Configuration;
 import data.Model;
 import data.TrustCertificate;
 import data.TrustView;
@@ -115,8 +116,9 @@ public class WebServer {
 
 						int attempts = 0;
 						while (true) {
-							try (TrustView trustView = Model.openTrustView()) {
-								str = new TrustComputation(trustView).validate(
+							try (TrustView trustView = Model.openTrustView();
+							     Configuration config = Model.openConfiguration()) {
+								str = new TrustComputation(config, trustView).validate(
 										path, 0.8,
 										Service.getValidationService(executorService)).toString();
 							}

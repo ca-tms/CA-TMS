@@ -1,8 +1,9 @@
 package data;
 
 public interface Configuration extends AutoCloseable {
-	static String ASSESSMENT_EXPIRATION_MILLIS = "assessment-expiration-millis";
 	static String OPINION_N = "opinion-n";
+	static String OPINION_MAX_F = "opinion-max-f";
+	static String ASSESSMENT_EXPIRATION_MILLIS = "assessment-expiration-millis";
 
 	public <T> T get(String key, Class<T> type)
 			throws ConfigurationValueException;

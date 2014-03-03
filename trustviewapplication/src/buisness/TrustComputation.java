@@ -13,27 +13,26 @@ import support.ValidationService;
 import util.Option;
 import util.ValidationResult;
 import CertainTrust.CertainTrust;
+import data.Configuration;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
 public class TrustComputation {
 	private final TrustView trustView;
+	private final Configuration config;
 
-	// TODO: parameters should be configurable and globally accessible
-	//       (maybe stored in the database)
-//	public static final double lmin = 0.6;
-//	public static final double lmed = 0.8;
-//	public static final double lmax = 0.95;
-	public static final double maxF = 0.8;
-	public static final int opinionN = 10;
 //	public static final int fixkl = 3;
 
-	public TrustComputation(TrustView trustView) {
+	public TrustComputation(Configuration config, TrustView trustView) {
+		this.config = config;
 		this.trustView = trustView;
 	}
 
 	private TrustAssessment createAssessment(TrustCertificate S, boolean isLegitimateRoot) {
+		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
+		final double opinionMaxF = config.get(Configuration.OPINION_MAX_F, Double.class);
+
 		// determine k and ca
 		String k = S.getPublicKey();
 		String ca = S.getSubject();
@@ -67,9 +66,9 @@ public class TrustComputation {
 					}
 
 			o_it_ca = new CertainTrust(
-					0.5, 0.0, n == 0 ? 0.5 : Math.min(maxF, f_ca / n), opinionN);
+					0.5, 0.0, n == 0 ? 0.5 : Math.min(opinionMaxF, f_ca / n), opinionN);
 			o_it_ee = new CertainTrust(
-					0.5, 0.0, n == 0 ? 0.5 : Math.min(maxF, f_ee / n), opinionN);
+					0.5, 0.0, n == 0 ? 0.5 : Math.min(opinionMaxF, f_ee / n), opinionN);
 		}
 
 		return new TrustAssessment(k, ca, S, o_kl, o_it_ca, o_it_ee);
