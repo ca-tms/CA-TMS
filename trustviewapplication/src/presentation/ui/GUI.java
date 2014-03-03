@@ -98,7 +98,7 @@ public class GUI {
 			new Object[][] {
 			},
 			new String[] {
-				"Serial", "Issuer", "Subject", "PublicKey"
+				"Serial", "Issuer", "Subject", "PublicKey" 
 			}
 		) {
 			@SuppressWarnings("rawtypes")
