@@ -18,6 +18,7 @@ import CertainTrust.CertainTrust;
 import util.Option;
 
 import data.Configuration;
+import data.Model;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -39,12 +40,11 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement removeCertificate;
 	private final PreparedStatement cleanCertificates;
 
-	public SQLiteBackedTrustView(Connection connection) throws SQLException {
+	public SQLiteBackedTrustView(Connection connection) throws Exception {
 		this.connection = connection;
 
-		// this Configuration instance must not be closed, because it shares
-		// the database connection with TrustView instance
-		config = new SQLiteBackedConfiguration(connection);
+		// configuration values
+		config = Model.openConfiguration();
 
 		// retrieving assessments
 		getAssessment = connection.prepareStatement(
@@ -445,8 +445,9 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public void close() throws SQLException {
+	public void close() throws Exception {
 		try {
+			config.close();
 			connection.commit();
 		}
 		catch (SQLException e) {

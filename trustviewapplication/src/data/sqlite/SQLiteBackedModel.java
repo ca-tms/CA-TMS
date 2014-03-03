@@ -100,13 +100,13 @@ public class SQLiteBackedModel {
 		}
 	}
 
-	public SQLiteBackedTrustView openTrustView() throws SQLException {
+	public SQLiteBackedTrustView openTrustView() throws Exception {
 		Connection connection = poolManager.getConnection();
 		connection.setAutoCommit(false);
 		return new SQLiteBackedTrustView(connection);
 	}
 
-	public SQLiteBackedConfiguration openConfiguration() throws SQLException {
+	public SQLiteBackedConfiguration openConfiguration() throws Exception {
 		Connection connection = poolManager.getConnection();
 		connection.setAutoCommit(false);
 		return new SQLiteBackedConfiguration(connection);

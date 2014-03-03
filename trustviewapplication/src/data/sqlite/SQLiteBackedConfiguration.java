@@ -28,23 +28,26 @@ public class SQLiteBackedConfiguration implements Configuration {
 		String value = null;
 		try {
 			validateDatabaseConnection();
+
 			getValue.setString(1, key);
 			try (ResultSet result = getValue.executeQuery()) {
 				if (result.next())
 					value = result.getString(2);
 			}
 
-			T result = type.cast(
-				type == String.class ? value :
-				type == Integer.class ? Integer.valueOf(value) :
-				type == Long.class ? Long.valueOf(value) :
-				type == Double.class ? Double.valueOf(value) :
-				type == Float.class ? Float.valueOf(value) :
-				type == Short.class ? Short.valueOf(value) :
-				type == Byte.class ? Byte.valueOf(value) : (Object) null);
+			if (value != null) {
+				T result = type.cast(
+					type == String.class ? value :
+					type == Integer.class ? Integer.valueOf(value) :
+					type == Long.class ? Long.valueOf(value) :
+					type == Double.class ? Double.valueOf(value) :
+					type == Float.class ? Float.valueOf(value) :
+					type == Short.class ? Short.valueOf(value) :
+					type == Byte.class ? Byte.valueOf(value) : (Object) null);
 
-			if (result != null)
-				return result;
+				if (result != null)
+					return result;
+			}
 		}
 		catch (NumberFormatException e) {
 			throw new ConfigurationValueException(key, e);
