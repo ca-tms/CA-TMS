@@ -22,8 +22,6 @@ public class TrustComputation {
 	private final TrustView trustView;
 	private final Configuration config;
 
-//	public static final int fixkl = 3;
-
 	public TrustComputation(Configuration config, TrustView trustView) {
 		this.config = config;
 		this.trustView = trustView;
@@ -110,7 +108,7 @@ public class TrustComputation {
 					updateTrustView = true;
 
 				if (updateTrustView)
-					trustView.setAssessment(assessment);
+					trustView.setAssessment(fixKeyLegitimacy(assessment));
 			}
 
 			trustView.setTrustedCertificate(p.get(p.size() - 1));
@@ -156,7 +154,7 @@ public class TrustComputation {
 					updateTrustView = true;
 
 				if (updateTrustView)
-					trustView.setAssessment(assessment);
+					trustView.setAssessment(fixKeyLegitimacy(assessment));
 			}
 
 			boolean updateTrustView = false;
@@ -185,7 +183,7 @@ public class TrustComputation {
 			}
 
 			if (updateTrustView)
-				trustView.setAssessment(assessment);
+				trustView.setAssessment(fixKeyLegitimacy(assessment));
 
 			// add C at position h+1 as untrusted certificate
 			trustView.setUntrustedCertificate(p.get(h + 1));
@@ -212,6 +210,19 @@ public class TrustComputation {
 		for (int i = 0; i < p.size() - 1; i++)
 			trustView.setAssessmentValid(
 					p.get(i).getPublicKey(), p.get(i).getSubject());
+	}
+
+	private TrustAssessment fixKeyLegitimacy(TrustAssessment assessment) {
+		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
+		final double fix_kl = config.get(Configuration.FIX_KL, Double.class);
+
+		if (assessment.getO_it_ca().getR() + assessment.getO_it_ee().getR() >= fix_kl)
+			return new TrustAssessment(
+					assessment.getK(), assessment.getCa(), assessment.getS(),
+					new Option<>(new CertainTrust(1.0, 1.0, 1.0, opinionN)),
+					assessment.getO_it_ca(), assessment.getO_it_ee());
+
+		return assessment;
 	}
 
 	// first certificate in p should be the target certificate
