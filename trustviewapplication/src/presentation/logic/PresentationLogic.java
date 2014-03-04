@@ -11,7 +11,7 @@ import java.util.Iterator;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableColumnModel;
+
 import javax.swing.table.DefaultTableModel;
 
 import data.TrustAssessment;
@@ -158,7 +158,7 @@ public class PresentationLogic {
 			}
 
 			boolean[] columnEditables = new boolean[] { false, false, false,
-					false, false, false };
+					false, true, true };
 
 			public boolean isCellEditable(int row, int column) {
 				return columnEditables[column];
@@ -215,6 +215,7 @@ public class PresentationLogic {
 		String Serial="";
 		String Issuer="";		
 		int row =table.getSelectedRow();
+		if(row==-1) return null;
 		Serial=(String)table.getValueAt(row, 0);
 		Issuer=(String)table.getValueAt(row, 1);
 		
@@ -230,6 +231,7 @@ public class PresentationLogic {
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
 			e1.printStackTrace();
+			return null;
 		}
 	
 		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
@@ -252,8 +254,10 @@ public class PresentationLogic {
 		String Serial="";
 		String Issuer="";		
 		int row =table.getSelectedRow();
+		if(row==-1) return null;
 		Serial=(String)table.getValueAt(row, 0);
 		Issuer=(String)table.getValueAt(row, 1);
+		
 		
 		Collection<TrustCertificate> Certs_temp = null;
 
@@ -267,6 +271,7 @@ public class PresentationLogic {
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
 			e1.printStackTrace();
+			return null;
 		}
 	
 		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
@@ -283,6 +288,36 @@ public class PresentationLogic {
 		return Certificate ;
 	}
 
+	// /////////////////////////////////////////////////////////getAss_by_Click/////////////////////////////////////////////////////////////////////////////////////
+	public static TrustAssessment getAss_by_Click(JTable table)
+
+	{
+		String k = "";
+		String ca = "";
+		int row = table.getSelectedRow();
+		if (row == -1)
+			return null;
+		k = (String) table.getValueAt(row, 0);
+		ca = (String) table.getValueAt(row, 1);
+
+		TrustAssessment Ass_temp = null;
+
+		try {
+			TrustView view = data.Model.openTrustView();
+			Ass_temp = view.getAssessment(k, ca);
+			view.close();
+
+		} catch (Exception e1) {
+			JOptionPane.showConfirmDialog(null,
+					"Error reading or concurrent modifying the database! ",
+					"Error", JOptionPane.DEFAULT_OPTION);
+			e1.printStackTrace();
+			return null;
+		}
+
+		return Ass_temp;
+	}
+	
 	
 	
 	

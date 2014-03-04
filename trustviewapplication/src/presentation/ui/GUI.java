@@ -4,6 +4,15 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
+
+
+
+
+
+
+
+
+import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
@@ -23,6 +32,8 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableColumnModel;
@@ -34,8 +45,8 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComboBox;
 
+import CertainTrust.CertainTrust;
 import presentation.logic.PresentationLogic;
-
 
 
 
@@ -54,6 +65,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.awt.Font;
 
 public class GUI {
 
@@ -63,10 +75,12 @@ public class GUI {
 	private JTable table_uTC;
 	private JTextField textField;
 	private JTable table_Ass;
-	private int[] PreferredWidth_TC ={120,120,120,120,120,120};
-	private int[] PreferredWidth_uTC ={120,120,120,120,120,120};
+	private int[] PreferredWidth_TC ={122,157,157,123,89,89};
+	private int[] PreferredWidth_uTC ={122,157,157,123,89,89};
+	private int[] PreferredWidth_Ass ={122,157,157,123,89,89};
 	TableColumn[] Trust_Cert_TableCol= new TableColumn[6];
 	TableColumn[] UnTrust_Cert_TableCol= new TableColumn[6];
+	TableColumn[] Ass_TableCol= new TableColumn[6];
 	/**
 	 * Launch the application.
 	 */
@@ -106,6 +120,7 @@ public class GUI {
 			  }
 		
 		frame = new JFrame();
+		frame.setResizable(false);
 		frame.setBounds(100, 100, 800, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
@@ -130,8 +145,10 @@ public class GUI {
 		
 		DefaultTableModel Model_TC=PresentationLogic.refresh_TC_Table();
 		table_TC =  new JTable(Model_TC);
+		table_TC.setFont(new Font("Arial", Font.PLAIN, 14));
+		table_TC.setRowHeight(25);
 		table_TC.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		refresh_ColWidth(table_TC,PreferredWidth_TC);
+		refresh_ColWidth();
 		
 		scrollPane_TC.setViewportView(table_TC);
 
@@ -208,7 +225,7 @@ public class GUI {
 							view.close();
 							
 							table_TC.setModel(PresentationLogic.refresh_TC_Table());
-							refresh_ColWidth(table_TC,PreferredWidth_TC);
+							refresh_ColWidth();
 						
 							
 						} catch (CertificateException e) {
@@ -258,6 +275,7 @@ public class GUI {
 					
 					
 					TrustCertificate uTCertificate=PresentationLogic.getTCert_by_Click(table_TC);
+					if (uTCertificate==null)return;
 					TrustView view;
 					try {
 						view = data.Model.openTrustView();
@@ -266,8 +284,8 @@ public class GUI {
 						
 						table_TC.setModel(PresentationLogic.refresh_TC_Table());
 						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
-						refresh_ColWidth(table_TC,PreferredWidth_TC);
-						refresh_ColWidth(table_uTC,PreferredWidth_uTC);
+						refresh_ColWidth();
+
 						
 					} catch (Exception e) {
 						JOptionPane.showConfirmDialog(null,
@@ -295,9 +313,12 @@ public class GUI {
 		// ///////////////////////////////////////////////////////////////////unTrustCertificate_Table////////////////////////////////////////////////////////////
 		
 
-
+		
 		table_uTC =  new JTable(PresentationLogic.refresh_uTC_Table());
-		refresh_ColWidth(table_uTC,PreferredWidth_uTC);
+		table_uTC.setFont(new Font("Arial", Font.PLAIN, 14));
+		table_uTC.setRowHeight(25);
+		table_uTC.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		refresh_ColWidth();
 		scrollPane_uTC.setViewportView(table_uTC);
 		
 		
@@ -375,7 +396,7 @@ public class GUI {
 									view.close();
 									
 									table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
-									refresh_ColWidth ( table_uTC, PreferredWidth_uTC);
+									refresh_ColWidth ();
 								
 									
 								} catch (CertificateException e) {
@@ -419,37 +440,44 @@ public class GUI {
 				
 				///////////////////////////////////////////////////////////////////Set_TC/////////////////////////////////////////////////////////////		
 				Set_TC.addMouseListener(new MouseAdapter() {
-					public void mousePressed(MouseEvent arg0) {
-						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
-							
-							TrustCertificate TCertificate=PresentationLogic.getuTCert_by_Click(table_uTC);
-							TrustView view;
-							try {
-								view = data.Model.openTrustView();
-								view.setTrustedCertificate(TCertificate);
-								view.close();
-								
-								table_TC.setModel(PresentationLogic.refresh_TC_Table());
-								table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
-								refresh_ColWidth(table_TC,PreferredWidth_TC);
-								refresh_ColWidth(table_uTC,PreferredWidth_uTC);
-								
-							} catch (Exception e) {
-								JOptionPane.showConfirmDialog(null,
+			public void mousePressed(MouseEvent arg0) {
+				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
+
+					TrustCertificate TCertificate = PresentationLogic
+							.getuTCert_by_Click(table_uTC);
+
+					if (TCertificate == null)
+						return;
+
+					TrustView view;
+					try {
+						view = data.Model.openTrustView();
+						view.setTrustedCertificate(TCertificate);
+						view.close();
+
+						table_TC.setModel(PresentationLogic.refresh_TC_Table());
+						table_uTC.setModel(PresentationLogic
+								.refresh_uTC_Table());
+						refresh_ColWidth();
+
+
+					} catch (Exception e) {
+						JOptionPane
+								.showConfirmDialog(
+										null,
 										"Error reading or concurrent modifying the database! ",
 										"Error", JOptionPane.DEFAULT_OPTION);
-								e.printStackTrace();
-							}
+						e.printStackTrace();
+					}
 
-							
-						}	
-						}	
+				}
+			}	
 					}
 				);
 						
 				
 			
-		// ///////////////////////////////////////////////////////////////////unTrustCertificate_Table////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////panel_Ass////////////////////////////////////////////////////////////
 		
 		
 
@@ -464,20 +492,25 @@ public class GUI {
 		
 
 
-
 		table_Ass = new JTable(PresentationLogic.refresh_Ass_Table());
+		table_Ass.setFont(new Font("Arial", Font.PLAIN, 14));
+		table_Ass.setRowHeight(25);
+		table_Ass.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		refresh_ColWidth();
 		scrollPane_Ass.setViewportView(table_Ass);
-		// ////////////////////////////////////////////////////////////////Popupmenu for ASS////////////////////////////////////////////////////
+		// ////////////////////////////////////////////////////////////////Popupmenu for ASS//////////////////////////////////////////////////////////
 
 				final JPopupMenu PopMenu_Ass = new JPopupMenu();
-				final JMenuItem Insert_Ass = new JMenuItem("Insert");
 				final JMenuItem Delete_Ass = new JMenuItem("Delete");
 				final JMenuItem Edit_Ass = new JMenuItem("Edit");
-				
-				PopMenu_Ass.add(Insert_Ass);
-				PopMenu_Ass.add(Delete_Ass);
+				final JMenuItem Set_Valid_Ass = new JMenuItem("Set Valid");
+				final JMenuItem Clean_Ass = new JMenuItem("Clean Assessments");
+			
 				PopMenu_Ass.add(Edit_Ass);
-
+				PopMenu_Ass.add(Delete_Ass);
+				PopMenu_Ass.add(Set_Valid_Ass);
+				PopMenu_Ass.add(Clean_Ass);
+//////////////////////////////////////////////////////////////////////////////////////////////////Listener for Ass///////////////////////////////////////////////////////////////////
 				table_Ass.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
 						if (arg0.getButton() == 3) {
@@ -489,20 +522,23 @@ public class GUI {
 					         PopMenu_Ass.show(arg0.getComponent(), arg0.getX(),
 									arg0.getY());
 						}}});
-
 				
-				Insert_Ass.addMouseListener(new MouseAdapter() {
+				scrollPane_Ass.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
-						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
-							
-							
-								JOptionPane.showConfirmDialog(null,
-										"to be done, delete cert ",
-										"Error", JOptionPane.DEFAULT_OPTION);
-							
-						}	
-					}}
-				);
+						if (arg0.getButton() == 3) {
+
+							int row = table_Ass.rowAtPoint(arg0.getPoint());
+					         if(row>=0)
+					        	 table_Ass.setRowSelectionInterval(row,row);
+
+					         PopMenu_Ass.show(arg0.getComponent(), arg0.getX(),
+									arg0.getY());
+						}}});
+				
+
+
+				///////////////////////////////////////////////////////////////////////////////Insert Ass//////////////////////////////////////////////////////////////////////////
+		
 				
 				Delete_Ass.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
@@ -510,7 +546,7 @@ public class GUI {
 							
 							
 								JOptionPane.showConfirmDialog(null,
-										"to be done, delete cert ",
+										"to be done, delete it ",
 										"Error", JOptionPane.DEFAULT_OPTION);
 							
 						}	
@@ -518,19 +554,66 @@ public class GUI {
 				);
 			
 						
-				
+				/////////////////////////////////////////////////////////////////////////////// Edit_Ass//////////////////////////////////////////////////////////////////////////		
 				Edit_Ass.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
 						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
 							
 							
-								JOptionPane.showConfirmDialog(null,
-										"to be done, delete cert ",
-										"Error", JOptionPane.DEFAULT_OPTION);
+							table_Ass.editCellAt(table_Ass.getSelectedRow(),4);
 								
 							
 						}	
 					}}
+				);
+				//////////////////////////////////////////////////////////////////////////Set_Valid_Ass//////////////////////////////////////////////////////////////////////
+				Set_Valid_Ass.addMouseListener(new MouseAdapter() {
+					public void mousePressed(MouseEvent arg0) {
+						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
+							
+							String k="";
+							String ca="";
+							int row =table_Ass.getSelectedRow();
+							if(row==-1)
+								return;
+							k=(String)table_Ass.getValueAt(row, 0);
+							ca=(String)table_Ass.getValueAt(row, 1);
+							
+							TrustView view;
+							try {
+								view = data.Model.openTrustView();
+								view.setAssessmentValid(k, ca);
+								view.close();
+							} catch (Exception e) {
+								JOptionPane.showConfirmDialog(null,
+										"Error reading or concurrent modifying the database! ",
+										"Error", JOptionPane.DEFAULT_OPTION);
+								e.printStackTrace();
+							}
+						
+								
+							
+						}	
+					}}
+				);
+				//////////////////////////////////////////////////////////////////////////Clean_Ass//////////////////////////////////////////////////////////////////////
+				Clean_Ass.addMouseListener(new MouseAdapter() {
+					public void mousePressed(MouseEvent arg0) {
+						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
+							TrustView view;
+							try {
+								view = data.Model.openTrustView();
+								view.clean();
+								view.close();
+							} catch (Exception e) {
+								JOptionPane.showConfirmDialog(null,
+										"Error reading or concurrent modifying the database! ",
+										"Error", JOptionPane.DEFAULT_OPTION);
+								e.printStackTrace();}
+							
+							table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+							refresh_ColWidth();
+						}}}
 				);
 ////////////////////////////////////////////////////////////////////////////configuration pannel//////////////////////////////////////////
 		JPanel panel_Conf = new JPanel();
@@ -631,25 +714,59 @@ public class GUI {
 
 	}
 	
-	public void refresh_ColWidth (JTable table,int [] PreferredWidth)
+	public void refresh_ColWidth ()
 	{
-		DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table.getColumnModel();
-		for (int i = 0; i < table.getColumnCount(); i++) {
-		TableColumn column = cmodel.getColumn(i);
-		column.setPreferredWidth(PreferredWidth[i]);
-		}
-		if(table_TC!=null)
+		
+	
+		
+		
+		if(table_TC!=null){
+			DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table_TC.getColumnModel();
+			for (int i = 0; i < table_TC.getColumnCount(); i++) {
+			TableColumn column = cmodel.getColumn(i);
+			column.setPreferredWidth(PreferredWidth_TC[i]);
+			}
 		for(int i=0;i<Trust_Cert_TableCol.length;i++)
 		{
 			Trust_Cert_TableCol[i]= table_TC.getColumnModel().getColumn(i);
 			Trust_Cert_TableCol[i].addPropertyChangeListener(new TC_ColumnListener ());
-		}
-		if(table_uTC!=null)
+		}}
+		
+		
+		
+		if(table_uTC!=null){
+			
+			DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table_uTC.getColumnModel();
+				for (int i = 0; i < table_uTC.getColumnCount(); i++) {
+				TableColumn column = cmodel.getColumn(i);
+				column.setPreferredWidth(PreferredWidth_uTC[i]);
+				}
+				
 			for(int i=0;i<UnTrust_Cert_TableCol.length;i++)
 			{
 			UnTrust_Cert_TableCol[i]= table_uTC.getColumnModel().getColumn(i);
 		UnTrust_Cert_TableCol[i].addPropertyChangeListener(new uTC_ColumnListener ());
 	}}
+		
+		
+		
+		if(table_Ass!=null){
+			
+			DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table_Ass.getColumnModel();
+				for (int i = 0; i < table_Ass.getColumnCount(); i++) {
+				TableColumn column = cmodel.getColumn(i);
+				column.setPreferredWidth(PreferredWidth_Ass[i]);
+				}
+				
+				DefaultTableModel Model_Ass=(DefaultTableModel)table_Ass.getModel();
+				Model_Ass.addTableModelListener(new Ass_ModelListener());
+				
+			for(int i=0;i<Ass_TableCol.length;i++)
+			{
+				Ass_TableCol[i]= table_Ass.getColumnModel().getColumn(i);
+				Ass_TableCol[i].addPropertyChangeListener(new Ass_ColumnListener ());
+	}}
+	}
 	
 	class TC_ColumnListener implements PropertyChangeListener  {
 	    public void propertyChange(PropertyChangeEvent e)  {
@@ -673,4 +790,88 @@ public class GUI {
 	             
 
 	        }}}
+	
+	class Ass_ColumnListener implements PropertyChangeListener  {
+	    public void propertyChange(PropertyChangeEvent e)  {
+	         if (e.getPropertyName().equals("preferredWidth"))  {
+
+	              TableColumn tableColumn= (TableColumn)e.getSource();
+	              int index= table_Ass.getColumnModel().getColumnIndex(tableColumn.getHeaderValue());
+	              PreferredWidth_Ass[index]=(int)e.getNewValue();
+	             
+
+	        }}}
+	
+	
+	  class  Ass_ModelListener implements TableModelListener {
+	      public void tableChanged(TableModelEvent e) {
+	 
+	  TrustAssessment Clicked_Ass = PresentationLogic.getAss_by_Click(table_Ass);
+	  TrustAssessment new_Ass=Clicked_Ass.clone();
+	  String Change=(String)table_Ass.getValueAt(e.getFirstRow(), e.getColumn());
+	  
+	  
+	  String regex="^\\s*\\(\\s*(\\s*0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0\\s*)\\s*\\)\\s*$";
+	
+	  if (!Change.matches(regex))
+	  {
+		  
+		  JOptionPane.showConfirmDialog(null,
+					"Please enter the valid value(between 0.0 and 1.0) for each item. example:(0.5, 0.5, 0.5)",
+					"Error", JOptionPane.DEFAULT_OPTION);
+		  if(e.getColumn()==4)
+		  Change= "(" + Clicked_Ass.getO_it_ca().getT() + ", "
+					+ Clicked_Ass.getO_it_ca().getC() + ", "
+					+ Clicked_Ass.getO_it_ca().getF() + ")";
+		  else
+			  if(e.getColumn()==5)
+		  Change="(" + Clicked_Ass.getO_it_ee().getT() + ", "
+						+ Clicked_Ass.getO_it_ee().getC() + ", "
+						+ Clicked_Ass.getO_it_ee().getF() + ")";
+		  
+				  table_Ass.setValueAt(Change, e.getFirstRow(), e.getColumn());
+			return;
+	  }//if
+	  
+	  Change=Change.substring(Change.indexOf("(")+1, Change.indexOf(")"));
+	  
+	  double T,C,F;
+	  String[] tcf = Change.split(",");
+	  
+	  T=Double.valueOf(tcf[0]);
+	  C=Double.valueOf(tcf[1]);
+	  F=Double.valueOf(tcf[2]);
+	  CertainTrust new_CertT;
+	  
+	  if(e.getColumn()==4)
+	  {  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ca().getN());
+	  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), new_CertT, Clicked_Ass.getO_it_ee());
+	  }
+	  else if(e.getColumn()==5)
+	  {
+		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ee().getN());
+		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), Clicked_Ass.getO_it_ca(), new_CertT);
+	  }
+	  
+	  
+	  try {
+			TrustView view = data.Model.openTrustView();
+			view.setAssessment(new_Ass);
+			view.close();
+
+		} catch (Exception e1) {
+			JOptionPane.showConfirmDialog(null,
+					"Error reading or concurrent modifying the database! ",
+					"Error", JOptionPane.DEFAULT_OPTION);
+			e1.printStackTrace();
+		}
+	  
+		table_Ass.setModel(PresentationLogic
+				.refresh_Ass_Table());
+		refresh_ColWidth();
+	  
+	      }
+	    }
+	  
 }
+
