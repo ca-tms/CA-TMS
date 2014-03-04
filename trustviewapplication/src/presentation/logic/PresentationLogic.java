@@ -31,8 +31,6 @@ public class PresentationLogic {
 			
 			 Cert = (X509Certificate)cf.generateCertificate(inStream);
 			inStream.close();
-			
-
 		return Cert;
 	}
 	

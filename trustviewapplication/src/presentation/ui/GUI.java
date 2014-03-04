@@ -488,9 +488,7 @@ public class GUI {
 
 					         PopMenu_Ass.show(arg0.getComponent(), arg0.getX(),
 									arg0.getY());
-						}
-					}
-				});
+						}}});
 
 				
 				Insert_Ass.addMouseListener(new MouseAdapter() {
