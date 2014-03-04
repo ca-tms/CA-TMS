@@ -4,10 +4,10 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
-import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -20,19 +20,40 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComboBox;
 
+import presentation.logic.PresentationLogic;
+
+
+
+
+
+
+
+
+
+
+
+
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
-import java.util.Collection;
-import java.util.Iterator;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class GUI {
 
@@ -42,7 +63,10 @@ public class GUI {
 	private JTable table_uTC;
 	private JTextField textField;
 	private JTable table_Ass;
-
+	private int[] PreferredWidth_TC ={120,120,120,120,120,120};
+	private int[] PreferredWidth_uTC ={120,120,120,120,120,120};
+	TableColumn[] Trust_Cert_TableCol= new TableColumn[6];
+	TableColumn[] UnTrust_Cert_TableCol= new TableColumn[6];
 	/**
 	 * Launch the application.
 	 */
@@ -73,9 +97,14 @@ public class GUI {
 	 * Initialize the contents of the frame.
 	 */
 
-	@SuppressWarnings({ "unchecked", "serial" })
+	@SuppressWarnings({ "unchecked" })
 	private void initialize() {
-
+		
+		try{
+			   UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			  }catch(Exception e){
+			  }
+		
 		frame = new JFrame();
 		frame.setBounds(100, 100, 800, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -97,69 +126,13 @@ public class GUI {
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
 
-		DefaultTableModel Model_TrustCert_Table = new DefaultTableModel(
-				new Object[][] {}, new String[] { "Serial", "Issuer",
-						"Subject", "PublicKey" }) {
-			@SuppressWarnings("rawtypes")
-			Class[] columnTypes = new Class[] { String.class, String.class,
-					String.class, String.class };
-
-			@SuppressWarnings({ "rawtypes" })
-			public Class getColumnClass(int columnIndex) {
-				return columnTypes[columnIndex];
-			}
-
-			boolean[] columnEditables = new boolean[] { false, false, false,
-					false };
-
-			public boolean isCellEditable(int row, int column) {
-				return columnEditables[column];
-			}
-		};
-
-		Collection<TrustCertificate> Certs_temp = null;
-
-		try {
-			TrustView view = data.Model.openTrustView();
-			Certs_temp = view.getTrustedCertificates();
-			view.close();
-
-		} catch (Exception e1) {
-			JOptionPane.showConfirmDialog(null,
-					"Error reading or concurrent modifying the database! ",
-					"Error", JOptionPane.ERROR_MESSAGE);
-			e1.printStackTrace();
-		}
-
-		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
-		TrustCertificate Certificate;
-
-		while (it_cert.hasNext()) {
-			Certificate = (TrustCertificate) it_cert.next();
-
-			Model_TrustCert_Table.addRow(new Object[] {
-					Certificate.getSerial(), Certificate.getIssuer(),
-					Certificate.getSubject(), Certificate.getPublicKey() });
-			
-		}
-		// ////////////////////////////////////////////////////////////////to be delete////////////////////////////////////////////////////
-		Model_TrustCert_Table.addRow(new String[] {
-				"Certificate.getSerial()", "Certificate.getIssuer()",
-				"Certificate.getSubject()", "Certificate.getPublicKey()aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
-		Model_TrustCert_Table.addRow(new String[] {
-				"Certificate.getSerial()", "Certificate.getIssuer()",
-				"Certificate.getSubject()", "Certificate.getPublicKey()" });
-		Model_TrustCert_Table.addRow(new String[] {
-				"Certificate.getSerial()", "Certificate.getIssuer()",
-				"Certificate.getSubject()", "Certificate.getPublicKey()" });
-		Model_TrustCert_Table.addRow(new String[] {
-				"1", "2",
-				"3", "4" });
-		// ////////////////////////////////////////////////////////////////to be delete////////////////////////////////////////////////////
-      
-		table_TC =  new JTable(Model_TrustCert_Table);
-		table_TC.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-	
+		
+		
+		DefaultTableModel Model_TC=PresentationLogic.refresh_TC_Table();
+		table_TC =  new JTable(Model_TC);
+		table_TC.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		refresh_ColWidth(table_TC,PreferredWidth_TC);
+		
 		scrollPane_TC.setViewportView(table_TC);
 
 		// ////////////////////////////////////////////////////////////////Popupmenu for TrustCertificate_Table////////////////////////////////////////////////////
@@ -167,14 +140,33 @@ public class GUI {
 		final JPopupMenu PopMenu_TrustCert = new JPopupMenu();
 		final JMenuItem Insert_TC = new JMenuItem("Insert");
 		final JMenuItem Delete_TC = new JMenuItem("Delete");
-		final JMenuItem Set_uTC = new JMenuItem("Untrust");
-		final JMenuItem Edit_TC = new JMenuItem("Edit");
+		final JMenuItem Set_uTC = new JMenuItem("Set untrust");
+		
 		
 		PopMenu_TrustCert.add(Insert_TC);
 		PopMenu_TrustCert.add(Delete_TC);
 		PopMenu_TrustCert.add(Set_uTC);
-		PopMenu_TrustCert.add(Edit_TC);
+		
+		///////////////////////////////////////////////////////////////////////////////////////Listener////////////////////////////////////////////////////
+		scrollPane_TC.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent arg0) {
+				if (arg0.getButton() == 3) {
 
+					int row = table_TC.rowAtPoint(arg0.getPoint());
+			         if(row>=0)
+			        	 table_TC.setRowSelectionInterval(row,row);
+
+					PopMenu_TrustCert.show(arg0.getComponent(), arg0.getX(),
+							arg0.getY());
+				}
+			}
+		});
+	
+		
+
+
+
+		
 		table_TC.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 3) {
@@ -189,20 +181,64 @@ public class GUI {
 			}
 		});
 
-		
+		///////////////////////////////////////////////////////////////////////////Insert menu//////////////////////////////////////////////
 		Insert_TC.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent arg0) {
-				if (arg0.getButton() == 1|| arg0.getButton() == 3) {
+				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
+					
+					String Cert_Path = "";
+					JFileChooser Cert_Chooser = new JFileChooser();
+
+					FileFilter Cert_filter = new FileNameExtensionFilter(
+							"X.509 Certificate", "cer");
+					Cert_Chooser.setFileFilter(Cert_filter);
+					int returnVal = Cert_Chooser.showOpenDialog(table_TC);
+
+					if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+						Cert_Path = Cert_Chooser.getSelectedFile()
+								.getAbsolutePath();							
+					}
+
+					
+						try {
+							X509Certificate cert = PresentationLogic.LoadCert(Cert_Path);
+							TrustView view = data.Model.openTrustView();
+							view.setTrustedCertificate(new TrustCertificate(cert));
+							view.close();
+							
+							table_TC.setModel(PresentationLogic.refresh_TC_Table());
+							refresh_ColWidth(table_TC,PreferredWidth_TC);
+						
+							
+						} catch (CertificateException e) {
+							JOptionPane.showConfirmDialog(null,
+									"Cannot create a TrustCertificate from not X.509 Certificate ",
+									"Error", JOptionPane.DEFAULT_OPTION);
+							e.printStackTrace();
+						} catch (IOException e) {
+							if(Cert_Path.equals(""))
+								return;
+							else
+							JOptionPane.showConfirmDialog(null,
+									"Error reading Certificate File ",
+									"Error", JOptionPane.DEFAULT_OPTION);
+							e.printStackTrace();
+						} catch (Exception e) {
+							JOptionPane.showConfirmDialog(null,
+									"Error reading or concurrent modifying the database! ",
+									"Error", JOptionPane.DEFAULT_OPTION);
+							e.printStackTrace();
+						}
+				
 					
 					
-						JOptionPane.showConfirmDialog(null,
-								"to be done, delete cert ",
-								"Error", JOptionPane.ERROR_MESSAGE);
-					
-				}	
-			}}
+						
+				}
+			}
+		}
 		);
-		
+		//////////////////////////////////////////////////////////////Delete//////////////////////////////////////////////////////////
 		Delete_TC.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1|| arg0.getButton() == 3) {
@@ -210,37 +246,44 @@ public class GUI {
 					
 						JOptionPane.showConfirmDialog(null,
 								"to be done, delete cert ",
-								"Error", JOptionPane.ERROR_MESSAGE);
+								"Error", JOptionPane.DEFAULT_OPTION);
 					
 				}	
 			}}
 		);
-	
+		//////////////////////////////////////////////////////////////Set untrust//////////////////////////////////////////////////////////
 		Set_uTC.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1|| arg0.getButton() == 3) {
 					
+					
+					TrustCertificate uTCertificate=PresentationLogic.getTCert_by_Click(table_TC);
+					TrustView view;
+					try {
+						view = data.Model.openTrustView();
+						view.setUntrustedCertificate(uTCertificate);
+						view.close();
 						
+						table_TC.setModel(PresentationLogic.refresh_TC_Table());
+						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+						refresh_ColWidth(table_TC,PreferredWidth_TC);
+						refresh_ColWidth(table_uTC,PreferredWidth_uTC);
+						
+					} catch (Exception e) {
+						JOptionPane.showConfirmDialog(null,
+								"Error reading or concurrent modifying the database! ",
+								"Error", JOptionPane.DEFAULT_OPTION);
+						e.printStackTrace();
+					}
+
+					
 				}	
 			}}
 		);
 				
 		
-		Edit_TC.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent arg0) {
-				if (arg0.getButton() == 1|| arg0.getButton() == 3) {
-					
-					
-						JOptionPane.showConfirmDialog(null,
-								"to be done, delete cert ",
-								"Error", JOptionPane.ERROR_MESSAGE);
-						
-					
-				}	
-			}}
-		);
 		
-		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////unTrustCertificate_panel////////////////////////////////////////////////////////////
 
 		JPanel panel_uTC = new JPanel();
 		tabbedPane.addTab("unTrusted Certificates", null, panel_uTC, null);
@@ -253,65 +296,8 @@ public class GUI {
 		
 
 
-		DefaultTableModel Model_unTrustCert_Table = new DefaultTableModel(
-				new Object[][] {}, new String[] { "Serial", "Issuer",
-						"Subject", "PublicKey" }) {
-			@SuppressWarnings("rawtypes")
-			Class[] columnTypes = new Class[] { String.class, String.class,
-					String.class, String.class };
-
-			@SuppressWarnings({ "rawtypes" })
-			public Class getColumnClass(int columnIndex) {
-				return columnTypes[columnIndex];
-			}
-
-			boolean[] columnEditables = new boolean[] { false, false, false,
-					false };
-
-			public boolean isCellEditable(int row, int column) {
-				return columnEditables[column];
-			}
-		};
-
-		try {
-			TrustView view = data.Model.openTrustView();
-			Certs_temp = view.getUntrustedCertificates();
-			view.close();
-
-		} catch (Exception e1) {
-			JOptionPane.showConfirmDialog(null,
-					"Error reading or concurrent modifying the database! ",
-					"Error", JOptionPane.ERROR_MESSAGE);
-			e1.printStackTrace();
-		}
-
-		it_cert = Certs_temp.iterator();
-
-		while (it_cert.hasNext()) {
-			Certificate = (TrustCertificate) it_cert.next();
-
-			Model_unTrustCert_Table.addRow(new Object[] {
-					Certificate.getSerial(), Certificate.getIssuer(),
-					Certificate.getSubject(), Certificate.getPublicKey() });
-
-		}
-
-		// ////////////////////////////////////////////////////////////////to be delete////////////////////////////////////////////////////
-		Model_unTrustCert_Table.addRow(new String[] {
-				"Certificate.getSerial()", "Certificate.getIssuer()",
-				"Certificate.getSubject()", "Certificate.getPublicKey()aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
-		Model_unTrustCert_Table.addRow(new String[] {
-				"Certificate.getSerial()", "Certificate.getIssuer()",
-				"Certificate.getSubject()", "Certificate.getPublicKey()" });
-		Model_unTrustCert_Table.addRow(new String[] {
-				"Certificate.getSerial()", "Certificate.getIssuer()",
-				"Certificate.getSubject()", "Certificate.getPublicKey()" });
-		Model_unTrustCert_Table.addRow(new String[] {
-				"1", "2",
-				"3", "4" });
-		// ////////////////////////////////////////////////////////////////to be delete////////////////////////////////////////////////////
-		table_uTC = new JTable(Model_unTrustCert_Table);
-		
+		table_uTC =  new JTable(PresentationLogic.refresh_uTC_Table());
+		refresh_ColWidth(table_uTC,PreferredWidth_uTC);
 		scrollPane_uTC.setViewportView(table_uTC);
 		
 		
@@ -320,13 +306,20 @@ public class GUI {
 				final JPopupMenu PopMenu_unTrustCert = new JPopupMenu();
 				final JMenuItem Insert_uTC = new JMenuItem("Insert");
 				final JMenuItem Delete_uTC = new JMenuItem("Delete");
-				final JMenuItem Set_TC = new JMenuItem("Trust");
-				final JMenuItem Edit_uTC = new JMenuItem("Edit");
+				final JMenuItem Set_TC = new JMenuItem("Set trust");
+
 				
 				PopMenu_unTrustCert.add(Insert_uTC);
 				PopMenu_unTrustCert.add(Delete_uTC);
 				PopMenu_unTrustCert.add(Set_TC);
-				PopMenu_unTrustCert.add(Edit_uTC);
+	
+				
+				
+				
+///////////////////////////////////////////////////////////////////////////////////////Listener////////////////////////////////////////////////////
+
+				
+
 
 				table_uTC.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
@@ -341,21 +334,76 @@ public class GUI {
 						}
 					}
 				});
+				scrollPane_uTC.addMouseListener(new MouseAdapter() {
+					public void mousePressed(MouseEvent arg0) {
+						if (arg0.getButton() == 3) {
 
-				
+							int  row = table_uTC.rowAtPoint(arg0.getPoint());
+					         if(row>=0)
+					        	 table_uTC.setRowSelectionInterval(row,row);
+
+					         PopMenu_unTrustCert.show(arg0.getComponent(), arg0.getX(),
+									arg0.getY());
+						}
+					}
+				});
+
+////////////////////////////////////////////////////////////////////////////////////////////Insert for unTrustCertificate//////////////////////////////////////////////////////
 				Insert_uTC.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
-						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
+						if (arg0.getButton() == 1 || arg0.getButton() == 3) {
+							
+							String Cert_Path = "";
+							JFileChooser Cert_Chooser = new JFileChooser();
+
+							FileFilter Cert_filter = new FileNameExtensionFilter(
+									"X.509 Certificate", "cer");
+							Cert_Chooser.setFileFilter(Cert_filter);
+							int returnVal = Cert_Chooser.showOpenDialog(table_uTC);
+
+							if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+								Cert_Path = Cert_Chooser.getSelectedFile()
+										.getAbsolutePath();							
+							}
+
+							
+								try {
+									X509Certificate cert = PresentationLogic.LoadCert(Cert_Path);
+									TrustView view = data.Model.openTrustView();
+									view.setUntrustedCertificate(new TrustCertificate(cert));
+									view.close();
+									
+									table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+									refresh_ColWidth ( table_uTC, PreferredWidth_uTC);
+								
+									
+								} catch (CertificateException e) {
+									JOptionPane.showConfirmDialog(null,
+											"Cannot create a TrustCertificate from not X.509 Certificate ",
+											"Error", JOptionPane.DEFAULT_OPTION);
+									e.printStackTrace();
+								} catch (IOException e) {
+									if(Cert_Path.equals(""))
+										return;
+									else
+									JOptionPane.showConfirmDialog(null,
+											"Error reading Certificate File ",
+											"Error", JOptionPane.DEFAULT_OPTION);
+									e.printStackTrace();
+								} catch (Exception e) {
+									JOptionPane.showConfirmDialog(null,
+											"Error reading or concurrent modifying the database! ",
+											"Error", JOptionPane.DEFAULT_OPTION);
+									e.printStackTrace();
+								}
+						
 							
 							
-								JOptionPane.showConfirmDialog(null,
-										"to be done, delete cert ",
-										"Error", JOptionPane.ERROR_MESSAGE);
-							
-						}	
-					}}
+								
+						}}}
 				);
-				
+		///////////////////////////////////////////////////////////////////Delete_uTC/////////////////////////////////////////////////////////////		
 				Delete_uTC.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
 						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
@@ -363,35 +411,44 @@ public class GUI {
 							
 								JOptionPane.showConfirmDialog(null,
 										"to be done, delete cert ",
-										"Error", JOptionPane.ERROR_MESSAGE);
+										"Error", JOptionPane.DEFAULT_OPTION);
 							
 						}	
 					}}
 				);
-			
+				
+				///////////////////////////////////////////////////////////////////Set_TC/////////////////////////////////////////////////////////////		
 				Set_TC.addMouseListener(new MouseAdapter() {
 					public void mousePressed(MouseEvent arg0) {
 						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
 							
+							TrustCertificate TCertificate=PresentationLogic.getuTCert_by_Click(table_uTC);
+							TrustView view;
+							try {
+								view = data.Model.openTrustView();
+								view.setTrustedCertificate(TCertificate);
+								view.close();
 								
+								table_TC.setModel(PresentationLogic.refresh_TC_Table());
+								table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+								refresh_ColWidth(table_TC,PreferredWidth_TC);
+								refresh_ColWidth(table_uTC,PreferredWidth_uTC);
+								
+							} catch (Exception e) {
+								JOptionPane.showConfirmDialog(null,
+										"Error reading or concurrent modifying the database! ",
+										"Error", JOptionPane.DEFAULT_OPTION);
+								e.printStackTrace();
+							}
+
+							
 						}	
-					}}
+						}	
+					}
 				);
 						
 				
-				Edit_uTC.addMouseListener(new MouseAdapter() {
-					public void mousePressed(MouseEvent arg0) {
-						if (arg0.getButton() == 1|| arg0.getButton() == 3) {
-							
-							
-								JOptionPane.showConfirmDialog(null,
-										"to be done, delete cert ",
-										"Error", JOptionPane.ERROR_MESSAGE);
-								
-							
-						}	
-					}}
-				);
+			
 		// ///////////////////////////////////////////////////////////////////unTrustCertificate_Table////////////////////////////////////////////////////////////
 		
 		
@@ -407,80 +464,10 @@ public class GUI {
 		
 
 
-		DefaultTableModel Model_Assessment = new DefaultTableModel(
-				new Object[][] {}, new String[] { "PublicKey", "CA",
-						"TrustCertificate", "O_kl", "O_it_ca", "O_it_ee" }) {
-			@SuppressWarnings("rawtypes")
-			Class[] columnTypes = new Class[] { String.class, String.class,
-					String.class, String.class, String.class, Object.class };
 
-			@SuppressWarnings("rawtypes")
-			public Class getColumnClass(int columnIndex) {
-				return columnTypes[columnIndex];
-			}
-
-			boolean[] columnEditables = new boolean[] { false, false, false,
-					false, false, false };
-
-			public boolean isCellEditable(int row, int column) {
-				return columnEditables[column];
-			}
-		};
-
-		Collection<TrustAssessment> Assessments_temp = null;
-		try {
-			TrustView view = data.Model.openTrustView();
-			Assessments_temp = view.getAssessments();
-			view.close();
-
-		} catch (Exception e1) {
-			JOptionPane.showConfirmDialog(null,
-					"Error reading or concurrent modifying the database! ",
-					"Error", JOptionPane.ERROR_MESSAGE);
-			e1.printStackTrace();
-		}
-
-		Iterator<TrustAssessment> it_ass = Assessments_temp.iterator();
-		TrustAssessment Assessment;
-
-		while (it_ass.hasNext()) {
-			Assessment = (TrustAssessment) it_ass.next();
-			String S = "";
-			for (TrustCertificate s : Assessment.getS())
-				S += S.isEmpty() ? s : ", " + s;
-			S = "{" + S + "}";
-			String o_kl = "";
-			o_kl += Assessment.getO_kl().isSet() ? "("
-					+ Assessment.getO_kl().get().getT() + ", "
-					+ Assessment.getO_kl().get().getC() + ", "
-					+ Assessment.getO_kl().get().getF() + ")" : "unknown";
-
-			String o_it_ca = "(" + Assessment.getO_it_ca().getT() + ", "
-					+ Assessment.getO_it_ca().getC() + ", "
-					+ Assessment.getO_it_ca().getF() + ")";
-			String o_it_ee = "(" + Assessment.getO_it_ee().getT() + ", "
-					+ Assessment.getO_it_ee().getC() + ", "
-					+ Assessment.getO_it_ee().getF() + ")";
-
-			Model_TrustCert_Table.addRow(new Object[] { Assessment.getK(),
-					Assessment.getCa(), S, o_kl, o_it_ca, o_it_ee });
-
-		}
-		// ////////////////////////////////////////////////////////////////to be delete////////////////////////////////////////////////////
-		Model_Assessment.addRow(new String[] { "Assessment.getK()",
-				"Assessment.getCa()", "S"," o_kl", "o_it_ca", "o_it_ee" });
-		Model_Assessment.addRow(new String[] { "Assessment.getK()",
-				"Assessment.getCa()", "S"," o_kl", "o_it_ca", "o_it_ee" });
-		Model_Assessment.addRow(new String[] { "Assessment.getK()",
-						"Assessment.getCa()", "S"," o_kl", "o_it_ca", "o_it_ee" });
-		Model_Assessment.addRow(new String[] { "Assessment.getK()",
-								"Assessment.getCa()", "S"," o_kl", "o_it_ca", "o_it_ee" });
-		Model_Assessment.addRow(new String[] { "Assessment.getK()",
-										"Assessment.getCa()", "S"," o_kl", "o_it_ca", "o_it_ee111111111111111111111111111111111111111111111111111111111111" });
-				// ////////////////////////////////////////////////////////////////to be delete////////////////////////////////////////////////////
-		table_Ass = new JTable(Model_Assessment);
+		table_Ass = new JTable(PresentationLogic.refresh_Ass_Table());
 		scrollPane_Ass.setViewportView(table_Ass);
-		// ////////////////////////////////////////////////////////////////Popupmenu for TrustCertificate_Table////////////////////////////////////////////////////
+		// ////////////////////////////////////////////////////////////////Popupmenu for ASS////////////////////////////////////////////////////
 
 				final JPopupMenu PopMenu_Ass = new JPopupMenu();
 				final JMenuItem Insert_Ass = new JMenuItem("Insert");
@@ -513,7 +500,7 @@ public class GUI {
 							
 								JOptionPane.showConfirmDialog(null,
 										"to be done, delete cert ",
-										"Error", JOptionPane.ERROR_MESSAGE);
+										"Error", JOptionPane.DEFAULT_OPTION);
 							
 						}	
 					}}
@@ -526,7 +513,7 @@ public class GUI {
 							
 								JOptionPane.showConfirmDialog(null,
 										"to be done, delete cert ",
-										"Error", JOptionPane.ERROR_MESSAGE);
+										"Error", JOptionPane.DEFAULT_OPTION);
 							
 						}	
 					}}
@@ -541,7 +528,7 @@ public class GUI {
 							
 								JOptionPane.showConfirmDialog(null,
 										"to be done, delete cert ",
-										"Error", JOptionPane.ERROR_MESSAGE);
+										"Error", JOptionPane.DEFAULT_OPTION);
 								
 							
 						}	
@@ -645,4 +632,47 @@ public class GUI {
 		frame.getContentPane().add(btnClose);
 
 	}
+	
+	public void refresh_ColWidth (JTable table,int [] PreferredWidth)
+	{
+		DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table.getColumnModel();
+		for (int i = 0; i < table.getColumnCount(); i++) {
+		TableColumn column = cmodel.getColumn(i);
+		column.setPreferredWidth(PreferredWidth[i]);
+		}
+		if(table_TC!=null)
+		for(int i=0;i<Trust_Cert_TableCol.length;i++)
+		{
+			Trust_Cert_TableCol[i]= table_TC.getColumnModel().getColumn(i);
+			Trust_Cert_TableCol[i].addPropertyChangeListener(new TC_ColumnListener ());
+		}
+		if(table_uTC!=null)
+			for(int i=0;i<UnTrust_Cert_TableCol.length;i++)
+			{
+			UnTrust_Cert_TableCol[i]= table_uTC.getColumnModel().getColumn(i);
+		UnTrust_Cert_TableCol[i].addPropertyChangeListener(new uTC_ColumnListener ());
+	}}
+	
+	class TC_ColumnListener implements PropertyChangeListener  {
+	    public void propertyChange(PropertyChangeEvent e)  {
+	         if (e.getPropertyName().equals("preferredWidth"))  {
+
+	              TableColumn tableColumn= (TableColumn)e.getSource();
+	              int index= table_TC.getColumnModel().getColumnIndex(tableColumn.getHeaderValue());
+	              PreferredWidth_TC[index]=(int)e.getNewValue();
+	              
+	              
+
+	        }}}
+	
+	class uTC_ColumnListener implements PropertyChangeListener  {
+	    public void propertyChange(PropertyChangeEvent e)  {
+	         if (e.getPropertyName().equals("preferredWidth"))  {
+
+	              TableColumn tableColumn= (TableColumn)e.getSource();
+	              int index= table_uTC.getColumnModel().getColumnIndex(tableColumn.getHeaderValue());
+	              PreferredWidth_uTC[index]=(int)e.getNewValue();
+	             
+
+	        }}}
 }
