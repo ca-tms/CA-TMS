@@ -237,6 +237,19 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public void removeAssessment(String k, String ca) {
+		try {
+			validateDatabaseConnection();
+			removeAssessment.setString(1, k);
+			removeAssessment.setString(2, ca);
+			removeAssessment.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public Collection<TrustAssessment> getAssessments() {
 		List<TrustAssessment> assessments = new ArrayList<>();
 		try {
@@ -378,6 +391,27 @@ public class SQLiteBackedTrustView implements TrustView {
 			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
 			setCertificateTrust.setBoolean(7, false);
 			setCertificateTrust.setBoolean(8, true);
+			setCertificateTrust.setString(9, S.getSerial());
+			setCertificateTrust.setString(10, S.getIssuer());
+			setCertificateTrust.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void removeCertificate(TrustCertificate S) {
+		try {
+			validateDatabaseConnection();
+			setCertificateTrust.setString(1, S.getSerial());
+			setCertificateTrust.setString(2, S.getIssuer());
+			setCertificateTrust.setString(3, S.getSubject());
+			setCertificateTrust.setString(4, S.getPublicKey());
+			setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
+			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
+			setCertificateTrust.setBoolean(7, false);
+			setCertificateTrust.setBoolean(8, false);
 			setCertificateTrust.setString(9, S.getSerial());
 			setCertificateTrust.setString(10, S.getIssuer());
 			setCertificateTrust.executeUpdate();

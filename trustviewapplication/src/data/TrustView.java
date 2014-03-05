@@ -45,6 +45,15 @@ public interface TrustView extends AutoCloseable {
 	void setAssessmentValid(String k, String ca);
 
 	/**
+	 * Removes the respective {@link TrustAssessment} from the
+	 * <code>TrustView</code>
+	 *
+	 * @param k public key for the given CA
+	 * @param ca the CA which the public key belongs to
+	 */
+	void removeAssessment(String k, String ca);
+
+	/**
 	 * @return a collection of all {@link TrustAssessment}s that are
 	 * currently stored in the <code>TrustView</code>
 	 */
@@ -73,6 +82,17 @@ public interface TrustView extends AutoCloseable {
 	 * @param S
 	 */
 	void setUntrustedCertificate(TrustCertificate S);
+
+	/**
+	 * Removes the given (trusted or untrusted) certificate from the
+	 * <code>TrustView</code>.
+	 *
+	 * This will not remove certificates in the S set of any
+	 * {@link TrustAssessment}.
+	 *
+	 * @param S
+	 */
+	void removeCertificate(TrustCertificate S);
 
 	/**
 	 * Cleans the trust view.
