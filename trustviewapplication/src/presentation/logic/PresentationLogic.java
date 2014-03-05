@@ -11,9 +11,9 @@ import java.util.Iterator;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-
 import javax.swing.table.DefaultTableModel;
 
+import data.Configuration;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -319,6 +319,50 @@ public class PresentationLogic {
 	}
 	
 	
+	public static <T> void set_Configuration(String key, T value)
+	{
+		Configuration conf;
+		try {
+			conf = data.Model.openConfiguration();
+			
+			conf.set(key,value);
+		
+			conf.close();
+
+
+		} catch (Exception e) {
+			JOptionPane
+					.showConfirmDialog(
+							null,
+							"Error reading or concurrent modifying the database! Please restart the application ",
+							"Error", JOptionPane.DEFAULT_OPTION);
+			e.printStackTrace();
+		}
+	}
 	
 	
+	public static <T> T get_Configuration(String key, Class<T> type)
+	{
+		Configuration conf; T type_temp=null;
+	try {
+		conf = data.Model.openConfiguration();
+
+		
+		type_temp=conf.get(key, type );
+		
+		conf.close();
+		
+
+
+	} catch (Exception e) {
+		JOptionPane
+				.showConfirmDialog(
+						null,
+						"Error reading or concurrent modifying the database! Please restart the application ",
+						"Error", JOptionPane.DEFAULT_OPTION);
+		e.printStackTrace();
+	}
+		return type_temp;
+		
+	}
 }
