@@ -10,7 +10,7 @@
 	<property name="export" location="jar" />
 	
 	<property name="exportname" value="CTMS.jar" />
-	<property name="mainclass" value="services/bindings/WebServer" />
+	<property name="mainclass" value="presentation/ui/GUI" />
 	
 	<path id="library-classpath">
 		<fileset dir="${lib}">

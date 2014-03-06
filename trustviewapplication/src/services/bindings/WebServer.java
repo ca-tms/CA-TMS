@@ -7,6 +7,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.cert.CertificateFactory;
@@ -29,7 +30,6 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import support.Service;
-
 import buisness.TrustComputation;
 import data.Configuration;
 import data.Model;
@@ -42,10 +42,8 @@ public class WebServer {
 
 	private final ServerSocketChannel serverSocketChannel;
 	private final ExecutorService executorService;
-
-	public static void main(String[] args) throws Exception {
-		new WebServer().run();
-	}
+	
+	Thread t;
 
 	public WebServer() throws IOException {
 		executorService = Executors.newCachedThreadPool();
@@ -55,17 +53,31 @@ public class WebServer {
 		serverSocketChannel.socket().bind(new InetSocketAddress(PORT));
 	}
 
-	public void run() {
-		while (true)
-			try {
-				SocketChannel socketChannel = serverSocketChannel.accept();
-				if (socketChannel != null)
-					executorService.execute(new CommunicationHandler(
-							socketChannel, executorService));
+	public void start() {
+		t = new Thread() {
+			@Override
+			public void run() {
+				while(!Thread.currentThread().isInterrupted()) {
+					try {
+						SocketChannel socketChannel = serverSocketChannel.accept();
+						if (socketChannel != null)
+							executorService.execute(new CommunicationHandler(
+									socketChannel, executorService));
+					}
+					catch(ClosedByInterruptException e) {
+						// nothing to do here since this happens regularly on server shutdown
+					}
+					catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
+		};
+		t.start();
+	}
+	
+	public void stop() {
+		t.interrupt();
 	}
 
 	static private class CommunicationHandler implements Runnable {

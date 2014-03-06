@@ -6,6 +6,8 @@ import javax.swing.JFrame;
 
 
 
+
+
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -35,11 +37,15 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import CertainTrust.CertainTrust;
 import presentation.logic.PresentationLogic;
+
+import services.bindings.WebServer;
 
 
 
@@ -60,6 +66,7 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.awt.Font;
+
 import javax.swing.border.TitledBorder;
 
 public class GUI {
@@ -87,8 +94,10 @@ public class GUI {
 	private float security_level_med;
 	private float security_level_high;
 	
-	private long assessment_expiration_millis ;
+	private long assessment_expiration_millis;
 	int port;
+	
+	WebServer server;
 	
 	
 	/**
@@ -803,8 +812,25 @@ public class GUI {
 		JPanel panel_About = new JPanel();
 		tabbedPane.addTab("About", null, panel_About, null);
 
-		JToggleButton tglbtnStartService = new JToggleButton("Service On/Off");
-		tglbtnStartService.setBounds(27, 534, 135, 23);
+		JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
+		tglbtnStartService.setBounds(27, 534, 160, 23);
+		tglbtnStartService.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent ev) {
+	            if(ev.getStateChange()==ItemEvent.SELECTED) {
+            		try {
+						server = new WebServer();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+	            	server.start();
+	            	((JToggleButton) ev.getSource()).setText("Stop Webserver");
+	            } else if(ev.getStateChange()==ItemEvent.DESELECTED) {
+	            	server.stop();
+	            	server = null;
+	            	((JToggleButton) ev.getSource()).setText("Start Webserver");
+	            }
+	       }
+		});
 		frame.getContentPane().add(tglbtnStartService);
 
 		JButton btnMiniminze = new JButton("Miniminze");
