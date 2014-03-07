@@ -37,52 +37,72 @@ import data.TrustCertificate;
 import data.TrustView;
 
 public class WebServer {
-	private static final int PORT = 8084;
-	private static final int TIMEOUT_MILLIS = 5000;
+	private Thread thread;
+	private ServerSocketChannel serverSocketChannel;
+	private ExecutorService executorService;
 
-	private final ServerSocketChannel serverSocketChannel;
-	private final ExecutorService executorService;
-	
-	Thread t;
-
-	public WebServer() throws IOException {
+	public WebServer() {
 		executorService = Executors.newCachedThreadPool();
-
-		serverSocketChannel = ServerSocketChannel.open();
-		serverSocketChannel.socket().setReuseAddress(true);
-		serverSocketChannel.socket().bind(new InetSocketAddress(PORT));
 	}
 
-	public void start() {
-		t = new Thread() {
-			@Override
-			public void run() {
-				while(!Thread.currentThread().isInterrupted()) {
-					try {
-						SocketChannel socketChannel = serverSocketChannel.accept();
-						if (socketChannel != null)
-							executorService.execute(new CommunicationHandler(
-									socketChannel, executorService));
-					}
-					catch(ClosedByInterruptException e) {
-						// nothing to do here since this happens regularly on server shutdown
-					}
-					catch (IOException e) {
-						e.printStackTrace();
+	public void start() throws IOException {
+		if (thread == null) {
+			final int port;
+			final int timeoutMillis;
+			try (Configuration config = Model.openConfiguration()) {
+				port = config.get("server-port", Integer.class);
+				timeoutMillis = config.get("server-request-timeout-millis", Integer.class);
+			}
+			catch (Exception e) {
+				// this should never happen, since we only read configuration values
+				e.printStackTrace();
+				return;
+			}
+
+			serverSocketChannel = ServerSocketChannel.open();
+			serverSocketChannel.socket().setReuseAddress(true);
+			serverSocketChannel.socket().bind(new InetSocketAddress(port));
+
+			thread = new Thread() {
+				@Override
+				public void run() {
+					while(!Thread.currentThread().isInterrupted()) {
+						try {
+							SocketChannel socketChannel = serverSocketChannel.accept();
+							if (socketChannel != null)
+								executorService.execute(new CommunicationHandler(
+										socketChannel, executorService, timeoutMillis));
+						}
+						catch(ClosedByInterruptException e) {
+							// this happens regularly on server shutdown
+							try {
+								serverSocketChannel.close();
+							}
+							catch (IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+						catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			}
-		};
-		t.start();
+			};
+			thread.start();
+		}
 	}
-	
+
 	public void stop() {
-		t.interrupt();
+		if (thread != null) {
+			thread.interrupt();
+			thread = null;
+		}
 	}
 
 	static private class CommunicationHandler implements Runnable {
 		private final SocketChannel socketChannel;
 		private final ExecutorService executorService;
+		private final int timeoutMillis;
 
 		private final static SimpleDateFormat dateFormat;
 
@@ -92,9 +112,10 @@ public class WebServer {
 		}
 
 		public CommunicationHandler(SocketChannel socketChannel,
-				ExecutorService executorService) {
+				ExecutorService executorService, int timeoutMillis) {
 			this.socketChannel = socketChannel;
 			this.executorService = executorService;
+			this.timeoutMillis = timeoutMillis;
 		}
 
 		@Override
@@ -107,7 +128,7 @@ public class WebServer {
 								new JsonObjectReader(reader));
 
 						JsonObject object = objectFuture.get(
-								TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+								timeoutMillis, TimeUnit.MILLISECONDS);
 						JsonArray chain = object.getJsonArray("certChain");
 
 						CertificateFactory factory = CertificateFactory.getInstance("X.509");
@@ -141,7 +162,7 @@ public class WebServer {
 								if (++attempts >= 60)
 									throw e;
 
-								System.err.println("TrustView update failed. Retrying ...");
+								System.err.println("TrustView update failed. This may happen due to concurrent access. Retrying ...");
 								Thread.sleep(500);
 								continue;
 							}

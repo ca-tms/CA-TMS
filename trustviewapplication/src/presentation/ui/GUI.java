@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 
 
 
+import data.Configuration;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -151,13 +152,13 @@ public class GUI {
 	{ 
 			
 		
-			assessment_expiration_millis=PresentationLogic.get_Configuration("assessment-expiration-millis", Long.class);
+			assessment_expiration_millis=PresentationLogic.get_Configuration(Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
 			
-			 Port=PresentationLogic.get_Configuration("port", Integer.class);
+			 Port=PresentationLogic.get_Configuration(Configuration.SERVER_PORT, Integer.class);
 			
-			security_level_low=PresentationLogic.get_Configuration("security-level-low", Float.class);
-			security_level_med=PresentationLogic.get_Configuration("security-level-medium", Float.class);
-			security_level_high=PresentationLogic.get_Configuration("security-level-high", Float.class);
+			security_level_low=PresentationLogic.get_Configuration(Configuration.SECURITY_LEVEL_LOW, Float.class);
+			security_level_med=PresentationLogic.get_Configuration(Configuration.SECURITY_LEVEL_MEDIUM, Float.class);
+			security_level_high=PresentationLogic.get_Configuration(Configuration.SECURITY_LEVEL_HIGH, Float.class);
 		
 	 
 	}
@@ -775,7 +776,7 @@ public class GUI {
 						{
 						
 							security_level_high=(float)slider_high.getValue()/100;
-							PresentationLogic.set_Configuration("security-level-high",security_level_high );
+							PresentationLogic.set_Configuration(Configuration.SECURITY_LEVEL_HIGH,security_level_high );
 							
 							
 						}
@@ -804,7 +805,7 @@ public class GUI {
 						{
 						
 							security_level_med=(float)slider_med.getValue()/100;
-							PresentationLogic.set_Configuration("security-level-medium",security_level_med );
+							PresentationLogic.set_Configuration(Configuration.SECURITY_LEVEL_MEDIUM,security_level_med );
 							
 							
 						}
@@ -834,7 +835,7 @@ public class GUI {
 						{
 						
 							security_level_low=(float)slider_low.getValue()/100;
-							PresentationLogic.set_Configuration("security-level-low",security_level_low );
+							PresentationLogic.set_Configuration(Configuration.SECURITY_LEVEL_LOW,security_level_low );
 							
 							
 						}
@@ -881,7 +882,7 @@ public class GUI {
 
 				} else {
 					Port = get_port;
-					PresentationLogic.set_Configuration("port", Port);
+					PresentationLogic.set_Configuration(Configuration.SERVER_PORT, Port);
 
 					PresentationLogic.msg("the Port will be bound to "
 							+ Port + " when the Service started next time!",
@@ -923,7 +924,7 @@ public class GUI {
 					int n = JOptionPane.showConfirmDialog(null, "Are you sure to set Expiration Time to "+expire+" ? If it's set too small, all the \"out-dated\" Assessments will be deleted !", "Are you Sure ?", JOptionPane.YES_NO_OPTION); 
 					if(n == JOptionPane.YES_OPTION)
 					{assessment_expiration_millis=expire;
-					PresentationLogic.set_Configuration("assessment-expiration-millis", assessment_expiration_millis);
+					PresentationLogic.set_Configuration(Configuration.ASSESSMENT_EXPIRATION_MILLIS, assessment_expiration_millis);
 					try {
 						view = data.Model.openTrustView();
 						view.clean();
@@ -965,12 +966,14 @@ public class GUI {
 			public void itemStateChanged(ItemEvent ev) {
 	            if(ev.getStateChange()==ItemEvent.SELECTED) {
             		try {
-						server = new WebServer();
+            			server = new WebServer();
+            			server.start();
+    	            	((JToggleButton) ev.getSource()).setText("Stop Webserver");
+						
 					} catch (IOException e) {
 						e.printStackTrace();
+						((JToggleButton) ev.getSource()).setSelected(false);
 					}
-	            	server.start();
-	            	((JToggleButton) ev.getSource()).setText("Stop Webserver");
 	            } else if(ev.getStateChange()==ItemEvent.DESELECTED) {
 	            	server.stop();
 	            	server = null;
