@@ -365,4 +365,14 @@ public class PresentationLogic {
 		return type_temp;
 		
 	}
+	
+	public static void msg(String msg) {
+		JOptionPane.showConfirmDialog(null, msg, "Error",
+				JOptionPane.DEFAULT_OPTION);
+	}
+	
+	public static void msg(String msg,String type) {
+		JOptionPane.showConfirmDialog(null, msg, type,
+				JOptionPane.DEFAULT_OPTION);
+	}
 }
