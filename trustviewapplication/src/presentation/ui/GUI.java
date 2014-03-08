@@ -1285,14 +1285,15 @@ public class GUI {
 	  CertainTrust new_CertT;
 	  
 	  if(e.getColumn()==4)
-	  {  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ca().getN());
-	  new_CertT.setRS(Clicked_Ass.getO_it_ca().getR(), Clicked_Ass.getO_it_ca().getS());
-
-	  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), new_CertT, Clicked_Ass.getO_it_ee());
+	  {
+		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ca().getN());
+		  new_CertT.setRS(Clicked_Ass.getO_it_ca().getR(), Clicked_Ass.getO_it_ca().getS());
+		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), new_CertT, Clicked_Ass.getO_it_ee());
 	  }
 	  else if(e.getColumn()==5)
 	  {
 		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ee().getN());
+		  new_CertT.setRS(Clicked_Ass.getO_it_ee().getR(), Clicked_Ass.getO_it_ee().getS());
 		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), Clicked_Ass.getO_it_ca(), new_CertT);
 	  }
 	  
