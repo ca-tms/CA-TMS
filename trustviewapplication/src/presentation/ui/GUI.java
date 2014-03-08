@@ -7,8 +7,6 @@ import javax.swing.JFrame;
 
 
 import java.io.*;
-import java.util.*;
-
 import data.Configuration;
 import data.Model;
 import data.TrustAssessment;
@@ -68,8 +66,6 @@ import services.bindings.WebServer;
 
 
 
-
-import util.Util;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -1136,7 +1132,7 @@ public class GUI {
 		frame.getContentPane().add(tglbtnStartService);
 
 		JButton btnMiniminze = new JButton("Miniminze");
-		btnMiniminze.setBounds(322, 534, 93, 23);
+		btnMiniminze.setBounds(359, 534, 93, 23);
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -1146,7 +1142,7 @@ public class GUI {
 		frame.getContentPane().add(btnMiniminze);
 
 		JButton btnClose = new JButton("Close");
-		btnClose.setBounds(462, 534, 93, 23);
+		btnClose.setBounds(475, 534, 93, 23);
 		btnClose.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -1154,6 +1150,21 @@ public class GUI {
 			}
 		});
 		frame.getContentPane().add(btnClose);
+		
+		JButton btnRefresh = new JButton("Refresh");
+		btnRefresh.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				
+				table_TC.setModel(PresentationLogic.refresh_TC_Table());
+				table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+				table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+				refresh_ColWidth();
+				
+			}
+		});
+		btnRefresh.setBounds(245, 534, 93, 23);
+		frame.getContentPane().add(btnRefresh);
 
 	}
 	
