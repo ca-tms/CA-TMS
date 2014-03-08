@@ -4,7 +4,12 @@ public interface Configuration extends AutoCloseable {
 	static String OPINION_N = "opinion-n";
 	static String OPINION_MAX_F = "opinion-max-f";
 	static String FIX_KL = "fix-kl";
+	static String SECURITY_LEVEL_LOW = "security-level-low";
+	static String SECURITY_LEVEL_MEDIUM = "security-level-medium";
+	static String SECURITY_LEVEL_HIGH = "security-level-high";
 	static String ASSESSMENT_EXPIRATION_MILLIS = "assessment-expiration-millis";
+	static String SERVER_PORT = "server-port";
+	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
 
 	public <T> T get(String key, Class<T> type)
 			throws ConfigurationValueException;

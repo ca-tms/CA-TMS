@@ -1,5 +1,6 @@
 package data;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -83,5 +84,26 @@ public final class Model {
 				configuration.close();
 			}
 		};
+	}
+
+	/**
+	 * Creates a backup of the current data model and saves it to the given file
+	 *
+	 * @param file
+	 * @throws Exception if the backup file could not be created
+	 */
+	public static void backup(File file) throws Exception {
+		getModel().backup(file);
+	}
+
+	/**
+	 * Restores a previously saved backup and replaces the contents of the
+	 * current data model with the contents stored in the given file
+	 *
+	 * @param file
+	 * @throws Exception if the backup could not be restored
+	 */
+	public static void restore(File file) throws Exception {
+		getModel().restore(file);
 	}
 }

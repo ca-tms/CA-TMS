@@ -1,6 +1,10 @@
 package data.sqlite;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,12 +20,18 @@ public class SQLiteBackedModel {
 	private static final int MAX_CONNECTIONS = 16;
 
 	private MiniConnectionPoolManager poolManager;
+	private File databaseFile;
 
-	public SQLiteBackedModel() throws ClassNotFoundException, SQLException {
+	public SQLiteBackedModel() throws SQLException {
+		setup();
+	}
+
+	public void setup() throws SQLException {
 		final String dir = Util.getDataDirectory() + File.separator + "ctms";
 		final String file = dir + File.separator + DATABASE_FILE_NAME;
 
 		new File(dir).mkdirs();
+		databaseFile = new File(file);
 
 		SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
 		dataSource.setUrl("jdbc:sqlite:" + file);
@@ -100,15 +110,53 @@ public class SQLiteBackedModel {
 		}
 	}
 
-	public SQLiteBackedTrustView openTrustView() throws Exception {
+	private void teardown() throws SQLException {
+		poolManager.dispose();
+		poolManager = null;
+	}
+
+	public synchronized SQLiteBackedTrustView openTrustView() throws Exception {
 		Connection connection = poolManager.getConnection();
 		connection.setAutoCommit(false);
 		return new SQLiteBackedTrustView(connection);
 	}
 
-	public SQLiteBackedConfiguration openConfiguration() throws Exception {
+	public synchronized SQLiteBackedConfiguration openConfiguration() throws Exception {
 		Connection connection = poolManager.getConnection();
 		connection.setAutoCommit(false);
 		return new SQLiteBackedConfiguration(connection);
+	}
+
+	public synchronized void backup(File file) throws Exception {
+		copy(databaseFile, file);
+	}
+
+	public synchronized void restore(File file) throws Exception {
+		File databaseTempFile =
+				new File(databaseFile.getParent(), DATABASE_FILE_NAME + ".temp");
+
+		try {
+			teardown();
+			databaseFile.renameTo(databaseTempFile);
+			copy(file, databaseFile);
+			setup();
+			databaseTempFile.delete();
+		}
+		catch (SQLException | IOException e) {
+			if (databaseTempFile.exists()) {
+				databaseFile.delete();
+				databaseTempFile.renameTo(databaseFile);
+			}
+			throw e;
+		}
+	}
+
+	private static void copy(File source, File destination) throws IOException {
+		try (FileInputStream inputStream = new FileInputStream(source);
+		     FileOutputStream outputStream = new FileOutputStream(destination);
+		     FileChannel sourceChannel = inputStream.getChannel();
+		     FileChannel destinationChannel = outputStream.getChannel()) {
+			destinationChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+		}
 	}
 }
