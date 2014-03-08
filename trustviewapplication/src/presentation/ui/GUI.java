@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.*;
 
 import data.Configuration;
+import data.Model;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -923,9 +924,6 @@ public class GUI {
 							.getAbsolutePath();
 				}
 				
-				if(!Import_Path.endsWith(".bak"))
-					Import_Path=Import_Path+".bak";
-				
 				if(!new File(Import_Path).exists())
 				{
 					PresentationLogic
@@ -935,9 +933,9 @@ public class GUI {
 
 				try {
 					
-					PresentationLogic.CopyFile(Import_Path, Dtabase_path);
+					Model.restore(new File(Import_Path));
 					
-				} catch (IOException e) {
+				} catch (Exception e) {
 					PresentationLogic
 					.msg("Importing Backup File Error !");
 					e.printStackTrace();
@@ -998,9 +996,9 @@ public class GUI {
 					if(!Export_Path.equals(".bak"))
 						{try {
 							
-							PresentationLogic.CopyFile(Dtabase_path, Export_Path);
+							Model.backup(Export_File);
 							
-						} catch (IOException e) {
+						} catch (Exception e) {
 							PresentationLogic
 							.msg("Exporting Backup File Error !");
 							e.printStackTrace();
@@ -1111,7 +1109,6 @@ public class GUI {
 		
 		JTextPane txtpnTrustServiceApplication = new JTextPane();
 		txtpnTrustServiceApplication.setBounds(136, 70, 292, 292);
-		txtpnTrustServiceApplication.setFont(new Font("Î¢ÈíÑÅºÚ", Font.PLAIN, 15));
 		txtpnTrustServiceApplication.setEditable(false);
 		txtpnTrustServiceApplication.setBackground(UIManager.getColor("Button.background"));
 		txtpnTrustServiceApplication.setText("Trust Service Application\r\n\r\nVersion 1.0\r\n\r\nProduced by :\r\nJannik Vieten\r\nPascal Weisenburger\r\nHaixin Cai\r\n\r\nTU Darmstadt");
