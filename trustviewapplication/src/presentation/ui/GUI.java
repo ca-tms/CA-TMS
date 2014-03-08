@@ -113,8 +113,6 @@ public class GUI {
 	private JTextField textField_Port;
 
 	int port;
-	final String Dtabase_dir = Util.getDataDirectory() + File.separator + "ctms";
-	final String Dtabase_path = Dtabase_dir + File.separator + "ctms.sqlite";
 	WebServer server;
 
 	
