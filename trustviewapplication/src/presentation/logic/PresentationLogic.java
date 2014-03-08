@@ -1,8 +1,13 @@
 package presentation.logic;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -375,4 +380,27 @@ public class PresentationLogic {
 		JOptionPane.showConfirmDialog(null, msg, type,
 				JOptionPane.DEFAULT_OPTION);
 	}
+	
+
+	public static long CopyFile(String srcFile, String destFile) throws IOException {  
+        long copySizes = 0;  
+
+
+        BufferedInputStream bin = new BufferedInputStream(  
+                new FileInputStream(srcFile));  
+        BufferedOutputStream bout = new BufferedOutputStream(  
+                new FileOutputStream(new File(destFile)));
+        int b = 0, i = 0;  
+        while ((b = bin.read()) != -1) {  
+            bout.write(b);  
+            i++;  
+        }  
+        bout.flush();  
+        bin.close();  
+        bout.close();  
+        copySizes = i;  
+
+        
+        return copySizes;  
+    }  
 }

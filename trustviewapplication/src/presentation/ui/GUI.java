@@ -6,10 +6,8 @@ import javax.swing.JFrame;
 
 
 
-
-
-
-
+import java.io.*;
+import java.util.*;
 
 import data.TrustAssessment;
 import data.TrustCertificate;
@@ -69,6 +67,8 @@ import services.bindings.WebServer;
 
 
 
+import util.Util;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -77,6 +77,7 @@ import java.security.cert.X509Certificate;
 import java.awt.Font;
 
 import javax.swing.border.TitledBorder;
+import javax.swing.JTextPane;
 
 public class GUI {
 
@@ -106,12 +107,12 @@ public class GUI {
 	private long assessment_expiration_millis;
 
 	private int Port;
-	private JTextField textField_Import;
 	private JTextField textField_Expiration;
 	private JTextField textField_Port;
 
 	int port;
-	
+	final String Dtabase_dir = Util.getDataDirectory() + File.separator + "ctms";
+	final String Dtabase_path = Dtabase_dir + File.separator + "ctms.sqlite";
 	WebServer server;
 
 	
@@ -260,6 +261,10 @@ public class GUI {
 						Cert_Path = Cert_Chooser.getSelectedFile()
 								.getAbsolutePath();
 					}
+						if(!new File(Cert_Path).exists())
+					{PresentationLogic.msg("File not found!");
+					return;
+					}
 
 					try {
 						X509Certificate cert = PresentationLogic
@@ -269,6 +274,7 @@ public class GUI {
 						view.close();
 
 						table_TC.setModel(PresentationLogic.refresh_TC_Table());
+						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (CertificateException e) {
@@ -294,8 +300,26 @@ public class GUI {
 		Delete_TC.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
+					
+					TrustCertificate Cert = PresentationLogic
+							.getTCert_by_Click(table_TC);
+					if (Cert == null)
+						return;
 
-					PresentationLogic.msg("to be done, delete cert ");
+					try {
+						view = data.Model.openTrustView();
+						view.removeCertificate(Cert);
+						view.close();
+
+						table_TC.setModel(PresentationLogic.refresh_TC_Table());
+						refresh_ColWidth();
+
+					} catch (Exception e) {
+						
+						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						
+						e.printStackTrace();
+					}
 					
 
 				}
@@ -408,6 +432,11 @@ public class GUI {
 						Cert_Path = Cert_Chooser.getSelectedFile()
 								.getAbsolutePath();
 					}
+					
+					if(!new File(Cert_Path).exists())
+					{PresentationLogic.msg("File not found!");
+					return;
+					}
 
 					try {
 						X509Certificate cert = PresentationLogic
@@ -418,6 +447,7 @@ public class GUI {
 
 						table_uTC.setModel(PresentationLogic
 								.refresh_uTC_Table());
+						table_TC.setModel(PresentationLogic.refresh_TC_Table());
 						refresh_ColWidth();
 
 					} catch (CertificateException e) {
@@ -445,9 +475,27 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					JOptionPane.showConfirmDialog(null,
-							"to be done, delete cert ", "Error",
-							JOptionPane.DEFAULT_OPTION);
+					TrustCertificate Cert = PresentationLogic
+							.getuTCert_by_Click(table_uTC);
+					if (Cert == null)
+						{System.out.print("sb");
+						return;}
+
+					try {
+						view = data.Model.openTrustView();
+						view.removeCertificate(Cert);
+						view.close();
+						
+
+						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+						refresh_ColWidth();
+
+					} catch (Exception e) {
+						
+						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						
+						e.printStackTrace();
+					}
 
 				}
 			}
@@ -549,9 +597,26 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					JOptionPane.showConfirmDialog(null,
-							"to be done, delete it ", "Error",
-							JOptionPane.DEFAULT_OPTION);
+					 TrustAssessment Ass = PresentationLogic
+							.getAss_by_Click(table_Ass);
+					if (Ass == null)
+						return;
+
+					try {
+						view = data.Model.openTrustView();
+						view.removeAssessment(Ass.getK(), Ass.getCa());
+						view.close();
+
+						table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+						refresh_ColWidth();
+
+					} catch (Exception e) {
+						
+						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						
+						e.printStackTrace();
+					}
+
 
 				}
 			}
@@ -693,7 +758,7 @@ public class GUI {
 		
 		JPanel Outer_General_Setting = new JPanel();
 		Outer_General_Setting.setBorder(new TitledBorder(null, "General Setting", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_General_Setting.setBounds(10, 143, 549, 193);
+		Outer_General_Setting.setBounds(10, 143, 549, 224);
 		panel_Conf.add(Outer_General_Setting);
 		Outer_General_Setting.setLayout(null);
 		
@@ -707,10 +772,10 @@ public class GUI {
 		Outer_General_Setting.add(textField_Expiration);
 		textField_Expiration.setColumns(10);
 		
-		JButton btnNewButton = new JButton("Apply");
+		JButton btnApply = new JButton("Apply");
 
-		btnNewButton.setBounds(446, 25, 93, 23);
-		Outer_General_Setting.add(btnNewButton);
+		btnApply.setBounds(446, 25, 93, 23);
+		Outer_General_Setting.add(btnApply);
 		
 		JLabel lblBindingPortFor = new JLabel("Binding Port for Trust Service:");
 		lblBindingPortFor.setBounds(139, 70, 204, 15);
@@ -729,30 +794,18 @@ public class GUI {
 		
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_Data_Backup.setBounds(10, 346, 549, 112);
+		Outer_Data_Backup.setBounds(10, 376, 549, 72);
 		panel_Conf.add(Outer_Data_Backup);
 		Outer_Data_Backup.setLayout(null);
 		
-		textField_Import = new JTextField();
-		textField_Import.setBounds(31, 46, 423, 23);
-		Outer_Data_Backup.add(textField_Import);
-		textField_Import.setColumns(10);
-		
-		JLabel lblNewLabel = new JLabel("Import Filepath:");
-		lblNewLabel.setBounds(21, 21, 129, 15);
-		Outer_Data_Backup.add(lblNewLabel);
-		
-		JButton btnBrowse = new JButton("Browse");
-
-		btnBrowse.setBounds(464, 46, 75, 23);
-		Outer_Data_Backup.add(btnBrowse);
-		
 		JButton btnImport = new JButton("Import");
-		btnImport.setBounds(80, 79, 93, 23);
+		
+		btnImport.setBounds(102, 31, 93, 23);
 		Outer_Data_Backup.add(btnImport);
 		
 		JButton btnExport = new JButton("Export");
-		btnExport.setBounds(318, 79, 93, 23);
+
+		btnExport.setBounds(340, 31, 93, 23);
 		Outer_Data_Backup.add(btnExport);
 ///////////////////////////////////////////////////////////////////////////////////Security level setting listner//////////////////////////////////////////////////////////////////////////////
 		slider_high.addChangeListener(new ChangeListener() {
@@ -843,34 +896,129 @@ public class GUI {
 				}
 			}
 		});
-///////////////////////////////////////////////////////////////////////////////////Security level setting//////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////General setting listner/////////////////////////////////////////////////////
-		btnBrowse.addMouseListener(new MouseAdapter() {
+
+////////////////////////////////////////////////////////////////////////////////Backup listner/////////////////////////////////////////////////////
+		
+		
+		btnImport.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
+				String Import_Path = "";
+				JFileChooser Import_Chooser = new JFileChooser();
+				Import_Chooser.setFileSelectionMode( JFileChooser.OPEN_DIALOG );
+				Import_Chooser.setDialogTitle("Import Backup File"); 
+				FileFilter Import_filter = new FileNameExtensionFilter(
+						"Trust Service Backup File(.bak)", "bak");
+				Import_Chooser.setDialogType(JFileChooser.OPEN_DIALOG);
+				Import_Chooser.setApproveButtonText("Open");
+				Import_Chooser.setFileFilter(Import_filter);
 				
+			
+				int returnVal = Import_Chooser.showOpenDialog(panel_Conf);
+
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+					Import_Path = Import_Chooser.getSelectedFile()
+							.getAbsolutePath();
+				}
+				
+				if(!Import_Path.endsWith(".bak"))
+					Import_Path=Import_Path+".bak";
+				
+				if(!new File(Import_Path).exists())
+				{
+					PresentationLogic
+					.msg("Import Backup File not exist !");
+				return;}
+				
+
+				try {
+					
+					PresentationLogic.CopyFile(Import_Path, Dtabase_path);
+					
+				} catch (IOException e) {
+					PresentationLogic
+					.msg("Importing Backup File Error !");
+					e.printStackTrace();
+					return;
+				}
+				
+				table_TC.setModel(PresentationLogic.refresh_TC_Table());
+				table_uTC.setModel(PresentationLogic
+						.refresh_uTC_Table());
+				table_Ass.setModel(PresentationLogic
+						.refresh_Ass_Table());
+				
+				refresh_ColWidth();
+				
+       
+				PresentationLogic
+				.msg("Success Importing Backup File !","Success");
+			}
+		});
+		btnExport.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
 				if (arg0.getButton() == 1) {
 
-					String Import_Path = "";
-					JFileChooser Import_Chooser = new JFileChooser();
-					Import_Chooser.setFileSelectionMode( JFileChooser.FILES_ONLY);
-					FileFilter Import_filter = new FileNameExtensionFilter(
-							"Trust Service Backup File", "bak");
-					Import_Chooser.setFileFilter(Import_filter);
+					String Export_Path = "";
+					File Export_File;
 					
-				
-					int returnVal = Import_Chooser.showOpenDialog(panel_Conf);
+					JFileChooser Export_Chooser = new JFileChooser();
+					Export_Chooser.setDialogTitle("Save Backup File");  
+					Export_Chooser.setFileSelectionMode( JFileChooser.APPROVE_OPTION  );
+					Export_Chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+					Export_Chooser.setApproveButtonText("Save");
+					FileFilter Export_filter= new FileNameExtensionFilter(
+							"Trust Service Backup File(.bak)", "bak");
+					Export_Chooser.setFileFilter(Export_filter);
+					
+					
+					int returnVal = Export_Chooser.showSaveDialog(panel_Conf);
 
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 
-						Import_Path = Import_Chooser.getSelectedFile()
+						Export_Path = Export_Chooser.getSelectedFile()
 								.getAbsolutePath();
 					}
-
-					textField_Import.setText(Import_Path);
 					
-				}}});
+					Export_File=new File(Export_Path);
+					
+					if(!Export_Path.endsWith(".bak"))
+						Export_Path=Export_Path+".bak";
+					
+					if(Export_File.exists())
+					{
+						int n = JOptionPane.showConfirmDialog(null, "Are you sure to overwrite file "+new File(Export_Path).getName()+" with the new backup file ?", "Are you Sure ?", JOptionPane.YES_NO_OPTION); 
+						if(n == JOptionPane.NO_OPTION)
+						return;
+					}
+					
+					if(!Export_Path.equals(".bak"))
+						{try {
+							
+							PresentationLogic.CopyFile(Dtabase_path, Export_Path);
+							
+						} catch (IOException e) {
+							PresentationLogic
+							.msg("Exporting Backup File Error !");
+							e.printStackTrace();
+							return;
+						}
+						
+						PresentationLogic
+						.msg("Success Exporting Backup File !","Success");
+						
+					}
+					}
+					
+					
+					
+			}
+			}
+		);
 		
+///////////////////////////////////////////////////////////////////////////////////General setting setting//////////////////////////////////////////////////////////////////////////////
 		btnChange.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -913,7 +1061,7 @@ public class GUI {
             }  
         }); 
 		
-		btnNewButton.addMouseListener(new MouseAdapter() {
+		btnApply.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				long expire=Long.valueOf(textField_Expiration.getText());
@@ -958,6 +1106,15 @@ public class GUI {
 		
 		JPanel panel_About = new JPanel();
 		tabbedPane.addTab("About", null, panel_About, null);
+		panel_About.setLayout(null);
+		
+		JTextPane txtpnTrustServiceApplication = new JTextPane();
+		txtpnTrustServiceApplication.setBounds(136, 70, 292, 292);
+		txtpnTrustServiceApplication.setFont(new Font("Î¢ÈíÑÅºÚ", Font.PLAIN, 15));
+		txtpnTrustServiceApplication.setEditable(false);
+		txtpnTrustServiceApplication.setBackground(UIManager.getColor("Button.background"));
+		txtpnTrustServiceApplication.setText("Trust Service Application\r\n\r\nVersion 1.0\r\n\r\nProduced by :\r\nJannik Vieten\r\nPascal Weisenburger\r\nHaixin Cai\r\n\r\nTU Darmstadt");
+		panel_About.add(txtpnTrustServiceApplication);
 
 		JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
 		tglbtnStartService.setBounds(27, 534, 160, 23);
