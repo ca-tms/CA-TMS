@@ -436,7 +436,7 @@ public class GUI {
 					
 					if(!new File(Cert_Path).exists())
 					{PresentationLogic.msg("File not found!");
-					return;
+					return; 
 					}
 
 					try {
