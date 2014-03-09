@@ -6,8 +6,8 @@ TVE.CTMSCommunicator = {
     /**
      * Sends a validation request to the CTMS and returns the result ("TRUSTED", "UNTRUSTED" or "UNKNOWN").
      * certChain - the chain to validate
-     * validationResult - Firefox's standard validation result
-     * secLevel - user defined level ("heigh", "medium" or "low")
+     * validationResult - Firefox's standard validation result ("invalid", "unknown" or "valid")
+     * secLevel - user defined level ("high", "medium" or "low")
      */
     requestValidation : function(certChain, validationResult, secLevel) {
         // build object around data

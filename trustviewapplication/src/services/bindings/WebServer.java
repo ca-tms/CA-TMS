@@ -30,6 +30,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import support.Service;
+import util.ValidationResult;
 import buisness.TrustComputation;
 import data.Configuration;
 import data.Model;
@@ -124,11 +125,14 @@ public class WebServer {
 			     Writer writer = Channels.newWriter(socketChannel, "UTF-8")) {
 				try {
 					if (socketChannel.socket().getInetAddress().isLoopbackAddress()) {
+						// parse incoming data as JSON
+						// but cancel if a specified timeout expires
 						Future<JsonObject> objectFuture = executorService.submit(
 								new JsonObjectReader(reader));
-
 						JsonObject object = objectFuture.get(
 								timeoutMillis, TimeUnit.MILLISECONDS);
+
+						// get certificate chain
 						JsonArray chain = object.getJsonArray("certChain");
 
 						CertificateFactory factory = CertificateFactory.getInstance("X.509");
@@ -145,28 +149,52 @@ public class WebServer {
 											new ByteArrayInputStream(certBytes))));
 						}
 
-						String str = "(unknown)";
-
-						int attempts = 0;
-						while (true) {
-							try (TrustView trustView = Model.openTrustView();
-							     Configuration config = Model.openConfiguration()) {
-								str = new TrustComputation(config, trustView).validate(
-										path, 0.8,
-										Service.getValidationService(executorService)).toString();
-							}
-							catch (Exception e) {
-								if (attempts == 0)
-									e.printStackTrace();
-
-								if (++attempts >= 60)
-									throw e;
-
-								System.err.println("TrustView update failed. This may happen due to concurrent access. Retrying ...");
-								Thread.sleep(500);
-								continue;
-							}
+						// get security level
+						String securityLevel = Configuration.SECURITY_LEVEL_HIGH;
+						switch (object.getString("secLevel")) {
+						case "high":
+							securityLevel = Configuration.SECURITY_LEVEL_HIGH;
 							break;
+						case "medium":
+							securityLevel = Configuration.SECURITY_LEVEL_MEDIUM;
+							break;
+						case "low":
+							securityLevel = Configuration.SECURITY_LEVEL_LOW;
+							break;
+						}
+
+						// get validation result
+						boolean validCertificateChain = false;
+						switch (object.getString("validationResult")) {
+						case "valid":
+							validCertificateChain = true;
+							break;
+						}
+
+						// perform trust validation
+						String result = ValidationResult.UNTRUSTED.toString();
+						if (validCertificateChain) {
+							int attempts = 0;
+							while (true) {
+								try (TrustView trustView = Model.openTrustView();
+								     Configuration config = Model.openConfiguration()) {
+									result = new TrustComputation(config, trustView).validate(
+											path, config.get(securityLevel, Double.class),
+											Service.getValidationService(executorService)).toString();
+								}
+								catch (Exception e) {
+									if (attempts == 0)
+										e.printStackTrace();
+
+									if (++attempts >= 60)
+										throw e;
+
+									System.err.println("TrustView update failed. This may happen due to concurrent access. Retrying ...");
+									Thread.sleep(500);
+									continue;
+								}
+								break;
+							}
 						}
 
 						writer.write(
@@ -175,7 +203,7 @@ public class WebServer {
 								"Date: " + dateFormat.format(new Date()) + "\r\n" +
 								"Connection: close\r\n" +
 								"\r\n" +
-								str);
+								result);
 					}
 					else {
 						System.err.println("403 Forbidden");
