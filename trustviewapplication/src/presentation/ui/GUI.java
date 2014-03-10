@@ -168,7 +168,7 @@ public class GUI {
 		} catch (Exception e) {
 		}
 
-		frame = new JFrame();
+		frame = new JFrame("CA Trust Management System");
 		frame.setResizable(true);
 		frame.setBounds(100, 100, 610, 621);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -410,7 +410,7 @@ public class GUI {
 			}
 		});
 
-		// //////////////////////////////////////////////////Insertfor unTrustCertificate//////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////Insert for unTrustCertificate//////////////////////////////////////////////////////
 		Insert_uTC.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
@@ -745,7 +745,7 @@ public class GUI {
 		Outer_Security_Level.add(lblHigh);
 
 		JLabel lblMedium = new JLabel("Medium:");
-		lblMedium.setBounds(225, 75, 54, 15);
+		lblMedium.setBounds(225, 75, 65, 15);
 		Outer_Security_Level.add(lblMedium);
 
 		JLabel lblLow = new JLabel("Low:");
@@ -759,7 +759,7 @@ public class GUI {
 		Outer_General_Setting.setLayout(null);
 		
 		JLabel lblNewLabel_1 = new JLabel("Assessment Expiration (in Milliseconds):");
-		lblNewLabel_1.setBounds(10, 29, 258, 15);
+		lblNewLabel_1.setBounds(10, 29, 270, 15);
 		Outer_General_Setting.add(lblNewLabel_1);
 		
 		textField_Expiration = new JTextField();
@@ -774,7 +774,7 @@ public class GUI {
 		Outer_General_Setting.add(btnApply);
 		
 		JLabel lblBindingPortFor = new JLabel("Binding Port for Trust Service:");
-		lblBindingPortFor.setBounds(139, 70, 204, 15);
+		lblBindingPortFor.setBounds(139, 70, 220, 15);
 		Outer_General_Setting.add(lblBindingPortFor);
 		
 		textField_Port = new JTextField();
@@ -1024,8 +1024,8 @@ public class GUI {
 					Port = get_port;
 					PresentationLogic.set_Configuration(Configuration.SERVER_PORT, Port);
 
-					PresentationLogic.msg("the Port will be bound to "
-							+ Port + " when the Service started next time!",
+					PresentationLogic.msg("The service will be bound to port "
+							+ Port + " when it is started next time!",
 							"Attention");
 
 				}
@@ -1131,8 +1131,8 @@ public class GUI {
 		});
 		frame.getContentPane().add(tglbtnStartService);
 
-		JButton btnMiniminze = new JButton("Miniminze");
-		btnMiniminze.setBounds(359, 534, 93, 23);
+		JButton btnMiniminze = new JButton("Minimize");
+		btnMiniminze.setBounds(359, 534, 100, 23);
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
