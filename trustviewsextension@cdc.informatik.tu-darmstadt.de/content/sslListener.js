@@ -23,7 +23,7 @@ TVE.SSLListener = {
         if(validationResult == "valid" && aRequest != null && !aRequest.isPending() && !TVE.State.isAllowedPage(aRequest.name)) {
             
             // gather data for upcoming CTMS validation
-            let rawChain = TVE.CertHandler.getRawChain();
+            let rawChain = TVE.CertHandler.getRawChain(aBrowser);
             let secLevel = TVE.Prefs.getCharPref("secLevel");
             
             try {

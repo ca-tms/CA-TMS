@@ -9,8 +9,8 @@ TVE.CertHandler = {
      * Each entry is a byte array which holds the raw data.
      * Entry 0 is the Root-CA's certificate, the last entry is the server's certificate.
      */
-    getRawChain : function() {
-        let secUI = window.getBrowser().selectedBrowser.securityUI; // get securityUI
+    getRawChain : function(browser) {
+        let secUI = browser.securityUI; // get securityUI
         secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl and certificate status
         let serverCert = secUI.SSLStatus.serverCert; // get certificate
         let chainLength = serverCert.getChain().length;
