@@ -11,7 +11,7 @@ TVE.State = {
     /**
      * Loads the proper warning page when CTMS server is not reachable.
      */
-    unreachable: function(url) {
+    unreachable: function(browser, url) {
         
         // callback function for assigning a command to the button
         function setCommand(event) {
@@ -20,19 +20,19 @@ TVE.State = {
                 var button = doc.getElementById("trustviewsextension-error-unreachable-tryagain");
                 var cmd = "TVE.State.tryAgain('" + url + "');";
                 button.setAttribute("oncommand", cmd);
-                gBrowser.removeEventListener("DOMContentLoaded", setCommand, false);
+                browser.removeEventListener("DOMContentLoaded", setCommand, false);
             }
         }
         
         // register callback function and load warning page
-        gBrowser.addEventListener("DOMContentLoaded", setCommand, false);
-        gBrowser.loadURI("chrome://trustviewsextension/content/ctmsUnreachable.xul");
+        browser.addEventListener("DOMContentLoaded", setCommand, false);
+        browser.loadURI("chrome://trustviewsextension/content/ctmsUnreachable.xul");
     },
     
     /**
      * Loads the proper warning page when validation result is bad.
      */
-    untrusted: function(url) {
+    untrusted: function(browser, url) {
         
         // callback function for assigning commands to the buttons
         function setCommand(event) {
@@ -46,13 +46,13 @@ TVE.State = {
                 cmd = "TVE.State.forceVisit('" + url + "');";
                 button.setAttribute("oncommand", cmd);
                 
-                gBrowser.removeEventListener("DOMContentLoaded", setCommand, false);
+                browser.removeEventListener("DOMContentLoaded", setCommand, false);
             }
         }
         
         // register callback function and load warning page
-        gBrowser.addEventListener("DOMContentLoaded", setCommand, false);
-        gBrowser.loadURI("chrome://trustviewsextension/content/untrustedWebsite.xul");
+        browser.addEventListener("DOMContentLoaded", setCommand, false);
+        browser.loadURI("chrome://trustviewsextension/content/untrustedWebsite.xul");
     },
     
     /**

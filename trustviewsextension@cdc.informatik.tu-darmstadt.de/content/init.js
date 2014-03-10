@@ -1,5 +1,5 @@
 // register SSL Listener
-getBrowser().addProgressListener(TVE.SSLListener);
+getBrowser().addTabsProgressListener(TVE.SSLListener);
 
 
 // on first run:
