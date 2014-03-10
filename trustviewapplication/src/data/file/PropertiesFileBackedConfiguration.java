@@ -39,10 +39,24 @@ public class PropertiesFileBackedConfiguration implements Configuration {
 
 	@Override
 	public <T> void set(String key, T value) {
-		throw new UnsupportedOperationException(
-				"PropertiesFileBackedConfiguration is read-only");
+		notSupported();
+	}
+
+	@Override
+	public void delete(String key) {
+		notSupported();
+	}
+
+	@Override
+	public void erase() {
+		notSupported();
 	}
 
 	@Override
 	public void close() throws SQLException { }
+
+	private void notSupported() {
+		throw new UnsupportedOperationException(
+				"PropertiesFileBackedConfiguration is read-only");
+	}
 }

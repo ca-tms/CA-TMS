@@ -102,4 +102,9 @@ public interface TrustView extends AutoCloseable {
 	 * as well as all certificates that left their validity period.
 	 */
 	void clean();
+	
+	/**
+	 * Erases all data stored in the trust view
+	 */
+	void erase();
 }

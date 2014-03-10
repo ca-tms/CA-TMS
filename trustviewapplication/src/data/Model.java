@@ -83,6 +83,16 @@ public final class Model {
 			public void close() throws Exception {
 				configuration.close();
 			}
+
+			@Override
+			public void delete(String key) {
+				configuration.delete(key);
+			}
+
+			@Override
+			public void erase() {
+				configuration.erase();
+			}
 		};
 	}
 
@@ -105,5 +115,15 @@ public final class Model {
 	 */
 	public static void restore(File file) throws Exception {
 		getModel().restore(file);
+	}
+
+	/**
+	 * Erases the all data stored from model (including trust view data and
+	 * configuration data)
+	 *
+	 * @throws Exception if the model could not be erased
+	 */
+	public static void erase() throws Exception {
+		getModel().erase();
 	}
 }

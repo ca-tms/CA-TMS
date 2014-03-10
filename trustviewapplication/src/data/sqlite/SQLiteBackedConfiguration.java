@@ -12,6 +12,8 @@ public class SQLiteBackedConfiguration implements Configuration {
 	private final Connection connection;
 	private final PreparedStatement getValue;
 	private final PreparedStatement setValue;
+	private final PreparedStatement deleteValue;
+	private final PreparedStatement eraseConfiguration;
 
 	public SQLiteBackedConfiguration(Connection connection) throws SQLException {
 		this.connection = connection;
@@ -21,6 +23,12 @@ public class SQLiteBackedConfiguration implements Configuration {
 
 		setValue = connection.prepareStatement(
 				"INSERT OR REPLACE INTO configuration VALUES (?, ?)");
+
+		deleteValue = connection.prepareStatement(
+				"DELETE FROM configuration WHERE key=?");
+
+		eraseConfiguration = connection.prepareStatement(
+				"DELETE FROM configuration");
 	}
 
 	@Override
@@ -73,6 +81,29 @@ public class SQLiteBackedConfiguration implements Configuration {
 	}
 
 	@Override
+	public void delete(String key) {
+		try {
+			validateDatabaseConnection();
+			deleteValue.setString(1, key);
+			deleteValue.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void erase() {
+		try {
+			validateDatabaseConnection();
+			eraseConfiguration.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public void close() throws SQLException {
 		try {
 			connection.commit();
@@ -84,6 +115,8 @@ public class SQLiteBackedConfiguration implements Configuration {
 		finally {
 			getValue.close();
 			connection.close();
+			deleteValue.close();
+			eraseConfiguration.close();
 		}
 	}
 

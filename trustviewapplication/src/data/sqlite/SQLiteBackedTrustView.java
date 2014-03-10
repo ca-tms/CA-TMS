@@ -39,6 +39,8 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement removeAssessment;
 	private final PreparedStatement removeCertificate;
 	private final PreparedStatement cleanCertificates;
+	private final PreparedStatement eraseAssessments;
+	private final PreparedStatement eraseCertificates;
 
 	public SQLiteBackedTrustView(Connection connection) throws Exception {
 		this.connection = connection;
@@ -94,6 +96,13 @@ public class SQLiteBackedTrustView implements TrustView {
 
 		cleanCertificates = connection.prepareStatement(
 				"DELETE FROM certificates WHERE trusted=0 AND untrusted=0 AND S=0");
+
+		// erasing the trust view
+		eraseAssessments = connection.prepareStatement(
+				"DELETE FROM assessments");
+
+		eraseCertificates = connection.prepareStatement(
+				"DELETE FROM certificates");
 	}
 
 	@Override
@@ -479,6 +488,18 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public void erase() {
+		try {
+			validateDatabaseConnection();
+			eraseAssessments.executeUpdate();
+			eraseCertificates.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public void close() throws Exception {
 		try {
 			config.close();
@@ -501,6 +522,8 @@ public class SQLiteBackedTrustView implements TrustView {
 			removeCertificate.close();
 			removeAssessment.close();
 			cleanCertificates.close();
+			eraseAssessments.close();
+			eraseCertificates.close();
 			connection.close();
 		}
 	}

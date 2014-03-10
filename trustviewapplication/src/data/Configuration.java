@@ -11,9 +11,14 @@ public interface Configuration extends AutoCloseable {
 	static String SERVER_PORT = "server-port";
 	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
 
-	public <T> T get(String key, Class<T> type)
+	<T> T get(String key, Class<T> type)
 			throws ConfigurationValueException;
 
-	public <T> void set(String key, T value)
+	<T> void set(String key, T value)
 			throws ConfigurationValueException, UnsupportedOperationException;
+
+	void delete(String key)
+			throws UnsupportedOperationException;
+
+	void erase();
 }

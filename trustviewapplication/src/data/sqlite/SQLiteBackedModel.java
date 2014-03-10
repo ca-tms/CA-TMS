@@ -151,6 +151,12 @@ public class SQLiteBackedModel {
 		}
 	}
 
+	public synchronized void erase() throws Exception {
+		teardown();
+		databaseFile.delete();
+		setup();
+	}
+
 	private static void copy(File source, File destination) throws IOException {
 		try (FileInputStream inputStream = new FileInputStream(source);
 		     FileOutputStream outputStream = new FileOutputStream(destination);
