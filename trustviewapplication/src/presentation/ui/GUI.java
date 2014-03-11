@@ -1,12 +1,28 @@
 package presentation.ui;
 
+import java.awt.AWTException;
 import java.awt.EventQueue;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 
 import javax.swing.JFrame;
 
 
 
+
+
+
+
+
+
+
+
+
+
 import java.io.*;
+
 import data.Configuration;
 import data.Model;
 import data.TrustAssessment;
@@ -14,6 +30,7 @@ import data.TrustCertificate;
 import data.TrustView;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -38,16 +55,30 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import CertainTrust.CertainTrust;
 import presentation.logic.PresentationLogic;
 import services.bindings.WebServer;
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -79,7 +110,7 @@ import javax.swing.JTextPane;
 
 public class GUI {
 
-	private JFrame frame;
+	private static JFrame frame;
 	
 	private JTable table_TC;
 	private JTable table_uTC;
@@ -87,10 +118,10 @@ public class GUI {
 	
 	private int[] PreferredWidth_TC ={120,145,145,123,102,102};
 	private int[] PreferredWidth_uTC ={120,145,145,123,102,102};
-	private int[] PreferredWidth_Ass ={122,157,157,123,89,89};
+	private int[] PreferredWidth_Ass ={122,157,123,89,89};
 	TableColumn[] Trust_Cert_TableCol= new TableColumn[6];
 	TableColumn[] UnTrust_Cert_TableCol= new TableColumn[6];
-	TableColumn[] Ass_TableCol= new TableColumn[6];
+	TableColumn[] Ass_TableCol= new TableColumn[5];
 	
 	private JTextField textField_high;
 	private JTextField textField_med;
@@ -107,7 +138,10 @@ public class GUI {
 	private int Port;
 	private JTextField textField_Expiration;
 	private JTextField textField_Port;
-
+	
+	static SystemTray tray = SystemTray.getSystemTray();
+	 private static TrayIcon trayIcon = null;
+	 static JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
 	int port;
 	WebServer server;
 
@@ -158,6 +192,78 @@ public class GUI {
 		
 	 
 	}
+	
+	 private static void miniTray() {  
+		 ImageIcon trayImg=null;
+		 if (tglbtnStartService.isSelected())
+		   trayImg = new ImageIcon("src\\presentation\\ui\\on.png");
+		 else
+			 trayImg = new ImageIcon("src\\presentation\\ui\\off.png");
+
+
+		  PopupMenu pop = new PopupMenu();  
+		  MenuItem show = new MenuItem("Resume");
+		  MenuItem exit = new MenuItem("Exit");
+
+		  show.addActionListener(new ActionListener() {
+
+		   public void actionPerformed(ActionEvent e) { 
+
+		    tray.remove(trayIcon);
+		    frame.setVisible(true);
+		    frame.setExtendedState(JFrame.NORMAL);
+		    frame.toFront();
+		   }
+
+		  });
+
+		  exit.addActionListener(new ActionListener() { 
+
+		     public void actionPerformed(ActionEvent e) {
+
+		      tray.remove(trayIcon);
+		      System.exit(0);
+
+		     }
+
+		    });
+
+		  pop.add(show);
+		  pop.add(exit);
+
+		  
+		  if (tglbtnStartService.isSelected())
+			  trayIcon = new TrayIcon(trayImg.getImage(), "Trust Service on", pop);
+			 else
+				 trayIcon = new TrayIcon(trayImg.getImage(), "Trust Service off", pop);
+
+		  
+		  trayIcon.setImageAutoSize(true);
+
+		  trayIcon.addMouseListener(new MouseAdapter() {
+
+			public void mouseClicked(MouseEvent e) {
+
+				if (e.getClickCount() == 2) {
+
+					tray.remove(trayIcon);
+					frame.setVisible(true);
+					frame.setExtendedState(JFrame.NORMAL);
+					frame.toFront();
+				}
+
+			}});
+
+		  try {
+
+		   tray.add(trayIcon);
+
+		  } catch (AWTException e1) {
+		
+		   e1.printStackTrace();
+		  }
+
+		 }
 	
 	
 	private void initialize() {
@@ -474,7 +580,7 @@ public class GUI {
 					TrustCertificate Cert = PresentationLogic
 							.getuTCert_by_Click(table_uTC);
 					if (Cert == null)
-						{System.out.print("sb");
+						{
 						return;}
 
 					try {
@@ -623,7 +729,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					table_Ass.editCellAt(table_Ass.getSelectedRow(), 4);
+					table_Ass.editCellAt(table_Ass.getSelectedRow(), 3);
 
 				}
 			}
@@ -1095,7 +1201,7 @@ public class GUI {
 				
 			}
 		});
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////panel_About////////////////////////////////////////////////////////////////////
 		
 		JPanel panel_About = new JPanel();
 		tabbedPane.addTab("About", null, panel_About, null);
@@ -1107,8 +1213,9 @@ public class GUI {
 		txtpnTrustServiceApplication.setBackground(UIManager.getColor("Button.background"));
 		txtpnTrustServiceApplication.setText("Trust Service Application\r\n\r\nVersion 1.0\r\n\r\nProduced by :\r\nJannik Vieten\r\nPascal Weisenburger\r\nHaixin Cai\r\n\r\nTU Darmstadt");
 		panel_About.add(txtpnTrustServiceApplication);
-
-		JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
+		
+		/////////////////////////////////////////////////////////////////JToggleButton////////////////////////////////////////////////////////////////////
+		
 		tglbtnStartService.setBounds(27, 534, 160, 23);
 		tglbtnStartService.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ev) {
@@ -1130,17 +1237,18 @@ public class GUI {
 	       }
 		});
 		frame.getContentPane().add(tglbtnStartService);
-
+/////////////////////////////////////////////////////////////////////////////Minimize//////////////////////////////////////////////////////////////
 		JButton btnMiniminze = new JButton("Minimize");
 		btnMiniminze.setBounds(359, 534, 100, 23);
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				frame.setExtendedState(JFrame.ICONIFIED);
+				frame.setVisible(false);
+			      miniTray();
 			}
 		});
 		frame.getContentPane().add(btnMiniminze);
-
+//////////////////////////////////////////////////////////////////////////////Close/////////////////////////////////////////////////////////////
 		JButton btnClose = new JButton("Close");
 		btnClose.setBounds(475, 534, 93, 23);
 		btnClose.addMouseListener(new MouseAdapter() {
@@ -1150,7 +1258,7 @@ public class GUI {
 			}
 		});
 		frame.getContentPane().add(btnClose);
-		
+		//////////////////////////////////////////////////////////////////////////Refresh///////////////////////////////////////////////////////////
 		JButton btnRefresh = new JButton("Refresh");
 		btnRefresh.addMouseListener(new MouseAdapter() {
 			@Override
@@ -1165,8 +1273,31 @@ public class GUI {
 		});
 		btnRefresh.setBounds(245, 534, 93, 23);
 		frame.getContentPane().add(btnRefresh);
+		
+		///////////////////////////////////////////////////////////////////////close////////////////////////////////////////////////////////////////
+		 frame.addWindowListener(new WindowAdapter() { 
+		     public void windowClosing(WindowEvent e) {
+		      System.exit(0);
+		     };
+
+		     public void windowIconified(WindowEvent e) {
+
+		    	 frame.setVisible(false);
+		      miniTray();
+
+		     }
+
+		    });
+
+		  
 
 	}
+	
+	
+	 
+
+	   
+	
 	
 	public void refresh_ColWidth ()
 	{
@@ -1271,12 +1402,12 @@ public class GUI {
 	  {
 		  PresentationLogic.msg("Please enter the valid value(between 0.0 and 1.0) for each item. example:(0.5, 0.5, 0.5)");
 		  
-		  if(e.getColumn()==4)
+		  if(e.getColumn()==3)
 		  Change= "(" + Clicked_Ass.getO_it_ca().getT() + ", "
 					+ Clicked_Ass.getO_it_ca().getC() + ", "
 					+ Clicked_Ass.getO_it_ca().getF() + ")";
 		  else
-			  if(e.getColumn()==5)
+			  if(e.getColumn()==4)
 		  Change="(" + Clicked_Ass.getO_it_ee().getT() + ", "
 						+ Clicked_Ass.getO_it_ee().getC() + ", "
 						+ Clicked_Ass.getO_it_ee().getF() + ")";
@@ -1295,17 +1426,19 @@ public class GUI {
 	  F=Double.valueOf(tcf[2]);
 	  CertainTrust new_CertT;
 	  
-	  if(e.getColumn()==4)
+	  if(e.getColumn()==3)
 	  {
 		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ca().getN());
 		  new_CertT.setRS(Clicked_Ass.getO_it_ca().getR(), Clicked_Ass.getO_it_ca().getS());
 		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), new_CertT, Clicked_Ass.getO_it_ee());
+		  
 	  }
-	  else if(e.getColumn()==5)
+	  else if(e.getColumn()==4)
 	  {
 		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ee().getN());
 		  new_CertT.setRS(Clicked_Ass.getO_it_ee().getR(), Clicked_Ass.getO_it_ee().getS());
 		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), Clicked_Ass.getO_it_ca(), new_CertT);
+		 
 	  }
 	  
 	  
@@ -1313,6 +1446,7 @@ public class GUI {
 			TrustView view = data.Model.openTrustView();
 			view.setAssessment(new_Ass);
 			view.close();
+			 
 
 		} catch (Exception e1) {
 			PresentationLogic.msg("Error reading or concurrent modifying the database! ");
@@ -1323,6 +1457,7 @@ public class GUI {
 		table_Ass.setModel(PresentationLogic
 				.refresh_Ass_Table());
 		refresh_ColWidth();
+		
 	  
 	      }
 	    }

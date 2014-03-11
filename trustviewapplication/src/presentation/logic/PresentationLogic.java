@@ -146,10 +146,10 @@ public class PresentationLogic {
 	public static DefaultTableModel refresh_Ass_Table()
 	{
 		DefaultTableModel Model = new DefaultTableModel(
-				new Object[][] {}, new String[] { "PublicKey", "CA",
-						"TrustCertificate", "O_kl", "O_it_ca", "O_it_ee" }) {
+				new Object[][] {}, new String[] { "PublicKey", "CA"
+						, "O_kl", "O_it_ca", "O_it_ee" }) {
 			@SuppressWarnings("rawtypes")
-			Class[] columnTypes = new Class[] { String.class, String.class,
+			Class[] columnTypes = new Class[] { String.class,
 					String.class, String.class, String.class, Object.class };
 
 			@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -157,7 +157,7 @@ public class PresentationLogic {
 				return columnTypes[columnIndex];
 			}
 
-			boolean[] columnEditables = new boolean[] { false, false, false,
+			boolean[] columnEditables = new boolean[] { false, false,
 					false, true, true };
 
 			public boolean isCellEditable(int row, int column) {
@@ -170,7 +170,7 @@ public class PresentationLogic {
 			TrustView view = data.Model.openTrustView();
 			Assessments_temp = view.getAssessments();
 			view.close();
-
+			
 		} catch (Exception e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
@@ -183,10 +183,7 @@ public class PresentationLogic {
 
 		while (it_ass.hasNext()) {
 			Assessment = (TrustAssessment) it_ass.next();
-			String S = "";
-			for (TrustCertificate s : Assessment.getS())
-				S += S.isEmpty() ? s : ", " + s;
-			S = "{" + S + "}";
+			
 			String o_kl = "";
 			o_kl += Assessment.getO_kl().isSet() ? "("
 					+ Assessment.getO_kl().get().getT() + ", "
@@ -201,7 +198,7 @@ public class PresentationLogic {
 					+ Assessment.getO_it_ee().getF() + ")";
 
 			Model.addRow(new Object[] { Assessment.getK(),
-					Assessment.getCa(), S, o_kl, o_it_ca, o_it_ee });
+					Assessment.getCa(),  o_kl, o_it_ca, o_it_ee });
 
 		}
 		return Model;
@@ -375,4 +372,7 @@ public class PresentationLogic {
 		JOptionPane.showConfirmDialog(null, msg, type,
 				JOptionPane.DEFAULT_OPTION);
 	}
+	
+	
+
 }
