@@ -196,9 +196,9 @@ public class GUI {
 	 private static void miniTray() {  
 		 ImageIcon trayImg=null;
 		 if (tglbtnStartService.isSelected())
-		   trayImg = new ImageIcon("ressources\\on.png");
+		   trayImg = new ImageIcon("resources\\on.png");
 		 else
-			 trayImg = new ImageIcon("ressources\\off.png");
+			 trayImg = new ImageIcon("resources\\off.png");
 
 
 		  PopupMenu pop = new PopupMenu();  
