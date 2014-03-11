@@ -4,10 +4,11 @@
 		This builds the Trust Views Application.
 	</description>
 	
-	<property name="src" location="src" />
-	<property name="lib" location="lib" />
-	<property name="build" location="bin" />
-	<property name="export" location="jar" />
+	<property name="src" value="src" />
+    <property name="resources" value="resources" />
+	<property name="lib" value="lib" />
+	<property name="build" value="bin" />
+	<property name="export" value="jar" />
 	
 	<property name="exportname" value="CTMS.jar" />
 	<property name="mainclass" value="presentation/ui/GUI" />
@@ -40,6 +41,9 @@
     <target name="jar" depends="compile">
     	<jar destfile="${export}/${exportname}">
     		<fileset dir="${build}" />
+            <fileset dir=".">
+                <include name="${resources}/*" />
+            </fileset>
     		<zipgroupfileset dir="${lib}" includes="*.jar" />
     		<manifest>
     		    <attribute name="Main-Class" value="${mainclass}" />
