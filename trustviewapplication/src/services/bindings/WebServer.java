@@ -1,7 +1,6 @@
 package services.bindings;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -10,11 +9,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.security.cert.CertificateFactory;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -24,18 +20,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import support.Service;
+import services.logic.JsonRequestDecoder;
+import services.logic.ValidationRequest;
+import services.logic.Validator;
 import util.ValidationResult;
-import buisness.TrustComputation;
 import data.Configuration;
 import data.Model;
-import data.TrustCertificate;
-import data.TrustView;
 
 public class WebServer {
 	private Thread thread;
@@ -132,71 +125,11 @@ public class WebServer {
 						JsonObject object = objectFuture.get(
 								timeoutMillis, TimeUnit.MILLISECONDS);
 
-						// get certificate chain
-						JsonArray chain = object.getJsonArray("certChain");
-
-						CertificateFactory factory = CertificateFactory.getInstance("X.509");
-						List<TrustCertificate> path = new ArrayList<>(chain.size());
-
-						for (JsonArray jsonCert : chain.getValuesAs(JsonArray.class)) {
-							int i = 0;
-							byte[] certBytes = new byte[jsonCert.size()];
-							for (JsonNumber jsonByte : jsonCert.getValuesAs(JsonNumber.class))
-								certBytes[i++] = (byte) jsonByte.intValue();
-
-							path.add(new TrustCertificate(
-									factory.generateCertificate(
-											new ByteArrayInputStream(certBytes))));
-						}
-
-						// get security level
-						String securityLevel = Configuration.SECURITY_LEVEL_HIGH;
-						switch (object.getString("secLevel")) {
-						case "high":
-							securityLevel = Configuration.SECURITY_LEVEL_HIGH;
-							break;
-						case "medium":
-							securityLevel = Configuration.SECURITY_LEVEL_MEDIUM;
-							break;
-						case "low":
-							securityLevel = Configuration.SECURITY_LEVEL_LOW;
-							break;
-						}
-
-						// get validation result
-						boolean validCertificateChain = false;
-						switch (object.getString("validationResult")) {
-						case "valid":
-							validCertificateChain = true;
-							break;
-						}
+						// decode JSON object
+						ValidationRequest request = JsonRequestDecoder.decode(object);
 
 						// perform trust validation
-						String result = ValidationResult.UNTRUSTED.toString();
-						if (validCertificateChain) {
-							int attempts = 0;
-							while (true) {
-								try (TrustView trustView = Model.openTrustView();
-								     Configuration config = Model.openConfiguration()) {
-									result = TrustComputation.validate(
-											trustView, config,
-											path, config.get(securityLevel, Double.class),
-											Service.getValidationService(executorService)).toString();
-								}
-								catch (Exception e) {
-									if (attempts == 0)
-										e.printStackTrace();
-
-									if (++attempts >= 60)
-										throw e;
-
-									System.err.println("TrustView update failed. This may happen due to concurrent access. Retrying ...");
-									Thread.sleep(500);
-									continue;
-								}
-								break;
-							}
-						}
+						ValidationResult result = Validator.validate(request);
 
 						writer.write(
 								"HTTP/1.1 200 OK\r\n" +
