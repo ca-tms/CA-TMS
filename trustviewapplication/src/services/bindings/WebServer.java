@@ -178,7 +178,8 @@ public class WebServer {
 							while (true) {
 								try (TrustView trustView = Model.openTrustView();
 								     Configuration config = Model.openConfiguration()) {
-									result = new TrustComputation(config, trustView).validate(
+									result = TrustComputation.validate(
+											trustView, config,
 											path, config.get(securityLevel, Double.class),
 											Service.getValidationService(executorService)).toString();
 								}

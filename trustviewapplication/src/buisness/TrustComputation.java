@@ -18,16 +18,12 @@ import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
-public class TrustComputation {
-	private final TrustView trustView;
-	private final Configuration config;
+public final class TrustComputation {
+	private TrustComputation() { }
 
-	public TrustComputation(Configuration config, TrustView trustView) {
-		this.config = config;
-		this.trustView = trustView;
-	}
-
-	private TrustAssessment createAssessment(TrustCertificate S, boolean isLegitimateRoot) {
+	private static TrustAssessment createAssessment(
+			TrustView trustView, Configuration config,
+			TrustCertificate S, boolean isLegitimateRoot) {
 		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
 		final double opinionMaxF = config.get(Configuration.OPINION_MAX_F, Double.class);
 
@@ -72,8 +68,12 @@ public class TrustComputation {
 		return new TrustAssessment(k, ca, S, o_kl, o_it_ca, o_it_ee);
 	}
 
-	private void updateView(List<TrustCertificate> p, List<TrustAssessment> pAssessments,
+	private static void updateView(TrustView trustView, Configuration config,
+			List<TrustCertificate> p, List<TrustAssessment> pAssessments,
 			ValidationResult R, List<TrustAssessment> TL, ValidationService VS) {
+		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
+		final double fix_kl = config.get(Configuration.FIX_KL, Double.class);
+
 		if (R == ValidationResult.TRUSTED) {
 			for (int i = 0; i < p.size() - 1; i++) {
 				boolean updateTrustView = false;
@@ -108,7 +108,8 @@ public class TrustComputation {
 					updateTrustView = true;
 
 				if (updateTrustView)
-					trustView.setAssessment(fixKeyLegitimacy(assessment));
+					trustView.setAssessment(
+							fixKeyLegitimacy(opinionN, fix_kl, assessment));
 			}
 
 			trustView.setTrustedCertificate(p.get(p.size() - 1));
@@ -154,7 +155,8 @@ public class TrustComputation {
 					updateTrustView = true;
 
 				if (updateTrustView)
-					trustView.setAssessment(fixKeyLegitimacy(assessment));
+					trustView.setAssessment(
+							fixKeyLegitimacy(opinionN, fix_kl, assessment));
 			}
 
 			boolean updateTrustView = false;
@@ -183,14 +185,15 @@ public class TrustComputation {
 			}
 
 			if (updateTrustView)
-				trustView.setAssessment(fixKeyLegitimacy(assessment));
+				trustView.setAssessment(
+						fixKeyLegitimacy(opinionN, fix_kl, assessment));
 
 			// add C at position h+1 as untrusted certificate
 			trustView.setUntrustedCertificate(p.get(h + 1));
 		}
 	}
 
-	private ValidationResult consensus(ValidationResult[] results) {
+	private static ValidationResult consensus(ValidationResult[] results) {
 		// currently simply a relative majority voting
 		int trusted = 0, untrusted = 0, unknown = 0;
 		for (ValidationResult result : results)
@@ -206,16 +209,14 @@ public class TrustComputation {
 			ValidationResult.UNKNOWN;
 	}
 
-	private void updateAssessmentsTimestamps(List<TrustCertificate> p) {
+	private static void updateAssessmentsTimestamps(TrustView trustView, List<TrustCertificate> p) {
 		for (int i = 0; i < p.size() - 1; i++)
 			trustView.setAssessmentValid(
 					p.get(i).getPublicKey(), p.get(i).getSubject());
 	}
 
-	private TrustAssessment fixKeyLegitimacy(TrustAssessment assessment) {
-		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
-		final double fix_kl = config.get(Configuration.FIX_KL, Double.class);
-
+	private static TrustAssessment fixKeyLegitimacy(int opinionN, double fix_kl,
+			TrustAssessment assessment) {
 		if (assessment.getO_it_ca().getR() + assessment.getO_it_ee().getR() >= fix_kl)
 			return new TrustAssessment(
 					assessment.getK(), assessment.getCa(), assessment.getS(),
@@ -230,25 +231,25 @@ public class TrustComputation {
 	// the certificate representing the trust anchor should not be included in
 	// the certification path, but given as separate argument
 	// (in compliance with the official documentation for these classes)
-	public ValidationResult validate(CertPath certPath, Certificate trustAnchor,
-			double l, ValidationService VS) {
-		List<? extends Certificate> certs = certPath.getCertificates();
+	public static ValidationResult validate(TrustView trustView, Configuration config,
+			CertPath path, Certificate pathAnchor, double l, ValidationService VS) {
+		List<? extends Certificate> certs = path.getCertificates();
 		List<TrustCertificate> p = new ArrayList<>(
 				Collections.<TrustCertificate>nCopies(certs.size() + 1, null));
 
 		int i = certs.size();
 		for (Certificate cert : certs)
 			p.set(i--, new TrustCertificate(cert));
-		p.set(0, new TrustCertificate(trustAnchor));
+		p.set(0, new TrustCertificate(pathAnchor));
 
-		return validate(p, l, VS);
+		return validate(trustView, config, p, l, VS);
 	}
 
 	// first certificate in p should be the certificate for the trust anchor
 	// and the last one should be the target certificate
 	// (in compliance with the paper)
-	public ValidationResult validate(List<TrustCertificate> p, double l,
-			ValidationService VS) {
+	public static ValidationResult validate(TrustView trustView, Configuration config,
+			List<TrustCertificate> p, double l, ValidationService VS) {
 		Set<TrustCertificate> trustedCertificates =
 				new HashSet<TrustCertificate>(trustView.getTrustedCertificates());
 		Set<TrustCertificate> untrustedCertificates =
@@ -256,14 +257,14 @@ public class TrustComputation {
 
 		// check if the last certificate is already trusted
 		if (trustedCertificates.contains(p.get(p.size() - 1))) {
-			updateAssessmentsTimestamps(p);
+			updateAssessmentsTimestamps(trustView, p);
 			return ValidationResult.TRUSTED;
 		}
 
 		// check if p contains untrusted certificate
 		for (TrustCertificate cert : p)
 			if (untrustedCertificates.contains(cert)) {
-				updateAssessmentsTimestamps(p);
+				updateAssessmentsTimestamps(trustView, p);
 				return ValidationResult.UNTRUSTED;
 			}
 
@@ -272,8 +273,10 @@ public class TrustComputation {
 		List<TrustAssessment> pAssessments = new ArrayList<>(p.size() - 1);
 		for (int i = 0; i < p.size() - 1; i++) {
 			TrustAssessment assessment = trustView.getAssessment(p.get(i));
-			if (assessment == null)
-				TL.add(assessment = createAssessment(p.get(i), i == 0));
+			if (assessment == null) {
+				assessment = createAssessment(trustView, config, p.get(i), i == 0);
+				TL.add(assessment);
+			}
 			pAssessments.add(assessment);
 		}
 
@@ -309,8 +312,8 @@ public class TrustComputation {
 			// compute consensus of validation service
 			result = consensus(VS.query(p.get(p.size() - 1).getCertificate()));
 
-		updateView(p, pAssessments, result, TL, VS);
-		updateAssessmentsTimestamps(p);
+		updateView(trustView, config, p, pAssessments, result, TL, VS);
+		updateAssessmentsTimestamps(trustView, p);
 		return result;
 	}
 }
