@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import data.Configuration;
-import data.ConfigurationValueException;
+import data.ConfigurationValueAccessException;
 
 public class SQLiteBackedConfiguration implements Configuration {
 	private final Connection connection;
@@ -58,13 +58,13 @@ public class SQLiteBackedConfiguration implements Configuration {
 			}
 		}
 		catch (NumberFormatException e) {
-			throw new ConfigurationValueException(key, e);
+			throw new ConfigurationValueAccessException(key, e);
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		throw new ConfigurationValueException(key);
+		throw new ConfigurationValueAccessException(key);
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import data.Configuration;
-import data.ConfigurationValueException;
+import data.ConfigurationValueAccessException;
 
 public class PropertiesFileBackedConfiguration implements Configuration {
 	private final Properties properties;
@@ -31,10 +31,10 @@ public class PropertiesFileBackedConfiguration implements Configuration {
 				return result;
 		}
 		catch (NumberFormatException e) {
-			throw new ConfigurationValueException(key, e);
+			throw new ConfigurationValueAccessException(key, e);
 		}
 
-		throw new ConfigurationValueException(key);
+		throw new ConfigurationValueAccessException(key);
 	}
 
 	@Override

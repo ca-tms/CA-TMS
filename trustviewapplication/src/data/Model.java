@@ -41,10 +41,15 @@ public final class Model {
 	 *
 	 * @return the open <code>TrustView</code> instance
 	 *
-	 * @throws Exception if the <code>TrustView</code> could not be opened
+	 * @throws ModelAccessException if the <code>TrustView</code> could not be opened
 	 */
-	public static TrustView openTrustView() throws Exception {
-		return getModel().openTrustView();
+	public static TrustView openTrustView() throws ModelAccessException {
+		try {
+			return getModel().openTrustView();
+		}
+		catch (Exception e) {
+			throw new ModelAccessException(e);
+		}
 	}
 
 	/**
@@ -57,11 +62,18 @@ public final class Model {
 	 *
 	 * @return the open <code>Configuration</code> instance
 	 *
-	 * @throws Exception if the <code>Configuration</code> could not be opened
+	 * @throws ModelAccessException if the <code>Configuration</code> could not be opened
 	 */
-	public static Configuration openConfiguration() throws Exception {
-		final Configuration configuration = getModel().openConfiguration();
-		final Configuration defaultConfiguration = getConfiguration();
+	public static Configuration openConfiguration() throws ModelAccessException {
+		final Configuration configuration;
+		final Configuration defaultConfiguration;
+		try {
+			configuration = getModel().openConfiguration();
+			defaultConfiguration = getConfiguration();
+		}
+		catch (Exception e) {
+			throw new ModelAccessException(e);
+		}
 
 		return new Configuration() {
 			@Override
@@ -69,7 +81,7 @@ public final class Model {
 				try {
 					return configuration.get(key, type);
 				}
-				catch (ConfigurationValueException e) {
+				catch (ConfigurationValueAccessException e) {
 					return defaultConfiguration.get(key, type);
 				}
 			}
@@ -100,10 +112,15 @@ public final class Model {
 	 * Creates a backup of the current data model and saves it to the given file
 	 *
 	 * @param file
-	 * @throws Exception if the backup file could not be created
+	 * @throws ModelAccessException if the backup file could not be created
 	 */
-	public static void backup(File file) throws Exception {
-		getModel().backup(file);
+	public static void backup(File file) throws ModelAccessException {
+		try {
+			getModel().backup(file);
+		}
+		catch (Exception e) {
+			throw new ModelAccessException(e);
+		}
 	}
 
 	/**
@@ -111,19 +128,29 @@ public final class Model {
 	 * current data model with the contents stored in the given file
 	 *
 	 * @param file
-	 * @throws Exception if the backup could not be restored
+	 * @throws ModelAccessException if the backup could not be restored
 	 */
-	public static void restore(File file) throws Exception {
-		getModel().restore(file);
+	public static void restore(File file) throws ModelAccessException {
+		try {
+			getModel().restore(file);
+		}
+		catch (Exception e) {
+			throw new ModelAccessException(e);
+		}
 	}
 
 	/**
 	 * Erases the all data stored from model (including trust view data and
 	 * configuration data)
 	 *
-	 * @throws Exception if the model could not be erased
+	 * @throws ModelAccessException if the model could not be erased
 	 */
-	public static void erase() throws Exception {
-		getModel().erase();
+	public static void erase() throws ModelAccessException {
+		try {
+			getModel().erase();
+		}
+		catch (Exception e) {
+			throw new ModelAccessException(e);
+		}
 	}
 }

@@ -12,10 +12,10 @@ public interface Configuration extends AutoCloseable {
 	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
 
 	<T> T get(String key, Class<T> type)
-			throws ConfigurationValueException;
+			throws ConfigurationValueAccessException;
 
 	<T> void set(String key, T value)
-			throws ConfigurationValueException, UnsupportedOperationException;
+			throws ConfigurationValueAccessException, UnsupportedOperationException;
 
 	void delete(String key)
 			throws UnsupportedOperationException;
