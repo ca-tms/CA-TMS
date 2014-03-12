@@ -14,6 +14,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import data.Configuration;
+import data.ModelAccessException;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -67,7 +68,7 @@ public class PresentationLogic {
 			Certs_temp = view.getTrustedCertificates();
 			view.close();
 
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
@@ -121,7 +122,7 @@ public class PresentationLogic {
 			Certs_temp = view.getUntrustedCertificates();
 			view.close();
 
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
@@ -171,7 +172,7 @@ public class PresentationLogic {
 			Assessments_temp = view.getAssessments();
 			view.close();
 			
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
@@ -223,7 +224,7 @@ public class PresentationLogic {
 			Certs_temp = view.getTrustedCertificates();
 			view.close();
 
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
@@ -263,7 +264,7 @@ public class PresentationLogic {
 			Certs_temp = view.getUntrustedCertificates();
 			view.close();
 
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
@@ -304,7 +305,7 @@ public class PresentationLogic {
 			Ass_temp = view.getAssessment(k, ca);
 			view.close();
 
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
 					"Error reading or concurrent modifying the database! ",
 					"Error", JOptionPane.DEFAULT_OPTION);
@@ -327,7 +328,7 @@ public class PresentationLogic {
 			conf.close();
 
 
-		} catch (Exception e) {
+		} catch (ModelAccessException e) {
 			JOptionPane
 					.showConfirmDialog(
 							null,
@@ -351,7 +352,7 @@ public class PresentationLogic {
 		
 
 
-	} catch (Exception e) {
+	} catch (ModelAccessException e) {
 		JOptionPane
 				.showConfirmDialog(
 						null,

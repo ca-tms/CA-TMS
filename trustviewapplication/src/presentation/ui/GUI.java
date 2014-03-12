@@ -25,6 +25,7 @@ import java.io.*;
 
 import data.Configuration;
 import data.Model;
+import data.ModelAccessException;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -156,12 +157,8 @@ public class GUI {
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					GUI window = new GUI();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				GUI window = new GUI();
+				window.frame.setVisible(true);
 			}
 		});
 	}
@@ -389,9 +386,9 @@ public class GUI {
 							PresentationLogic.msg("Error reading Certificate File ");
 							
 						e.printStackTrace();
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
-		
+						
 						e.printStackTrace();
 					}
 
@@ -416,7 +413,7 @@ public class GUI {
 						table_TC.setModel(PresentationLogic.refresh_TC_Table());
 						refresh_ColWidth();
 
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 						
@@ -447,7 +444,7 @@ public class GUI {
 								.refresh_uTC_Table());
 						refresh_ColWidth();
 
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 						
@@ -563,7 +560,7 @@ public class GUI {
 							PresentationLogic.msg("Error reading Certificate File ");
 						
 						e.printStackTrace();
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 					
 						e.printStackTrace();
@@ -592,7 +589,7 @@ public class GUI {
 						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
 						refresh_ColWidth();
 
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 						
@@ -625,7 +622,7 @@ public class GUI {
 								.refresh_uTC_Table());
 						refresh_ColWidth();
 
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 						
 						e.printStackTrace();
@@ -712,7 +709,7 @@ public class GUI {
 						table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
 						refresh_ColWidth();
 
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 						
@@ -752,7 +749,7 @@ public class GUI {
 						view = data.Model.openTrustView();
 						view.setAssessmentValid(k, ca);
 						view.close();
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 					
 					}
@@ -769,7 +766,7 @@ public class GUI {
 						view = data.Model.openTrustView();
 						view.clean();
 						view.close();
-					} catch (Exception e) {
+					} catch (ModelAccessException e) {
 						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 						
 						e.printStackTrace();
@@ -1035,7 +1032,7 @@ public class GUI {
 					
 					Model.restore(new File(Import_Path));
 					
-				} catch (Exception e) {
+				} catch (ModelAccessException e) {
 					PresentationLogic
 					.msg("Importing Backup File Error !");
 					e.printStackTrace();
@@ -1098,7 +1095,7 @@ public class GUI {
 							
 							Model.backup(Export_File);
 							
-						} catch (Exception e) {
+						} catch (ModelAccessException e) {
 							PresentationLogic
 							.msg("Exporting Backup File Error !");
 							e.printStackTrace();
@@ -1175,7 +1172,7 @@ public class GUI {
 						view = data.Model.openTrustView();
 						view.clean();
 						view.close();
-					} catch (Exception arg) {
+					} catch (ModelAccessException arg) {
 						JOptionPane
 								.showConfirmDialog(
 										null,
@@ -1448,7 +1445,7 @@ public class GUI {
 			view.close();
 			 
 
-		} catch (Exception e1) {
+		} catch (ModelAccessException e1) {
 			PresentationLogic.msg("Error reading or concurrent modifying the database! ");
 			
 			e1.printStackTrace();
