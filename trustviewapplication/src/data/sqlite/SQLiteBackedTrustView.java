@@ -19,6 +19,7 @@ import util.Option;
 
 import data.Configuration;
 import data.Model;
+import data.ModelAccessException;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -42,67 +43,83 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement eraseAssessments;
 	private final PreparedStatement eraseCertificates;
 
-	public SQLiteBackedTrustView(Connection connection) throws Exception {
-		this.connection = connection;
+	public SQLiteBackedTrustView(Connection connection) throws ModelAccessException  {
+		try {
+			this.connection = connection;
 
-		// configuration values
-		config = Model.openConfiguration();
+			// configuration values
+			config = Model.openConfiguration();
 
-		// retrieving assessments
-		getAssessment = connection.prepareStatement(
-				"SELECT * FROM assessments WHERE k=? AND ca=?");
+			try {
+				// retrieving assessments
+				getAssessment = connection.prepareStatement(
+						"SELECT * FROM assessments WHERE k=? AND ca=?");
 
-		getAssessments = connection.prepareStatement(
-				"SELECT * FROM assessments");
+				getAssessments = connection.prepareStatement(
+						"SELECT * FROM assessments");
 
-		getAssessmentsS = connection.prepareStatement(
-				"SELECT * FROM certificates WHERE publickey=? AND subject=? AND S=1");
+				getAssessmentsS = connection.prepareStatement(
+						"SELECT * FROM certificates WHERE publickey=? AND subject=? AND S=1");
 
-		// setting assessments
-		setAssessment = connection.prepareStatement(
-				"INSERT OR REPLACE INTO assessments VALUES (?, ?, ?, ?, ?, ?, " +
-				"                                           ?, ?, ?, ?, ?, ?, " +
-				"                                           ?, ?, ?, ?, ?, ?)");
+				// setting assessments
+				setAssessment = connection.prepareStatement(
+						"INSERT OR REPLACE INTO assessments VALUES (?, ?, ?, ?, ?, ?, " +
+						"                                           ?, ?, ?, ?, ?, ?, " +
+						"                                           ?, ?, ?, ?, ?, ?)");
 
-		setAssessmentS = connection.prepareStatement(
-				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, " +
-				"  COALESCE((SELECT trusted FROM certificates " +
-				"            WHERE serial=? AND issuer=?), 0)," +
-				"  COALESCE((SELECT untrusted FROM certificates " +
-				"            WHERE serial=? AND issuer=?), 0)," +
-				"  ?)");
+				setAssessmentS = connection.prepareStatement(
+						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, " +
+						"  COALESCE((SELECT trusted FROM certificates " +
+						"            WHERE serial=? AND issuer=?), 0)," +
+						"  COALESCE((SELECT untrusted FROM certificates " +
+						"            WHERE serial=? AND issuer=?), 0)," +
+						"  ?)");
 
-		setAssessmentValid = connection.prepareStatement(
-				"UPDATE assessments SET timestamp=? WHERE k=? AND ca=?");
+				setAssessmentValid = connection.prepareStatement(
+						"UPDATE assessments SET timestamp=? WHERE k=? AND ca=?");
 
-		// retrieving certificates
-		getCertificates = connection.prepareStatement(
-				"SELECT * FROM certificates");
+				// retrieving certificates
+				getCertificates = connection.prepareStatement(
+						"SELECT * FROM certificates");
 
-		getCertificateTrust = connection.prepareStatement(
-				"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");
+				getCertificateTrust = connection.prepareStatement(
+						"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");
 
-		// setting certificates
-		setCertificateTrust = connection.prepareStatement(
-				"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, " +
-				"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
+				// setting certificates
+				setCertificateTrust = connection.prepareStatement(
+						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, " +
+						"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
 
-		// cleaning the trust view
-		removeAssessment = connection.prepareStatement(
-				"DELETE FROM assessments WHERE k=? AND ca=?");
+				// cleaning the trust view
+				removeAssessment = connection.prepareStatement(
+						"DELETE FROM assessments WHERE k=? AND ca=?");
 
-		removeCertificate = connection.prepareStatement(
-				"DELETE FROM certificates WHERE serial=? AND issuer=?");
+				removeCertificate = connection.prepareStatement(
+						"DELETE FROM certificates WHERE serial=? AND issuer=?");
 
-		cleanCertificates = connection.prepareStatement(
-				"DELETE FROM certificates WHERE trusted=0 AND untrusted=0 AND S=0");
+				cleanCertificates = connection.prepareStatement(
+						"DELETE FROM certificates WHERE trusted=0 AND untrusted=0 AND S=0");
 
-		// erasing the trust view
-		eraseAssessments = connection.prepareStatement(
-				"DELETE FROM assessments");
+				// erasing the trust view
+				eraseAssessments = connection.prepareStatement(
+						"DELETE FROM assessments");
 
-		eraseCertificates = connection.prepareStatement(
-				"DELETE FROM certificates");
+				eraseCertificates = connection.prepareStatement(
+						"DELETE FROM certificates");
+			}
+			catch (SQLException e) {
+				throw new ModelAccessException(e);
+			}
+		}
+		catch (Throwable t) {
+			try {
+				finalizeConnection();
+			}
+			catch (Throwable u) {
+				t.addSuppressed(u);
+			}
+			throw t;
+		}
 	}
 
 	@Override
@@ -500,7 +517,19 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws ModelAccessException {
+		try {
+			finalizeConnection();
+		}
+		catch (ModelAccessException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new ModelAccessException(e);
+		}
+	}
+
+	public void finalizeConnection() throws ModelAccessException, SQLException {
 		try {
 			config.close();
 			connection.commit();
@@ -510,21 +539,25 @@ public class SQLiteBackedTrustView implements TrustView {
 			throw e;
 		}
 		finally {
-			getAssessment.close();
-			getAssessments.close();
-			getAssessmentsS.close();
-			setAssessment.close();
-			setAssessmentS.close();
-			setAssessmentValid.close();
-			getCertificates.close();
-			getCertificateTrust.close();
-			setCertificateTrust.close();
-			removeCertificate.close();
-			removeAssessment.close();
-			cleanCertificates.close();
-			eraseAssessments.close();
-			eraseCertificates.close();
-			connection.close();
+			try {
+				getAssessment.close();
+				getAssessments.close();
+				getAssessmentsS.close();
+				setAssessment.close();
+				setAssessmentS.close();
+				setAssessmentValid.close();
+				getCertificates.close();
+				getCertificateTrust.close();
+				setCertificateTrust.close();
+				removeCertificate.close();
+				removeAssessment.close();
+				cleanCertificates.close();
+				eraseAssessments.close();
+				eraseCertificates.close();
+			}
+			finally {
+				connection.close();
+			}
 		}
 	}
 

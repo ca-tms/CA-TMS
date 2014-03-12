@@ -21,4 +21,7 @@ public interface Configuration extends AutoCloseable {
 			throws UnsupportedOperationException;
 
 	void erase();
+
+	@Override
+	void close() throws ModelAccessException;
 }

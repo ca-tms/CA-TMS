@@ -11,6 +11,8 @@ import java.sql.Statement;
 
 import org.sqlite.SQLiteConnectionPoolDataSource;
 
+import data.ModelAccessException;
+
 import biz.source_code.miniConnectionPoolManager.MiniConnectionPoolManager;
 
 import util.Util;
@@ -22,8 +24,13 @@ public class SQLiteBackedModel {
 	private MiniConnectionPoolManager poolManager;
 	private File databaseFile;
 
-	public SQLiteBackedModel() throws SQLException {
-		setup();
+	public SQLiteBackedModel() throws ModelAccessException {
+		try {
+			setup();
+		}
+		catch (SQLException e) {
+			throw new ModelAccessException(e);
+		}
 	}
 
 	public void setup() throws SQLException {
@@ -115,23 +122,54 @@ public class SQLiteBackedModel {
 		poolManager = null;
 	}
 
-	public synchronized SQLiteBackedTrustView openTrustView() throws Exception {
-		Connection connection = poolManager.getConnection();
-		connection.setAutoCommit(false);
-		return new SQLiteBackedTrustView(connection);
+	public synchronized SQLiteBackedTrustView openTrustView() throws ModelAccessException {
+		Connection connection = null;
+		try {
+			connection = poolManager.getConnection();
+			connection.setAutoCommit(false);
+			return new SQLiteBackedTrustView(connection);
+		}
+		catch (SQLException e) {
+			try {
+				if (connection != null)
+					connection.close();
+			}
+			catch (Throwable t) {
+				e.addSuppressed(t);
+			}
+			throw new ModelAccessException(e);
+		}
 	}
 
-	public synchronized SQLiteBackedConfiguration openConfiguration() throws Exception {
-		Connection connection = poolManager.getConnection();
-		connection.setAutoCommit(false);
-		return new SQLiteBackedConfiguration(connection);
+	public synchronized SQLiteBackedConfiguration openConfiguration() throws ModelAccessException {
+		Connection connection = null;
+		try {
+			connection = poolManager.getConnection();
+			connection.setAutoCommit(false);
+			return new SQLiteBackedConfiguration(connection);
+		}
+		catch (SQLException e) {
+			try {
+				if (connection != null)
+					connection.close();
+			}
+			catch (Throwable t) {
+				e.addSuppressed(t);
+			}
+			throw new ModelAccessException(e);
+		}
 	}
 
-	public synchronized void backup(File file) throws Exception {
-		copy(databaseFile, file);
+	public synchronized void backup(File file) throws ModelAccessException {
+		try {
+			copy(databaseFile, file);
+		}
+		catch (IOException e) {
+			throw new ModelAccessException(e);
+		}
 	}
 
-	public synchronized void restore(File file) throws Exception {
+	public synchronized void restore(File file) throws ModelAccessException {
 		File databaseTempFile =
 				new File(databaseFile.getParent(), DATABASE_FILE_NAME + ".temp");
 
@@ -147,14 +185,19 @@ public class SQLiteBackedModel {
 				databaseFile.delete();
 				databaseTempFile.renameTo(databaseFile);
 			}
-			throw e;
+			throw new ModelAccessException(e);
 		}
 	}
 
-	public synchronized void erase() throws Exception {
-		teardown();
-		databaseFile.delete();
-		setup();
+	public synchronized void erase() throws ModelAccessException {
+		try {
+			teardown();
+			databaseFile.delete();
+			setup();
+		}
+		catch (SQLException e) {
+			throw new ModelAccessException(e);
+		}
 	}
 
 	private static void copy(File source, File destination) throws IOException {

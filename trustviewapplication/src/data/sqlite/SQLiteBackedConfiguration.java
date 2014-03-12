@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import data.Configuration;
 import data.ConfigurationValueAccessException;
+import data.ModelAccessException;
 
 public class SQLiteBackedConfiguration implements Configuration {
 	private final Connection connection;
@@ -15,20 +16,36 @@ public class SQLiteBackedConfiguration implements Configuration {
 	private final PreparedStatement deleteValue;
 	private final PreparedStatement eraseConfiguration;
 
-	public SQLiteBackedConfiguration(Connection connection) throws SQLException {
-		this.connection = connection;
+	public SQLiteBackedConfiguration(Connection connection) throws ModelAccessException {
+		try {
+			this.connection = connection;
 
-		getValue = connection.prepareStatement(
-				"SELECT * FROM configuration WHERE key=?");
+			try {
+				getValue = connection.prepareStatement(
+						"SELECT * FROM configuration WHERE key=?");
 
-		setValue = connection.prepareStatement(
-				"INSERT OR REPLACE INTO configuration VALUES (?, ?)");
+				setValue = connection.prepareStatement(
+						"INSERT OR REPLACE INTO configuration VALUES (?, ?)");
 
-		deleteValue = connection.prepareStatement(
-				"DELETE FROM configuration WHERE key=?");
+				deleteValue = connection.prepareStatement(
+						"DELETE FROM configuration WHERE key=?");
 
-		eraseConfiguration = connection.prepareStatement(
-				"DELETE FROM configuration");
+				eraseConfiguration = connection.prepareStatement(
+						"DELETE FROM configuration");
+			}
+			catch (SQLException e) {
+				throw new ModelAccessException(e);
+			}
+		}
+		catch (Throwable t) {
+			try {
+				finalizeConnection();
+			}
+			catch (Throwable u) {
+				t.addSuppressed(u);
+			}
+			throw t;
+		}
 	}
 
 	@Override
@@ -104,7 +121,16 @@ public class SQLiteBackedConfiguration implements Configuration {
 	}
 
 	@Override
-	public void close() throws SQLException {
+	public void close() throws ModelAccessException {
+		try {
+			finalizeConnection();
+		}
+		catch (SQLException e) {
+			throw new ModelAccessException(e);
+		}
+	}
+
+	private void finalizeConnection() throws SQLException {
 		try {
 			connection.commit();
 		}
@@ -113,10 +139,14 @@ public class SQLiteBackedConfiguration implements Configuration {
 			throw e;
 		}
 		finally {
-			getValue.close();
-			connection.close();
-			deleteValue.close();
-			eraseConfiguration.close();
+			try {
+				getValue.close();
+				deleteValue.close();
+				eraseConfiguration.close();
+			}
+			finally {
+				connection.close();
+			}
 		}
 	}
 

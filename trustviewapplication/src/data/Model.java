@@ -1,6 +1,7 @@
 package data;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -11,18 +12,21 @@ public final class Model {
 	private static SQLiteBackedModel model = null;
 	private static Configuration configuration = null;
 
-	private static synchronized SQLiteBackedModel getModel() throws Exception {
+	private static synchronized SQLiteBackedModel getModel() throws ModelAccessException {
 		if (model == null)
 			model = new SQLiteBackedModel();
 		return model;
 	}
 
-	private static synchronized Configuration getConfiguration() throws Exception {
+	private static synchronized Configuration getConfiguration() throws ModelAccessException {
 		if (configuration == null) {
 			Properties properties = new Properties();
 			try (InputStream stream =
 					Model.class.getResourceAsStream("/configuration.properties")) {
 				properties.load(stream);
+			}
+			catch (IOException e) {
+				throw new ModelAccessException(e);
 			}
 			configuration = new PropertiesFileBackedConfiguration(properties);
 		}
@@ -44,12 +48,7 @@ public final class Model {
 	 * @throws ModelAccessException if the <code>TrustView</code> could not be opened
 	 */
 	public static TrustView openTrustView() throws ModelAccessException {
-		try {
-			return getModel().openTrustView();
-		}
-		catch (Exception e) {
-			throw new ModelAccessException(e);
-		}
+		return getModel().openTrustView();
 	}
 
 	/**
@@ -65,15 +64,8 @@ public final class Model {
 	 * @throws ModelAccessException if the <code>Configuration</code> could not be opened
 	 */
 	public static Configuration openConfiguration() throws ModelAccessException {
-		final Configuration configuration;
-		final Configuration defaultConfiguration;
-		try {
-			configuration = getModel().openConfiguration();
-			defaultConfiguration = getConfiguration();
-		}
-		catch (Exception e) {
-			throw new ModelAccessException(e);
-		}
+		final Configuration configuration = getModel().openConfiguration();
+		final Configuration defaultConfiguration = getConfiguration();
 
 		return new Configuration() {
 			@Override
@@ -92,7 +84,7 @@ public final class Model {
 			}
 
 			@Override
-			public void close() throws Exception {
+			public void close() throws ModelAccessException {
 				configuration.close();
 			}
 
@@ -115,12 +107,7 @@ public final class Model {
 	 * @throws ModelAccessException if the backup file could not be created
 	 */
 	public static void backup(File file) throws ModelAccessException {
-		try {
-			getModel().backup(file);
-		}
-		catch (Exception e) {
-			throw new ModelAccessException(e);
-		}
+		getModel().backup(file);
 	}
 
 	/**
@@ -131,12 +118,7 @@ public final class Model {
 	 * @throws ModelAccessException if the backup could not be restored
 	 */
 	public static void restore(File file) throws ModelAccessException {
-		try {
-			getModel().restore(file);
-		}
-		catch (Exception e) {
-			throw new ModelAccessException(e);
-		}
+		getModel().restore(file);
 	}
 
 	/**
@@ -146,11 +128,6 @@ public final class Model {
 	 * @throws ModelAccessException if the model could not be erased
 	 */
 	public static void erase() throws ModelAccessException {
-		try {
-			getModel().erase();
-		}
-		catch (Exception e) {
-			throw new ModelAccessException(e);
-		}
+		getModel().erase();
 	}
 }

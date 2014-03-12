@@ -1,10 +1,10 @@
 package data.file;
 
-import java.sql.SQLException;
 import java.util.Properties;
 
 import data.Configuration;
 import data.ConfigurationValueAccessException;
+import data.ModelAccessException;
 
 public class PropertiesFileBackedConfiguration implements Configuration {
 	private final Properties properties;
@@ -53,7 +53,7 @@ public class PropertiesFileBackedConfiguration implements Configuration {
 	}
 
 	@Override
-	public void close() throws SQLException { }
+	public void close() throws ModelAccessException { }
 
 	private void notSupported() {
 		throw new UnsupportedOperationException(
