@@ -2,6 +2,22 @@ package data;
 
 import java.util.Collection;
 
+/**
+ * <p>Provides access to the Trust View.
+ * A Trust View stores the public key trust assessments, a set of trusted and
+ * a set of untrusted certificates, as described in
+ * <q>Trust views for the web pki</q> [1], section 4.2.</p>
+ *
+ * <p>A <code>TrustView</code> object must be closed after usage in order for
+ * any modification made on the <code>TrustView</code> to take effect and
+ * to release acquired resources.</p>
+ *
+ * <p>Closing the <code>TrustView</code> object may fail in case of concurrent
+ * modifications.</p>
+ *
+ * <p>[1] Johannes Braun, Florian Volk, Johannes Buchmann, and Max Mühlhäuser.
+ * Trust views for the web pki. 2013.</p>
+ */
 public interface TrustView extends AutoCloseable {
 	/**
 	 * @param S a certificate certifying a CA

@@ -38,7 +38,8 @@ public final class Model {
 	/**
 	 * Opens a {@link TrustView} that can be used to retrieve and/or store
 	 * information and must be closed afterwards in order for any modification
-	 * made on the <code>TrustView</code> to take effect.
+	 * made on the <code>TrustView</code> to take effect and to release
+	 * acquired resources.
 	 *
 	 * Note: closing the <code>TrustView</code> may fail in case of concurrent
 	 * modifications.
@@ -54,7 +55,12 @@ public final class Model {
 	/**
 	 * Opens a {@link Configuration} that can be used to retrieve and/or store
 	 * information and must be closed afterwards in order for any modification
-	 * made on the <code>Configuration</code> to take effect.
+	 * made on the <code>Configuration</code> to take effect and to release
+	 * acquired resources.
+	 *
+	 * Custom values can be stored in the data model and retrieved at a later
+	 * point in time. For specific keys, that are not set to a custom value,
+	 * a fallback default value will be used.
 	 *
 	 * Note: closing the <code>Configuration</code> may fail in case of concurrent
 	 * modifications.
@@ -122,7 +128,7 @@ public final class Model {
 	}
 
 	/**
-	 * Erases the all data stored from model (including trust view data and
+	 * Erases the all data stored in model (including trust view data and
 	 * configuration data)
 	 *
 	 * @throws ModelAccessException if the model could not be erased
