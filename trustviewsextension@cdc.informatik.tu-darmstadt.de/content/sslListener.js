@@ -17,7 +17,7 @@ TVE.SSLListener = {
      */
     onSecurityChange: function(aBrowser, aWebProgress, aRequest, aState) {
         
-        // get standard validation result from Firefox/NSS
+        // parse standard validation result from Firefox/NSS
         let validationResult = TVE.CertHandler.getValidationResult(aState);
         
         if(validationResult == "valid" && aRequest != null && !aRequest.isPending() && !TVE.State.isAllowedPage(aRequest.name)) {

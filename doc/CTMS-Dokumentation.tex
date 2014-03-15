@@ -56,18 +56,46 @@ Dieses \textit{CA Trust Management System (CTMS)} wurde nun implementiert und be
 TODO: Hier Inhalt einfügen!
 
 \section{Firefox-Extension}
+Im Folgenden wird die zum CTMS-System gehörige Firefox-Extension beschrieben.
 
 \subsection{Überblick}
 Standardmäßig akzeptiert Firefox alle gültigen Zertifikate, die von beliebigen, im Browser registrierten CAs ausgestellt wurden. Das sind inzwischen sehr viele und diese Tatsache liegt dem Vertrauens-Problem der derzeitigen Web-PKI zu Grunde. Um das alternative Vertrauenskonzept der Trust Views zu benutzen, integriert sich die Firefox-Extension in den Browser und delegiert die Trust-Berechnung an die CTMS-Anwendung, um anschließend angemessen auf das Ergebnis zu reagieren und den Benutzer ggf. zu warnen.
 
+\subsection{Installation}
+Die Installation der Extension funktioniert wie von Firefox-Addons gewohnt. Liegt keine fertige .xpi-Datei vor, muss diese zunächst erzeugt werden. Dazu wird der Inhalt des Ordners, der die Extension enthält, in ein zip-Archiv gepackt. Die Dateiendung sollte anschließend in .xpi geändert werden. Es sollte nun also eine Datei \texttt{trustviewsextension@cdc.informatik.tu-darmstadt.de.xpi} existieren, in der sich auf oberster Ebene (unter anderem) die Datei \texttt{install.rdf} befindet. Die .xpi Datei kann dann in den Firefox gezogen werden und wird folglich installiert.
+
 \subsection{Benutzung}
-Bei der Installation der Extension wird ein zusätzlicher Button in die Toolbar des Browsers integriert. Über diesen Button wird ein Menü bereitgestellt, in dem Einstellungen vorgenommen werden können. Dort lässt sich das Sicherheitslevel auf eine der drei Stufen \glqq hoch\grqq, \glqq mittel\grqq ~oder \glqq niedrig\grqq ~einstellen, was das Sicherheitsbedürfnis des Benutzers für die Webseiten widerspiegeln soll, die als nächstes besucht werden. Für Online-Banking oder e-Commerce dürfte beispielsweise ein höheres Level erforderlich sein, als für das Lesen einer Nachrichtenseite. Das ausgewählte Sicherheitslevel geht dann als Parameter in die Vertrauensberechnung der CTMS-Anwendung ein. Außerdem lässt sich über das Menü das Konfigurationsfenster der Extension aufrufen, in dem die Verbindungsinformationen (Host und Port) zur CTMS-Anwendung geändert werden können, mit der die Extension über HTTP kommuniziert.\\
+Während der Installation der Extension wird ein zusätzlicher Button in die Toolbar des Browsers integriert. Über diesen Button wird ein Menü bereitgestellt, in dem Einstellungen vorgenommen werden können. Dort lässt sich das Sicherheitslevel auf eine der drei Stufen \glqq hoch\grqq, \glqq mittel\grqq ~oder \glqq niedrig\grqq ~einstellen, was das Sicherheitsbedürfnis des Benutzers für die Webseiten widerspiegeln soll, die als nächstes besucht werden. Für Online-Banking oder e-Commerce dürfte beispielsweise ein höheres Level erforderlich sein, als für das Lesen einer Nachrichtenseite. Das ausgewählte Sicherheitslevel geht dann als Parameter in die Vertrauensberechnung der CTMS-Anwendung ein. Außerdem lässt sich über das Menü das Konfigurationsfenster der Extension aufrufen, in dem die Verbindungsinformationen (Host und Port) zur CTMS-Anwendung geändert werden können, mit der die Extension über HTTP kommuniziert.\\
 Wird eine mit TLS geschützte Seite aufgerufen, nimmt die Extension Kontakt mit der CTMS-Anwendung auf und erwartet von ihr das Urteil, ob die Seite bzw. das ausgelieferte Zertifikat vertrauenswürdig ist. Ist das nicht der Fall, wird der Benutzer auf eine Warnseite umgeleitet, die den Sachverhalt erklärt, dem Benutzer aber gleichzeitig die Möglichkeit gibt es mit geändertem Sicherheitslevel erneut zu versuchen, oder die Website in jedem Fall zu besuchen. Bei letzterer Möglichkeit wird die betroffene Website für die Dauer der Browsersitzung von weiteren Trust-Überprüfungen ausgenommen.\\
 Ist die CTMS-Anwendung nicht erreichbar, wird ebenfalls eine Warnseite angezeigt, die den Benutzer dazu auffordert die CTMS-Anwendung zu starten oder die Extension zu deaktivieren.
 
 \subsection{Architektur}
-TODO: schreiben
+Im Folgenden wird auf die einzelnen Komponenten der Extension eingegangen und die ihr zugrunde liegende Architektur beschrieben.
 
+\subsubsection{Namespace}
+Um Namenskonflikte bei der Wahl von Bezeichnern wie Funktionsnamen zu vermeiden, befinden sich alle zur CTMS-Extension gehörigen JavaScript-Objekte innerhalb des Namespace \texttt{TVE} (kurz für Trust-Views-Extension). Beispiele hierfür sind die Objekte \texttt{TVE.SSLListener} und \texttt{TVE.UI}. In den folgenden Beschreibungen wird das Präfix TVE meist weggelassen.\\
+Der Namespace wird innerhalb der Datei \texttt{setupNamespace.jsm} angelegt, der als JavaScript-Modul \cite{jsm} geschrieben wurde, s.~d. es keine Probleme mit dem Scoping über mehrere XUL-Seiten hinweg gibt. Außerdem wird beim Setup auch der entsprechende Preferences-Branch and den Namespace gebunden.
+
+\subsubsection{Initiierung}
+Nachdem der Namespace erzeugt und alle nötigen Skripte geladen wurden, wird die Datei \texttt{init.js} ausgeführt. Dort wird das Objekt \texttt{SSLListener} als WebProgressListener registriert um über HTTPS-Seitenaufrufe informiert zu werden. Diese Registrierung muss jedoch durch die Methode \texttt{addTabsProgressListener()} \cite{allTabs} erfolgen, um auch mit mehreren Tabs zu funktionieren.\\
+Wird \texttt{init.js} das erste Mal nach der Installation ausgeführt, werden noch zusätzliche Schritte unternommen um die Extension für die erste Benutzung vorzubereiten. Dazu wird der Button der Extension zur Toolbar von Firefox hinzugefügt und das Security-Level wird auf \glqq mittel\grqq~ eingestellt. Die wesentliche XUL-Datei bis zu diesem Punkt ist \texttt{browserOverlay.xul}.
+
+\subsubsection{SSLListener}
+In der Datei \texttt{sslListener.js} befindet sich das Objekt \texttt{SSLListener}, welches bereits von \texttt{init.js} als WebProgressListener \cite{progressListener} registriert wurde. \texttt{SSLListener} wird aktiv, wenn eine neue HTTPS-Verbindung aufgebaut wird und regelt dann das weitere Vorgehen der Extension. Das CTMS wird nur kontaktiert, wenn Firefox/NSS die Zertifikatskette erfolgreich validieren konnte. Für die weitere Validierung durch das CTMS werden neben dem Validierungsergebnis von Firefox/NSS das vom Benutzer gesetzte Security-Level und die Zertifikatskette benötigt. Letztere wird vom \texttt{CertHandler} ausgelesen. Die Kommunikation mit dem CTMS wird dann vom \texttt{CTMSCommunicator} durchgeführt, der das Ergebnis der Validierung zurück gibt. Dieses Ergebnis ist entweder \glqq TRUSTED\grqq, \glqq UNKNOWN\grqq~oder \glqq UNTRUSTED\grqq. In letzterem Fall wird das \texttt{State} Objekt angewiesen eine Warnseite anzuzeigen. Schlägt die Kommunikation mit dem CTMS fehl, etwa weil der Webservice nicht erreichbar ist, wird stattdessen eine entsprechende Fehlerseite angezeigt.
+
+\subsubsection{Certificate Handler}
+Der \texttt{CertHandler} aus der Datei \texttt{certHandler.js} stellt eine Funktion bereit, um die Zertifikatskette der aktuellen Verbindung auszulesen. Zurückgegeben wird dabei ein Array, welches alle Zertifikate der Kette enthält. Jeder Eintrag ist wiederum ein Bytearray welches ein Zertifikat im DER-Format \cite{DER} repräsentiert. Das erste Zertifikat im Array ist das der Root-CA, das letzte Zertifikat das des Servers.
+
+\subsubsection{Kommunikation mit dem CTMS}
+In \texttt{ctmsCommunicator.js} ist das Objekt \texttt{CTMSCommunicator} definiert, welches Validierungsanfragen an die CTMS-Anwendung stellen kann. Kommuniziert wird dabei über HTTP. Der \texttt{CTMSCommunicator} packt die erforderlichen Parameter (Zertifikatskette, Standardvalidierungsergebnis und Security-Level) in ein JSON-codiertes Objekt und verschickt dieses per HTTP-POST mittels eines \texttt{XMLHttpRequest} \cite{httpRequest}. Die Antwort des CTMS wird dann an den \texttt{SSLListener} zurück gegeben.
+
+\subsubsection{State}
+Das in \texttt{state.js} definierte Objekt \texttt{State} ist dafür zuständig Warnseiten anzuzeigen, sowie eine Liste temporär erlaubter Seiten zu managen, die während der aktiven Sitzung von der Trust-Überprüfung ausgenommen werden.\\
+Schlägt der Verbindungsaufbau mit dem CTMS fehl, wird die Warnseite \texttt{ctmsUnreachable.xul} angezeigt, auf der dem Benutzer erklärt wird, dass der Webservice aktiviert werden sollte.\\
+Wird hingegen ein Zertifikat für unvertrauenswürdig erachtet, wird der Benutzer auf der Warnseite \texttt{untrustedWebsite.xul} gewarnt und erhält die Möglichkeit, es mit geändertem Sicherheitslevel erneut zu versuchen, oder die Warnung zu ignorieren und die Website dennoch zu besuchen. In letzterem Fall wird die entsprechende Seite für die aktive Sitzung von Trust-Überprüfungen ausgenommen.
+
+\subsubsection{Optionen} 
+In \texttt{options.xul} ist ein Einstellungsfenster definiert, in dem sich die Verbindungsinformationen zum CTMS verändern lassen. Es ist möglich, die Einstellungen auf die Standardwerte zurückzusetzen. Diese Funktionalität stellt das \texttt{UI} Objekt aus \texttt{ui.js} bereit.
 
 \newpage
 \bibliographystyle{plain}
