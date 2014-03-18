@@ -1,9 +1,10 @@
 \documentclass[accentcolor=tud1c,article,colorback,11pt]{tudreport}
 \usepackage[utf8]{inputenc}
-\usepackage[german]{babel}
+\usepackage[ngerman]{babel}
 \usepackage[T1]{fontenc}
 \usepackage[stable]{footmisc}
 \usepackage[ngerman]{hyperref}
+\usepackage[ngerman]{cleveref}
 \usepackage{longtable}
 \usepackage{multirow}
 \usepackage{booktabs}
@@ -53,7 +54,51 @@ Dieses \textit{CA Trust Management System (CTMS)} wurde nun implementiert und be
 
 \section{CTMS-Anwendung}
 
-TODO: Hier Inhalt einfügen!
+Im Folgenden wird das CTMS-System beschrieben.
+
+\subsection{Überblick}
+Das System besteht im Wesentlichen aus
+\begin{itemize}
+\item dem Datenmodell zur Verwaltung des \textit{Trust Views} und der Benutzerkonfiguration
+\item der Trust-Validierung zur Berechnung der Vertrauenswerte im Trust-Modell
+\item Bindings zur Kommunikation mit Anwendungen, damit diese das Trust-Modell benutzen können
+\item einer graphischen Oberfläche, mit deren Hilfe der Benutzer den Trust View  einsehen und verwalten kann
+\end{itemize}
+\Cref{overview} bietet einer Überblick über diese Komponenten und deren Interaktion.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{overview}
+  \caption{Überblick über die Komponenten des CA Trust Management Systems}
+  \label{overview}
+\end{figure}
+
+\subsection{Datenmodell}
+Das Datenmodell verwaltet den Trust View, in dem die \textit{Public Key Trust Assessments} und die Menge vertrauenswürdiger und nicht vertrauenswürdiger Zertifikate gespeichert sind, wie in \cite{braun2013trust}, Abschnitt 4.2 beschrieben.
+
+Darüber hinaus stellt das Datenmodell den Zugriff auf die Benutzerkonfiguration zur Verfügung. Standardwerte sind in der Datei \texttt{configuration.properties} im Wurzelverzeichnis der Applikation/\texttt{JAR}-Datei festgelegt und können dort angepasst werden. Vom Benutzer angepasste Werte werden von der zugrunde liegenden Implementierung des Modells an einem benutzerspezifischem Ort gespeichert, wie dies auch mit dem Trust View geschieht.
+
+Die momentane Implementierung des Modells in den Klassen \texttt{data.SQLiteBackedTrustView} und \texttt{data.SQLiteBackedConfiguration} nutzt eine SQLite-Datenbank zum Speichern der Daten. Die Datenbank-Datei \texttt{ctms.sqlite} wird abgelegt im Verzeichnis:
+\begin{description}
+\item[Windows] \%APPDATA\%\textbackslash ctms
+\item[OS X] \textasciitilde/Library/Application Support/ctms
+\item[andere (falls \$XDG\_DATA\_HOME gesetzt)] \$XDG\_DATA\_HOME/ctms
+\item[andere (falls \$XDG\_DATA\_HOME nicht gesetzt)] \textasciitilde/.local/share/ctms
+\end{description}
+
+Die Implementierung des Datenmodells kann ggf. einfach gegen eine andere ausgetauscht werden. Dazu muss lediglich die Klasse \texttt{data.Model} angepasst werden, sodass eine andere Implementierung genutzt wird, welche Realisierungen der Interfaces \texttt{data.TrustView} und \texttt{data.Configuration} bereitstellt.
+
+Zentraler Zugriff auf das Datenmodell erfolgt über die Klasse \texttt{data.Model}. Über die Methoden \texttt{openTrustView} und \texttt{openConfiguration} können Instanzen der Interfaces \texttt{TrustView} bzw. \texttt{Configuration} geöffnet werden. Nach dem Ende der Transaktion also dem Abfragen und Aktualisieren des Datenmodells, müssen die geöffneten Instanzen wieder geschlossen werden. Es ist dabei sicher gestellt, dass die Transaktion atomar ist, sie also komplett ausgeführt oder komplett nicht ausgeführt wird und die Daten somit konsistent bleiben.
+
+\subsection{Trust-Validierung}
+
+Die Algorithmen zur Berechnung der Trust-Werte und zur Trust-Validierung sind in der Klasse \texttt{buisness.Computation} implementiert. Es handelt sich dabei um die in \cite{braun2013trust}, Abschnitte 4.3, 4.4 und 4.5 beschriebenen Algorithmen der Initialisierung der Trust Assessments, der Trust-Validierung und der Trust-View-Aktualisierung.
+
+\subsection{Bindings}
+Bindings stellen eine Schnittstelle für andere Anwendungen zur Verfügung, um das Trust-Modell nutzen zu können. Die allgemeine Funktionalität, die von allen Bindings genutzt werden kann, wie der Zugriff auf das Datenmodell, um die Trust-Validierung auf dessen Basis auszuführen, ist in der Klasse \texttt{services.logic.Validator} implementiert. Momentan existiert ein Binding \texttt{services.bindings.Web\-Server}, das einen simplen WebServer zur Verfügung stellt, über den das ebenfalls im Rahmen dieses Projektes entwickelte Firefox-Plugin mit dem CTMS kommunizieren kann, um den Service der Trust-Validierung zu nutzen. Der Webserver kann über die graphische Oberfläche gestartet werden.
+
+\subsection{Graphische Oberfläche}
+...
 
 \section{Firefox-Extension}
 Im Folgenden wird die zum CTMS-System gehörige Firefox-Extension beschrieben.
