@@ -11,7 +11,6 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 
 import util.CertificatePathValidity;
-
 import data.Configuration;
 import data.Model;
 import data.ModelAccessException;
@@ -68,9 +67,12 @@ public final class JsonRequestDecoder {
 			break;
 		}
 
+		// get host url
+		String host = object.getString("url");
+
 		// return the decoded the request object
 		try (Configuration config = Model.openConfiguration()) {
-			return new ValidationRequest(certifiactePath, certificatePathValidity,
+			return new ValidationRequest(host, certifiactePath, certificatePathValidity,
 					config.get(securityLevel, Double.class));
 		}
 	}

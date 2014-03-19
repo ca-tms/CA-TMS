@@ -124,7 +124,7 @@ public final class TrustComputation {
 				if (!TL.contains(pAssessments.get(i)))
 					h = i;
 			for (int i = h; i < p.size() - 1; i++)
-				if (consensus(VS.query(p.get(i).getCertificate())) ==
+				if (VS.query(p.get(i).getCertificate()) ==
 						ValidationResult.TRUSTED)
 					h = i;
 
@@ -191,22 +191,6 @@ public final class TrustComputation {
 			// add C at position h+1 as untrusted certificate
 			trustView.setUntrustedCertificate(p.get(h + 1));
 		}
-	}
-
-	private static ValidationResult consensus(ValidationResult[] results) {
-		// currently simply a relative majority voting
-		int trusted = 0, untrusted = 0, unknown = 0;
-		for (ValidationResult result : results)
-			switch (result) {
-			case TRUSTED: trusted++; break;
-			case UNTRUSTED: untrusted++; break;
-			case UNKNOWN: unknown++; break;
-			}
-
-		return
-			trusted > untrusted && trusted > unknown ? ValidationResult.TRUSTED :
-			untrusted > unknown ? ValidationResult.UNTRUSTED :
-			ValidationResult.UNKNOWN;
 	}
 
 	private static void updateAssessmentsTimestamps(TrustView trustView, List<TrustCertificate> p) {
@@ -310,7 +294,7 @@ public final class TrustComputation {
 			result = ValidationResult.UNTRUSTED;
 		if (exp < l && o_kl.getC() < 1)
 			// compute consensus of validation service
-			result = consensus(VS.query(p.get(p.size() - 1).getCertificate()));
+			result = VS.query(p.get(p.size() - 1).getCertificate());
 
 		updateView(trustView, config, p, pAssessments, result, TL, VS);
 		updateAssessmentsTimestamps(trustView, p);

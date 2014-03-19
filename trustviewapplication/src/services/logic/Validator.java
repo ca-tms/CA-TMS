@@ -1,11 +1,9 @@
 package services.logic;
 
-import buisness.TrustComputation;
-
 import support.Service;
 import util.CertificatePathValidity;
 import util.ValidationResult;
-
+import buisness.TrustComputation;
 import data.Configuration;
 import data.Model;
 import data.ModelAccessException;
@@ -30,7 +28,7 @@ public final class Validator {
 								trustView, config,
 								request.getCertifiactePath(),
 								request.getsecurityLevel(),
-								Service.getValidationService());
+								Service.getValidationService(request.getHost()));
 				}
 				catch (Exception e) {
 					if (attempts == 0)
