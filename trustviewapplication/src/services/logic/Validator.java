@@ -20,6 +20,10 @@ public final class Validator {
 		ValidationResult result = ValidationResult.UNTRUSTED;
 
 		if (request.getCertificatePathValidity() == CertificatePathValidity.VALID) {
+			System.out.println("Performing trust validation ...");
+			System.out.println("  URL: " + request.getURL());
+			System.out.println("  Security Level: " + request.getsecurityLevel());
+			
 			int attempts = 0;
 			while (true) {
 				try (TrustView trustView = Model.openTrustView();
@@ -28,7 +32,7 @@ public final class Validator {
 								trustView, config,
 								request.getCertifiactePath(),
 								request.getsecurityLevel(),
-								Service.getValidationService(request.getHost()));
+								Service.getValidationService(request.getURL()));
 				}
 				catch (Exception e) {
 					if (attempts == 0)
@@ -47,6 +51,9 @@ public final class Validator {
 					}
 					continue;
 				}
+				
+				System.out.println("Trust validation completed.");
+				System.out.println("  Result was " + result);
 				break;
 			}
 		}

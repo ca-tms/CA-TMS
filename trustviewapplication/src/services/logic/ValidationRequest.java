@@ -6,14 +6,14 @@ import util.CertificatePathValidity;
 import data.TrustCertificate;
 
 public class ValidationRequest {
-	private final String host;
+	private final String url;
 	private final List<TrustCertificate> certifiactePath;
 	private final double securityLevel;
 	private final CertificatePathValidity certificatePathValidity;
 
-	public ValidationRequest(String host, List<TrustCertificate> certifiactePath,
+	public ValidationRequest(String url, List<TrustCertificate> certifiactePath,
 			CertificatePathValidity certificatePathValidity, double securityLevel) {
-		this.host = host;
+		this.url = url;
 		this.certifiactePath = certifiactePath;
 		this.certificatePathValidity = certificatePathValidity;
 		this.securityLevel = securityLevel;
@@ -23,8 +23,8 @@ public class ValidationRequest {
 				"Security level have a value between 0 and 1, but was " + securityLevel);
 	}
 
-	public String getHost() {
-		return host;
+	public String getURL() {
+		return url;
 	}
 
 	public List<TrustCertificate> getCertifiactePath() {
