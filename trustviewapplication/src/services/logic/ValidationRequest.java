@@ -20,7 +20,7 @@ public class ValidationRequest {
 
 		if (securityLevel < 0.0 || securityLevel > 1.0)
 			throw new IllegalArgumentException(
-				"Security level have a value between 0 and 1, but was " + securityLevel);
+				"Security level must have a value between 0 and 1, but was " + securityLevel);
 	}
 
 	public String getURL() {

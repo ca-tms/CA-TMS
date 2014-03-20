@@ -23,7 +23,7 @@ public final class Validator {
 			System.out.println("Performing trust validation ...");
 			System.out.println("  URL: " + request.getURL());
 			System.out.println("  Security Level: " + request.getsecurityLevel());
-			
+
 			int attempts = 0;
 			while (true) {
 				try (TrustView trustView = Model.openTrustView();
@@ -51,7 +51,7 @@ public final class Validator {
 					}
 					continue;
 				}
-				
+
 				System.out.println("Trust validation completed.");
 				System.out.println("  Result was " + result);
 				break;
