@@ -15,16 +15,15 @@ import data.ModelAccessException;
 
 import biz.source_code.miniConnectionPoolManager.MiniConnectionPoolManager;
 
-import util.Util;
-
-public class SQLiteBackedModel {
-	private static final String DATABASE_FILE_NAME = "ctms.sqlite";
+public class SQLiteBackedModel implements AutoCloseable {
 	private static final int MAX_CONNECTIONS = 16;
 
 	private MiniConnectionPoolManager poolManager;
 	private File databaseFile;
 
-	public SQLiteBackedModel() throws ModelAccessException {
+	public SQLiteBackedModel(File databaseFile) throws ModelAccessException {
+		this.databaseFile = databaseFile;
+
 		try {
 			setup();
 		}
@@ -34,14 +33,10 @@ public class SQLiteBackedModel {
 	}
 
 	public void setup() throws SQLException {
-		final String dir = Util.getDataDirectory() + File.separator + "ctms";
-		final String file = dir + File.separator + DATABASE_FILE_NAME;
-
-		new File(dir).mkdirs();
-		databaseFile = new File(file);
+		databaseFile.getParentFile().mkdirs();
 
 		SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
-		dataSource.setUrl("jdbc:sqlite:" + file);
+		dataSource.setUrl("jdbc:sqlite:" + databaseFile.getPath());
 		poolManager = new MiniConnectionPoolManager(dataSource, MAX_CONNECTIONS);
 
 		try (Connection connection = poolManager.getConnection();
@@ -122,6 +117,11 @@ public class SQLiteBackedModel {
 		poolManager = null;
 	}
 
+	@Override
+	public void close() throws Exception {
+		teardown();
+	}
+
 	public synchronized SQLiteBackedTrustView openTrustView() throws ModelAccessException {
 		Connection connection = null;
 		try {
@@ -170,8 +170,7 @@ public class SQLiteBackedModel {
 	}
 
 	public synchronized void restore(File file) throws ModelAccessException {
-		File databaseTempFile =
-				new File(databaseFile.getParent(), DATABASE_FILE_NAME + ".temp");
+		File databaseTempFile = new File(databaseFile.getPath() + ".temp");
 
 		try {
 			teardown();

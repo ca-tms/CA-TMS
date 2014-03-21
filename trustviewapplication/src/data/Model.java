@@ -5,16 +5,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import util.Util;
+
 import data.file.PropertiesFileBackedConfiguration;
 import data.sqlite.SQLiteBackedModel;
 
 public final class Model {
+	private static final String DATABASE_FILE_NAME =
+			File.separator + "ctms" + File.separator + "ctms.sqlite";
+	private static final String DEFAULT_CONFIGURATION_FILE_NAME =
+			"/configuration.properties";
+
 	private static SQLiteBackedModel model = null;
 	private static Configuration configuration = null;
 
 	private static synchronized SQLiteBackedModel getModel() throws ModelAccessException {
 		if (model == null)
-			model = new SQLiteBackedModel();
+			model = new SQLiteBackedModel(new File(
+							Util.getDataDirectory() + DATABASE_FILE_NAME));
 		return model;
 	}
 
@@ -22,7 +30,7 @@ public final class Model {
 		if (configuration == null) {
 			Properties properties = new Properties();
 			try (InputStream stream =
-					Model.class.getResourceAsStream("/configuration.properties")) {
+					Model.class.getResourceAsStream(DEFAULT_CONFIGURATION_FILE_NAME)) {
 				properties.load(stream);
 			}
 			catch (IOException e) {
