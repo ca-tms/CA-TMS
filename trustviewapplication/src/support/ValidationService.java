@@ -1,9 +1,9 @@
 package support;
 
-import java.security.cert.Certificate;
+import data.TrustCertificate;
 
 import util.ValidationResult;
 
 public interface ValidationService {
-	ValidationResult query(Certificate certificate);
+	ValidationResult query(TrustCertificate certificate);
 }

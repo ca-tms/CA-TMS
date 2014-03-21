@@ -124,7 +124,7 @@ public final class TrustComputation {
 				if (!TL.contains(pAssessments.get(i)))
 					h = i;
 			for (int i = h; i < p.size() - 1; i++)
-				if (VS.query(p.get(i).getCertificate()) ==
+				if (VS.query(p.get(i)) ==
 						ValidationResult.TRUSTED)
 					h = i;
 
@@ -294,7 +294,7 @@ public final class TrustComputation {
 			result = ValidationResult.UNTRUSTED;
 		if (exp < l && o_kl.getC() < 1)
 			// compute consensus of validation service
-			result = VS.query(p.get(p.size() - 1).getCertificate());
+			result = VS.query(p.get(p.size() - 1));
 
 		updateView(trustView, config, p, pAssessments, result, TL, VS);
 		updateAssessmentsTimestamps(trustView, p);
