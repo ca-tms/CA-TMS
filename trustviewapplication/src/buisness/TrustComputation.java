@@ -18,9 +18,27 @@ import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
+/**
+ * <p>Implements the Trust computation and validation as described in
+ * <q>Trust views for the web pki</q> [1], sections 4.3, 4.4 and 4.5.</p>
+ *
+ * <p>[1] Johannes Braun, Florian Volk, Johannes Buchmann, and Max Mühlhäuser.
+ * Trust views for the web pki. 2013.</p>
+ */
 public final class TrustComputation {
 	private TrustComputation() { }
 
+	/**
+	 * Implements the initialization of Trust Assessments as described in
+	 * <q>Trust views for the web pki</q> [1], section 4.3
+	 *
+	 * @param trustView the Trust View to be used
+	 * @param config the configuration to be used
+	 * @param S the certificate that certifies the entity
+	 *          which the Trust Assessment should be initialized for
+	 * @param isLegitimateRoot <code>true</code> if the entity is a root entity
+	 * @return the initialized Trust Assessment
+	 */
 	private static TrustAssessment createAssessment(
 			TrustView trustView, Configuration config,
 			TrustCertificate S, boolean isLegitimateRoot) {
@@ -68,6 +86,19 @@ public final class TrustComputation {
 		return new TrustAssessment(k, ca, S, o_kl, o_it_ca, o_it_ee);
 	}
 
+	/**
+	 * Implements the Trust View update as described in
+	 * <q>Trust views for the web pki</q> [1], section 4.5
+	 *
+	 * @param trustView the Trust View to be used
+	 * @param config the configuration to be used
+	 * @param p a certificate path
+	 * @param pAssessments the assessments belonging to the certificates in the
+	 *                     certificate path <code>p</code> at the corresponding index
+	 * @param R the result of the trust validation
+	 * @param TL the list of new Trust Assessments
+	 * @param VS an external validation service
+	 */
 	private static void updateView(TrustView trustView, Configuration config,
 			List<TrustCertificate> p, List<TrustAssessment> pAssessments,
 			ValidationResult R, List<TrustAssessment> TL, ValidationService VS) {
@@ -210,11 +241,22 @@ public final class TrustComputation {
 		return assessment;
 	}
 
-	// first certificate in p should be the target certificate
-	// and the last one should be issued by the trust anchor
-	// the certificate representing the trust anchor should not be included in
-	// the certification path, but given as separate argument
-	// (in compliance with the official documentation for these classes)
+	/**
+	 * Implements the Trust Validation as described in
+	 * <q>Trust views for the web pki</q> [1], section 4.4
+	 *
+	 * @param trustView the Trust View to be used
+	 * @param config the configuration to be used
+	 * @param path a certificate path
+	 *        (starting with he certificate for the end entity and ending with
+	 *        the certificate issued by the root CA
+	 *        excluding the self-signed certificate for the root CA itself
+	 *        in compliance with the documentation for {@link CertPath})
+	 * @param pathAnchor the self-signed root certificate
+	 * @param l the security level (between 0 and 1) to be used
+	 * @param VS an external validation service
+	 * @return the result of the trust validation
+	 */
 	public static ValidationResult validate(TrustView trustView, Configuration config,
 			CertPath path, Certificate pathAnchor, double l, ValidationService VS) {
 		List<? extends Certificate> certs = path.getCertificates();
@@ -229,9 +271,20 @@ public final class TrustComputation {
 		return validate(trustView, config, p, l, VS);
 	}
 
-	// first certificate in p should be the certificate for the trust anchor
-	// and the last one should be the target certificate
-	// (in compliance with the paper)
+	/**
+	 * Implements the Trust Validation as described in
+	 * <q>Trust views for the web pki</q> [1], section 4.4
+	 *
+	 * @param trustView the Trust View to be used
+	 * @param config the configuration to be used
+	 * @param p a certificate path
+	 *        (starting with the self-signed root certificate and ending with
+	 *        the certificate for the end entity,
+	 *        in compliance with the definition used in [1])
+	 * @param l the security level (between 0 and 1) to be used
+	 * @param VS an external validation service
+	 * @return the result of the trust validation
+	 */
 	public static ValidationResult validate(TrustView trustView, Configuration config,
 			List<TrustCertificate> p, double l, ValidationService VS) {
 		Set<TrustCertificate> trustedCertificates =

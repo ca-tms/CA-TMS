@@ -9,7 +9,8 @@ import util.Option;
 import CertainTrust.CertainTrust;
 
 /**
- * <p>Represents a Trust Assessment as described in [1], section 4.2.</p>
+ * <p>Represents a Trust Assessment as described in
+ * <q>Trust views for the web pki</q> [1], section 4.2.</p>
  *
  * <p>[1] Johannes Braun, Florian Volk, Johannes Buchmann, and Max Mühlhäuser.
  * Trust views for the web pki. 2013.</p>
@@ -37,7 +38,7 @@ public class TrustAssessment {
 
 	/**
 	 * <p>Creates a new <code>TrustAssessment</code>, initializing it with all data that
-	 * represents the assessment as described in [1]</p>
+	 * represents the assessment as described in <q>Trust views for the web pki</q> [1]</p>
 	 */
 	public TrustAssessment(String k, String ca, Set<TrustCertificate> S,
 			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
@@ -51,7 +52,7 @@ public class TrustAssessment {
 
 	/**
 	 * <p>Creates a new <code>TrustAssessment</code>, initializing it with all data that
-	 * represents the assessment as described in [1]</p>
+	 * represents the assessment as described in <q>Trust views for the web pki</q> [1]</p>
 	 *
 	 * <p>This constructor is just a shorthand for
 	 * {@link #TrustAssessment(String, String, Set, Option, CertainTrust, CertainTrust)}
