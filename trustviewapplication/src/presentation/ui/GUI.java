@@ -833,7 +833,7 @@ public class GUI {
 
 		JPanel Outer_General_Setting = new JPanel();
 		Outer_General_Setting.setBorder(new TitledBorder(null, "General Setting", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_General_Setting.setBounds(10, 143, 549, 233);
+		Outer_General_Setting.setBounds(10, 143, 549, 243);
 		panel_Conf.add(Outer_General_Setting);
 		Outer_General_Setting.setLayout(null);
 
@@ -869,58 +869,58 @@ public class GUI {
 		
 		JSeparator separator = new JSeparator();
 		separator.setForeground(Color.LIGHT_GRAY);
-		separator.setBounds(120, 115, 419, 11);
+		separator.setBounds(120, 118, 419, 11);
 		Outer_General_Setting.add(separator);
 		
 		JLabel lblResetDatabase = new JLabel("Reset trust view");
-		lblResetDatabase.setBounds(10, 106, 100, 15);
+		lblResetDatabase.setBounds(10, 109, 100, 15);
 		Outer_General_Setting.add(lblResetDatabase);
 		
 		JLabel lblDeleteAllThe = new JLabel("All of the Trust/Untrust Certificates, Assessments will");
-		lblDeleteAllThe.setBounds(42, 127, 343, 15);
+		lblDeleteAllThe.setBounds(42, 130, 343, 15);
 		Outer_General_Setting.add(lblDeleteAllThe);
 		
 		JLabel lblAndAllThe = new JLabel("be deleted.");
-		lblAndAllThe.setBounds(42, 145, 343, 15);
+		lblAndAllThe.setBounds(42, 148, 343, 15);
 		Outer_General_Setting.add(lblAndAllThe);
 		
 		JButton btnReset = new JButton("Reset");
 		
-		btnReset.setBounds(422, 131, 93, 23);
+		btnReset.setBounds(422, 134, 93, 23);
 		Outer_General_Setting.add(btnReset);
 		
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setForeground(Color.LIGHT_GRAY);
-		separator_1.setBounds(149, 184, 390, 2);
+		separator_1.setBounds(149, 187, 390, 2);
 		Outer_General_Setting.add(separator_1);
 		
 		JLabel lblDefaultSetting = new JLabel("Default configuration");
-		lblDefaultSetting.setBounds(10, 175, 129, 15);
+		lblDefaultSetting.setBounds(10, 178, 129, 15);
 		Outer_General_Setting.add(lblDefaultSetting);
 		
 		JLabel lblAllOfThe = new JLabel("All of the configurations will be set to default value.");
-		lblAllOfThe.setBounds(42, 196, 359, 15);
+		lblAllOfThe.setBounds(42, 199, 359, 15);
 		Outer_General_Setting.add(lblAllOfThe);
 		
 		JButton btnDefault = new JButton("Default");
 		
-		btnDefault.setBounds(422, 195, 93, 23);
+		btnDefault.setBounds(422, 198, 93, 23);
 		Outer_General_Setting.add(btnDefault);
 
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_Data_Backup.setBounds(10, 386, 549, 72);
+		Outer_Data_Backup.setBounds(10, 396, 549, 62);
 		panel_Conf.add(Outer_Data_Backup);
 		Outer_Data_Backup.setLayout(null);
 
 		JButton btnImport = new JButton("Import");
 
-		btnImport.setBounds(102, 31, 93, 23);
+		btnImport.setBounds(107, 29, 93, 23);
 		Outer_Data_Backup.add(btnImport);
 
 		JButton btnExport = new JButton("Export");
 
-		btnExport.setBounds(340, 31, 93, 23);
+		btnExport.setBounds(345, 29, 93, 23);
 		Outer_Data_Backup.add(btnExport);
 ///////////////////////////////////////////////////////////////////////////////////Security level setting listner//////////////////////////////////////////////////////////////////////////////
 		slider_high.addChangeListener(new ChangeListener() {
