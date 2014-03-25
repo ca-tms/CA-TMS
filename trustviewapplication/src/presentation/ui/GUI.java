@@ -62,6 +62,8 @@ import data.ModelAccessException;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
+import javax.swing.JSeparator;
+import java.awt.Color;
 
 public class GUI {
 
@@ -831,7 +833,7 @@ public class GUI {
 
 		JPanel Outer_General_Setting = new JPanel();
 		Outer_General_Setting.setBorder(new TitledBorder(null, "General Setting", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_General_Setting.setBounds(10, 143, 549, 224);
+		Outer_General_Setting.setBounds(10, 143, 549, 233);
 		panel_Conf.add(Outer_General_Setting);
 		Outer_General_Setting.setLayout(null);
 
@@ -864,10 +866,50 @@ public class GUI {
 
 		btnChange.setBounds(446, 66, 93, 23);
 		Outer_General_Setting.add(btnChange);
+		
+		JSeparator separator = new JSeparator();
+		separator.setForeground(Color.LIGHT_GRAY);
+		separator.setBounds(120, 115, 419, 11);
+		Outer_General_Setting.add(separator);
+		
+		JLabel lblResetDatabase = new JLabel("Reset trust view");
+		lblResetDatabase.setBounds(10, 106, 100, 15);
+		Outer_General_Setting.add(lblResetDatabase);
+		
+		JLabel lblDeleteAllThe = new JLabel("All of the Trust/Untrust Certificates, Assessments will");
+		lblDeleteAllThe.setBounds(42, 127, 343, 15);
+		Outer_General_Setting.add(lblDeleteAllThe);
+		
+		JLabel lblAndAllThe = new JLabel("be deleted.");
+		lblAndAllThe.setBounds(42, 145, 343, 15);
+		Outer_General_Setting.add(lblAndAllThe);
+		
+		JButton btnReset = new JButton("Reset");
+		
+		btnReset.setBounds(422, 131, 93, 23);
+		Outer_General_Setting.add(btnReset);
+		
+		JSeparator separator_1 = new JSeparator();
+		separator_1.setForeground(Color.LIGHT_GRAY);
+		separator_1.setBounds(149, 184, 390, 2);
+		Outer_General_Setting.add(separator_1);
+		
+		JLabel lblDefaultSetting = new JLabel("Default configuration");
+		lblDefaultSetting.setBounds(10, 175, 129, 15);
+		Outer_General_Setting.add(lblDefaultSetting);
+		
+		JLabel lblAllOfThe = new JLabel("All of the configurations will be set to default value.");
+		lblAllOfThe.setBounds(42, 196, 359, 15);
+		Outer_General_Setting.add(lblAllOfThe);
+		
+		JButton btnDefault = new JButton("Default");
+		
+		btnDefault.setBounds(422, 195, 93, 23);
+		Outer_General_Setting.add(btnDefault);
 
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_Data_Backup.setBounds(10, 376, 549, 72);
+		Outer_Data_Backup.setBounds(10, 386, 549, 72);
 		panel_Conf.add(Outer_Data_Backup);
 		Outer_Data_Backup.setLayout(null);
 
@@ -1175,6 +1217,66 @@ public class GUI {
 					PresentationLogic.msg("Please enter a valid Expiration Time in millisecond !" );
 				}
 
+			}
+		});
+		
+		
+		btnReset.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				
+				int n = JOptionPane.showConfirmDialog(null, "Are you sure to reset all the data in the database ?", "Are you Sure ?", JOptionPane.YES_NO_OPTION);
+				if(n == JOptionPane.YES_OPTION)
+				{
+					try {
+						view = data.Model.openTrustView();
+						view.erase();
+						view.close();
+					} catch (ModelAccessException e) {
+						JOptionPane
+						.showConfirmDialog(
+								null,
+								"Error reading or concurrent modifying the database! ",
+								"Error", JOptionPane.DEFAULT_OPTION);
+						e.printStackTrace();
+					}
+					table_TC.setModel(PresentationLogic.refresh_TC_Table());
+					table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+					table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+					refresh_ColWidth();
+					
+				
+				}}
+			
+		});
+		
+		btnDefault.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				int n = JOptionPane.showConfirmDialog(null, "Are you sure to restore the configurations of the application ? This function should only be used if the Application is in an unusable state !", "Are you Sure ?", JOptionPane.YES_NO_OPTION);
+				if(n == JOptionPane.YES_OPTION)
+				{
+					
+					Configuration conf;
+					try {
+						conf = data.Model.openConfiguration();
+						conf.erase();
+						conf.close();
+					} catch (ModelAccessException e) {
+						JOptionPane
+						.showConfirmDialog(
+								null,
+								"Error reading or concurrent modifying the database! ",
+								"Error", JOptionPane.DEFAULT_OPTION);
+						e.printStackTrace();
+					}
+					
+					JOptionPane
+					.showConfirmDialog(
+							null,
+							"All of the configurations are restored, please restart the application !",
+							"Please restart the Application !", JOptionPane.DEFAULT_OPTION);
+				}
 			}
 		});
 		/////////////////////////////////////////////////////////////////panel_About////////////////////////////////////////////////////////////////////
