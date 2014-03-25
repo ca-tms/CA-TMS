@@ -10,6 +10,10 @@ import util.Util;
 import data.file.PropertiesFileBackedConfiguration;
 import data.sqlite.SQLiteBackedModel;
 
+/**
+ * Provides the central access point for the data model that stores the
+ * user's {@link TrustView} data as well as the current {@link Configuration}
+ */
 public final class Model {
 	private static final String DATABASE_FILE_NAME =
 			File.separator + "ctms" + File.separator + "ctms.sqlite";

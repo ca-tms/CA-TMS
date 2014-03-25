@@ -9,6 +9,11 @@ import data.Configuration;
 import data.ConfigurationValueAccessException;
 import data.ModelAccessException;
 
+/**
+ * Implementation of the {@link Configuration} interface that provides
+ * writable access to the configuration key-value mapping stored
+ * in a SQLite database.
+ */
 public class SQLiteBackedConfiguration implements Configuration {
 	private final Connection connection;
 	private final PreparedStatement getValue;

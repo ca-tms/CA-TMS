@@ -11,10 +11,15 @@ import java.sql.Statement;
 
 import org.sqlite.SQLiteConnectionPoolDataSource;
 
+import data.Model;
 import data.ModelAccessException;
 
 import biz.source_code.miniConnectionPoolManager.MiniConnectionPoolManager;
 
+/**
+ * Data model that is to be used by the {@link Model} to implement data storage
+ * using a SQLite database.
+ */
 public class SQLiteBackedModel implements AutoCloseable {
 	private static final int MAX_CONNECTIONS = 16;
 

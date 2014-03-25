@@ -6,6 +6,11 @@ import data.Configuration;
 import data.ConfigurationValueAccessException;
 import data.ModelAccessException;
 
+/**
+ * Implementation of the {@link Configuration} interface that provides
+ * read-only access to the configuration key-value mapping stored
+ * in a {@link Properties} file.
+ */
 public class PropertiesFileBackedConfiguration implements Configuration {
 	private final Properties properties;
 

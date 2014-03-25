@@ -24,6 +24,9 @@ import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
 
+/**
+ * Implementation of the {@link TrustView} that is backed by a SQLite database.
+ */
 public class SQLiteBackedTrustView implements TrustView {
 	private final Connection connection;
 	private final Configuration config;

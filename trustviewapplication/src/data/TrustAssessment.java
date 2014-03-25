@@ -8,6 +8,12 @@ import util.Option;
 
 import CertainTrust.CertainTrust;
 
+/**
+ * <p>Represents a Trust Assessment as described in [1], section 4.2.</p>
+ *
+ * <p>[1] Johannes Braun, Florian Volk, Johannes Buchmann, and Max Mühlhäuser.
+ * Trust views for the web pki. 2013.</p>
+ */
 public class TrustAssessment {
 	// public key
 	private final String k;
@@ -29,6 +35,10 @@ public class TrustAssessment {
 	// (issuer trust in ca, when using k to sign end entities)
 	private final CertainTrust o_it_ee;
 
+	/**
+	 * <p>Creates a new <code>TrustAssessment</code>, initializing it with all data that
+	 * represents the assessment as described in [1]</p>
+	 */
 	public TrustAssessment(String k, String ca, Set<TrustCertificate> S,
 			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
 		this.k = k;
@@ -39,6 +49,14 @@ public class TrustAssessment {
 		this.o_it_ee = o_it_ee;
 	}
 
+	/**
+	 * <p>Creates a new <code>TrustAssessment</code>, initializing it with all data that
+	 * represents the assessment as described in [1]</p>
+	 *
+	 * <p>This constructor is just a shorthand for
+	 * {@link #TrustAssessment(String, String, Set, Option, CertainTrust, CertainTrust)}
+	 * where the the set <code>S</code> is initialized with a single element</p>
+	 */
 	public TrustAssessment(String k, String ca, TrustCertificate S,
 			Option<CertainTrust> o_kl, CertainTrust o_it_ca, CertainTrust o_it_ee) {
 		this(k, ca, new HashSet<>(Collections.singleton(S)),
@@ -75,26 +93,46 @@ public class TrustAssessment {
 		       o_it_ee.getT() + ", " + o_it_ee.getC() + ", " + o_it_ee.getF() + "))";
 	}
 
+	/**
+	 * @return the public key
+	 */
 	public String getK() {
 		return k;
 	}
 
+	/**
+	 * @return the CA name
+	 */
 	public String getCa() {
 		return ca;
 	}
 
+	/**
+	 * @return the certificates for this public key and CA
+	 */
 	public Set<TrustCertificate> getS() {
 		return S;
 	}
 
+	/**
+	 * @return the opinion on the key legitimacy (whether k belongs to the CA)
+	 */
 	public Option<CertainTrust> getO_kl() {
 		return o_kl;
 	}
 
+	/**
+	 * @return the opinion on the issuer trust in the CA when using k to sign CAs
+	 * (the trust in the CA to issue trustworthy certificates for CAs)
+	 */
 	public CertainTrust getO_it_ca() {
 		return o_it_ca;
 	}
 
+	/**
+	 * @return the pinion on the issuer trust in the CA when using k to sign end entities
+	 * (the trust in the CA to issue trustworthy certificates for end entities)
+	 */
 	public CertainTrust getO_it_ee() {
 		return o_it_ee;
 	}

@@ -1,8 +1,15 @@
 package util;
 
+/**
+ * Provides general utility functions
+ */
 public final class Util {
 	private Util() { }
 
+	/**
+	 * @return the user data directory,
+	 * this is where an application can store user-specific data
+	 */
 	public static String getDataDirectory() {
 		String OS = System.getProperty("os.name").toUpperCase();
 		if (OS.contains("WIN"))

@@ -8,9 +8,17 @@ import sslcheck.core.NotaryManager;
 import sslcheck.core.TLSConnectionInfo;
 import util.ValidationResult;
 
+/**
+ * Provides central access point for external services
+ */
 public final class Service {
 	private Service() { }
 
+	/**
+	 * @return a {@link ValidationService} instance that can be used to query
+	 * external validation services implemented as notaries
+	 * @param host the host which validation is requested for
+	 */
 	public static ValidationService getValidationService(final String host) {
 		return new ValidationService() {
 			@Override

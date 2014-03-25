@@ -16,9 +16,15 @@ import data.Model;
 import data.ModelAccessException;
 import data.TrustCertificate;
 
+/**
+ * Decoder for JSON requests
+ */
 public final class JsonRequestDecoder {
 	private JsonRequestDecoder() { }
 
+	/**
+	 * Decodes a JSON request resulting in a {@link ValidationRequest} object
+	 */
 	public static ValidationRequest decode(JsonObject object)
 			throws CertificateException, ModelAccessException {
 		// get certificate chain

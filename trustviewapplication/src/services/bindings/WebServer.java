@@ -30,15 +30,26 @@ import util.ValidationResult;
 import data.Configuration;
 import data.Model;
 
+/**
+ * Implements a web server binding. The web server can be queried by using a
+ * HTTP interface from a local client.
+ */
 public class WebServer {
 	private Thread thread;
 	private ServerSocketChannel serverSocketChannel;
 	private ExecutorService executorService;
 
+	/**
+	 * Creates a new <code>WebServer</code> instance
+	 */
 	public WebServer() {
 		executorService = Executors.newCachedThreadPool();
 	}
 
+	/**
+	 * Starts the web server listening on the configured port
+	 * @throws IOException
+	 */
 	public void start() throws IOException {
 		if (thread == null) {
 			final int port;
@@ -86,6 +97,10 @@ public class WebServer {
 		}
 	}
 
+	/**
+	 * Stops a running the web server from listening to incoming HTTP queries
+	 * @throws IOException
+	 */
 	public void stop() {
 		if (thread != null) {
 			thread.interrupt();
@@ -93,6 +108,10 @@ public class WebServer {
 		}
 	}
 
+	/**
+	 * Implements the parsing of HTTP requests, the creation of HTTP responses
+	 * and the delegation of queries to the {@link Validator}
+	 */
 	static private class CommunicationHandler implements Runnable {
 		private final SocketChannel socketChannel;
 		private final ExecutorService executorService;
@@ -191,6 +210,9 @@ public class WebServer {
 		}
 	}
 
+	/**
+	 * Reads a JSON object from a HTTP stream's content
+	 */
 	static private class JsonObjectReader implements Callable<JsonObject> {
 		private final BufferedReader reader;
 

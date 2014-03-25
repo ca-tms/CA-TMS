@@ -1,5 +1,8 @@
 package data;
 
+/**
+ * Indicates that accessing the data model failed
+ */
 public class ModelAccessException extends Exception {
 	private static final long serialVersionUID = -4988969206288878607L;
 

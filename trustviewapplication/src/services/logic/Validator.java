@@ -9,12 +9,21 @@ import data.Model;
 import data.ModelAccessException;
 import data.TrustView;
 
+/**
+ * Validator for {@link ValidationRequest}s
+ */
 public final class Validator {
 	static final int MAX_ATTEMPTS = 60;
 	static final int WAIT_ATTEMPT_MILLIS = 500;
 
 	private Validator() { }
 
+	/**
+	 * @return the validation result for the given request
+	 * @param request
+	 * @throws ModelAccessException if accessing the data model,
+	 * whose data the validation is based on, failed
+	 */
 	public static ValidationResult validate(ValidationRequest request)
 			throws ModelAccessException {
 		ValidationResult result = ValidationResult.UNTRUSTED;
