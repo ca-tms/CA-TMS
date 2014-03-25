@@ -79,13 +79,16 @@ Das Datenmodell verwaltet den Trust View, in dem die \textit{Public Key Trust As
 Darüber hinaus stellt das Datenmodell den Zugriff auf die Benutzerkonfiguration zur Verfügung. Standardwerte sind in der Datei \texttt{configuration.properties} im Wurzelverzeichnis der Applikation/\texttt{JAR}-Datei festgelegt und können dort modifiziert werden. Vom Benutzer angepasste Werte werden von der zugrunde liegenden Implementierung des Modells an einem benutzerspezifischem Ort gespeichert, wie dies auch mit dem Trust View geschieht.
 
 Die momentane Implementierung des Modells in den Klassen \texttt{data.sqlite.SQLiteBackedTrustView} und \texttt{data.sqlite.SQLiteBackedConfiguration} nutzt eine SQLite-Datenbank zum Speichern der Daten. Die Datenbank-Datei \texttt{ctms.sqlite} wird abgelegt im Verzeichnis:
+\vspace{1em}
 
+\begin{minipage}{\textwidth}
 \begin{description}
 \item[Windows] \%APPDATA\%\textbackslash ctms
 \item[OS X] \textasciitilde/Library/Application Support/ctms
 \item[andere (falls \$XDG\_DATA\_HOME gesetzt)] \$XDG\_DATA\_HOME/ctms
 \item[andere (falls \$XDG\_DATA\_HOME nicht gesetzt)] \textasciitilde/.local/share/ctms
 \end{description}
+\end{minipage}
 
 Die Implementierung des Datenmodells kann ggf. einfach gegen eine andere ausgetauscht werden. Dazu muss lediglich die Klasse \texttt{data.Model} angepasst werden, sodass eine andere Implementierung genutzt wird, welche Realisierungen der Interfaces \texttt{data.TrustView} und \texttt{data.Configuration} bereitstellt.
 
@@ -94,6 +97,8 @@ Zentraler Zugriff auf das Datenmodell erfolgt über die Klasse \texttt{data.Mode
 \subsection{Trust-Validierung}
 
 Die Algorithmen zur Berechnung der Trust-Werte und zur Trust-Validierung sind in der Klasse \texttt{buisness.Computation} implementiert. Es handelt sich dabei um die in \cite{braun2013trust}, Abschnitte 4.3, 4.4 und 4.5 beschriebenen Algorithmen der Initialisierung der Trust Assessments, der Trust-Validierung und der Trust-View-Aktualisierung.
+
+Die Standardpfadvalidierung wird von Firefox ausgeführt und das Resultat wird der Java-Applikation übermittelt. Diese prüft die Gültigkeit/Revokation der Zertifikate und die Gültigkeit des Zertifikatspfades nicht mehr selbst, sondern verlässt sich auf die Validierung, die von Firefox ausgeführt wurde. Dies bedeutet insbesondere auch, dass für die Gültigkeit der Root Certificate Store von Firefox maßgeblich ist und nicht der der Java Runtime. Die Klassen im Package \texttt{support.revocation} sind deshalb zurzeit nicht implementiert.
 
 \subsection{Bindings}
 Bindings stellen eine Schnittstelle für andere Anwendungen zur Verfügung, um das Trust-Modell nutzen zu können. Die allgemeine Funktionalität, die von allen Bindings genutzt werden kann, wie der Zugriff auf die Trust-Berechnung-Komponente und das Datenmodell, um die Trust-Validierung auf dessen Basis auszuführen, ist in der Klasse \texttt{services.logic.Validator} implementiert. Momentan existiert ein Binding \texttt{services.bindings.WebServer}, das einen simplen WebServer zur Verfügung stellt, über den das ebenfalls im Rahmen dieses Projektes entwickelte Firefox-Plugin mit dem CTMS kommunizieren kann, um den Service der Trust-Validierung zu nutzen. Der Webserver kann über die graphische Oberfläche gestartet werden.
