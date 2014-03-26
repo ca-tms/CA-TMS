@@ -157,18 +157,19 @@ public class GUI {
 
 
 		  PopupMenu pop = new PopupMenu();
-		  MenuItem show = new MenuItem("Resume");
+		  MenuItem resume = new MenuItem("Resume");
 		  MenuItem exit = new MenuItem("Exit");
 
-		  show.addActionListener(new ActionListener() {
+		  resume.addActionListener(new ActionListener() {
 
 		   @Override
 		public void actionPerformed(ActionEvent e) {
 
-		    tray.remove(trayIcon);
+		    
 		    frame.setVisible(true);
 		    frame.setExtendedState(JFrame.NORMAL);
 		    frame.toFront();
+		    tray.remove(trayIcon);
 		   }
 
 		  });
@@ -185,7 +186,7 @@ public class GUI {
 
 		    });
 
-		  pop.add(show);
+		  pop.add(resume);
 		  pop.add(exit);
 
 
@@ -204,10 +205,11 @@ public class GUI {
 
 				if (e.getClickCount() == 2) {
 
-					tray.remove(trayIcon);
+					
 					frame.setVisible(true);
 					frame.setExtendedState(JFrame.NORMAL);
 					frame.toFront();
+					tray.remove(trayIcon);
 				}
 
 			}});
@@ -1330,7 +1332,8 @@ public class GUI {
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				frame.setVisible(false);
+				//frame.setVisible(false);
+				frame.dispose();
 			      miniTray(trayImg_on,trayImg_off);
 			}
 		});
@@ -1371,7 +1374,8 @@ public class GUI {
 		     @Override
 			public void windowIconified(WindowEvent e) {
 
-		    	 frame.setVisible(false);
+		    	 //frame.setVisible(false);
+		    	 frame.dispose();
 		      miniTray(trayImg_on,trayImg_off);
 
 		     }
