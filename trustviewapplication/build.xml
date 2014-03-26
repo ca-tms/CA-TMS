@@ -5,7 +5,6 @@
 	</description>
 	
 	<property name="src" value="src" />
-    <property name="resources" value="resources" />
 	<property name="lib" value="lib" />
 	<property name="build" value="bin" />
 	<property name="export" value="jar" />
@@ -36,14 +35,14 @@
     	<copy todir="${build}">
     		<fileset dir="${src}" includes="**/*.properties" />
     	</copy>
+    	<copy todir="${build}/presentation/ui/resources">
+    	    <fileset dir="${src}/presentation/ui/resources" includes="**/*png" />
+    	</copy>
     </target>
 
     <target name="jar" depends="compile">
     	<jar destfile="${export}/${exportname}">
     		<fileset dir="${build}" />
-            <fileset dir=".">
-                <include name="${resources}/*" />
-            </fileset>
     		<zipgroupfileset dir="${lib}" includes="*.jar" />
     		<manifest>
     		    <attribute name="Main-Class" value="${mainclass}" />
