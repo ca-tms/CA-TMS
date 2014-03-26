@@ -101,7 +101,8 @@ public class GUI {
 	 static JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
 	int port;
 	WebServer server;
-
+	ImageIcon trayImg_on;
+	ImageIcon trayImg_off;
 
 
 	/**
@@ -147,12 +148,12 @@ public class GUI {
 
 	}
 
-	 private static void miniTray() {
+	 private static void miniTray(ImageIcon on,ImageIcon off) {
 		 ImageIcon trayImg=null;
 		 if (tglbtnStartService.isSelected())
-		   trayImg = new ImageIcon("resources/on.png");
+		   trayImg = on;
 		 else
-			 trayImg = new ImageIcon("resources/off.png");
+			 trayImg = off;
 
 
 		  PopupMenu pop = new PopupMenu();
@@ -249,6 +250,12 @@ public class GUI {
 		scrollPane_TC.setBounds(10, 10, 549, 448);
 		panel_TC.add(scrollPane_TC);
 
+		
+		trayImg_on=new ImageIcon(this.getClass().getResource("resources/on.png"));
+		trayImg_off=new ImageIcon(this.getClass().getResource("resources/off.png"));
+		//trayImg_off=new ImageIcon(this.getClass().getResource("../resources/off.png").getPath());
+		//System.out.println(this.getClass().getResource("").getPath()+"resources/on.png"));
+		//System.out.println(this.getClass().getResource("resources/on.png").getPath());
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
 		table_TC = new JTable(PresentationLogic.refresh_TC_Table());
@@ -259,7 +266,8 @@ public class GUI {
 		refresh_ColWidth();
 
 		scrollPane_TC.setViewportView(table_TC);
-
+		
+		
 		// ////////////////////////////////////////////////////////////////Popupmenu
 		// for
 		// TrustCertificate_Table////////////////////////////////////////////////////
@@ -1323,7 +1331,7 @@ public class GUI {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				frame.setVisible(false);
-			      miniTray();
+			      miniTray(trayImg_on,trayImg_off);
 			}
 		});
 		frame.getContentPane().add(btnMiniminze);
@@ -1364,7 +1372,7 @@ public class GUI {
 			public void windowIconified(WindowEvent e) {
 
 		    	 frame.setVisible(false);
-		      miniTray();
+		      miniTray(trayImg_on,trayImg_off);
 
 		     }
 
