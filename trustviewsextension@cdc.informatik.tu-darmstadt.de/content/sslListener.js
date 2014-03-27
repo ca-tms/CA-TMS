@@ -17,10 +17,12 @@ TVE.SSLListener = {
      */
     onSecurityChange: function(aBrowser, aWebProgress, aRequest, aState) {
         
+        let url = aRequest.name;
+        
         // parse standard validation result from Firefox/NSS
         let validationResult = TVE.CertHandler.getValidationResult(aState);
         
-        if(validationResult == "valid" && aRequest != null && !aRequest.isPending() && !TVE.State.isAllowedPage(aRequest.name)) {
+        if(validationResult == "valid" && aRequest != null && !aRequest.isPending() && !TVE.State.isAllowedPage(url)) {
             
             // gather data for upcoming CTMS validation
             let rawChain = TVE.CertHandler.getRawChain(aBrowser);
@@ -28,14 +30,14 @@ TVE.SSLListener = {
             
             try {
                 // query CTMS!
-                let ctmsResult = TVE.CTMSCommunicator.requestValidation(aRequest.name, rawChain, validationResult, secLevel);
+                let ctmsResult = TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel);
                 if(ctmsResult == "UNTRUSTED") {
                     // display warning page when result is bad
-                    TVE.State.untrusted(aBrowser, aRequest.name);
+                    TVE.State.untrusted(aBrowser, url);
                 }
             } catch(err) {
                 // should happen when CTMS server is unreachable
-                TVE.State.unreachable(aBrowser, aRequest.name);
+                TVE.State.unreachable(aBrowser, url);
             }
             
         }
