@@ -26,14 +26,16 @@ TVE.CertHandler = {
     },
     
     /**
-     * Takes a security state and evaluates, if it is "valid", "invalid" or "unknown".
+     * Checks if SSLStatus is "valid" or "invalid".
      */
-    getValidationResult : function(secState) {
-        if(secState & Components.interfaces.nsIWebProgressListener.STATE_IS_INSECURE)
+    getValidationResult : function(browser) {
+        let secUI = browser.securityUI; // get securityUI
+        secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl and certificate status
+        let status = secUI.SSLStatus; // get certificate
+        
+        if(status.isUntrusted)
             return "invalid";
-        if(secState & Components.interfaces.nsIWebProgressListener.STATE_IS_BROKEN)
-            return "unknown";
-        if(secState & Components.interfaces.nsIWebProgressListener.STATE_IS_SECURE)
+        else
             return "valid";
     }
     
