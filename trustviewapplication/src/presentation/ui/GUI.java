@@ -62,7 +62,9 @@ import data.ModelAccessException;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
+
 import javax.swing.JSeparator;
+
 import java.awt.Color;
 
 public class GUI {
@@ -97,8 +99,8 @@ public class GUI {
 	private JTextField textField_Port;
 
 	static SystemTray tray = SystemTray.getSystemTray();
-	 private static TrayIcon trayIcon = null;
-	 static JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
+	private static TrayIcon trayIcon = null;
+	static JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
 	int port;
 	WebServer server;
 	ImageIcon trayImg_on;
@@ -113,6 +115,7 @@ public class GUI {
 
 
 		EventQueue.invokeLater(new Runnable() {
+			@SuppressWarnings("static-access")
 			@Override
 			public void run() {
 				GUI window = new GUI();
