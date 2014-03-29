@@ -104,7 +104,7 @@ Die Standardpfadvalidierung wird von Firefox ausgeführt und das Resultat wird d
 Bindings stellen eine Schnittstelle für andere Anwendungen zur Verfügung, um das Trust-Modell nutzen zu können. Die allgemeine Funktionalität, die von allen Bindings genutzt werden kann, wie der Zugriff auf die Trust-Berechnung-Komponente und das Datenmodell, um die Trust-Validierung auf dessen Basis auszuführen, ist in der Klasse \texttt{services.logic.Validator} implementiert. Momentan existiert ein Binding \texttt{services.bindings.WebServer}, das einen simplen WebServer zur Verfügung stellt, über den das ebenfalls im Rahmen dieses Projektes entwickelte Firefox-Plugin mit dem CTMS kommunizieren kann, um den Service der Trust-Validierung zu nutzen. Der Webserver kann über die graphische Oberfläche gestartet werden.
 
 \subsection{Graphische Oberfläche}
-...
+Das CTMS kann über die grafische Benutzeroberfläche gesteuert werden, die sich in \texttt{presentation.ui} befindet. Wichtigste Funktion ist das Starten des Webservers, über den die Firefox-Extension mit der Java-Anwendung kommunizieren kann. Außerdem ist das Ansehen und Bearbeiten von vertrauenswürdigen und unvertrauenswürdigen Zertifikaten sowie den \textit{Trust Assessments} möglich. In der Konfigurationsansicht können die Werte für die Security-Level und den TCP Port angepasst werden. Zudem ist es möglich, die Datenbank, in der der Trust View gespeichert ist, zu löschen oder ein Backup zu erstellen bzw. wieder einzuspielen.
 
 \section{Firefox-Extension}
 Im Folgenden wird die zum CTMS-System gehörige Firefox-Extension beschrieben.
