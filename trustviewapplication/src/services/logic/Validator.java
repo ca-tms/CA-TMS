@@ -1,12 +1,14 @@
 package services.logic;
 
 import support.Service;
+import support.ValidationService;
 import util.CertificatePathValidity;
 import util.ValidationResult;
 import buisness.TrustComputation;
 import data.Configuration;
 import data.Model;
 import data.ModelAccessException;
+import data.TrustCertificate;
 import data.TrustView;
 
 /**
@@ -37,11 +39,46 @@ public final class Validator {
 			while (true) {
 				try (TrustView trustView = Model.openTrustView();
 				     Configuration config = Model.openConfiguration()) {
+
+					// initialize validation service
+					// normally external notaries are queried but the validation
+					// service result can be forced to be a given outcome for
+					// testing purposes
+					String overrideValidationServiceResult =
+							config.get(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
+
+					final ValidationResult validationServiceResult;
+					switch (overrideValidationServiceResult.toLowerCase()) {
+					case "trusted":
+						validationServiceResult = ValidationResult.TRUSTED;
+						break;
+					case "untrusted":
+						validationServiceResult = ValidationResult.UNTRUSTED;
+						break;
+					case "unknown":
+						validationServiceResult = ValidationResult.UNKNOWN;
+						break;
+					default:
+						validationServiceResult = null;
+						break;
+					}
+
+					ValidationService validationService =
+						validationServiceResult == null ?
+							Service.getValidationService(request.getURL()) :
+							new ValidationService() {
+								@Override
+								public ValidationResult query(TrustCertificate certificate) {
+									return validationServiceResult;
+								}
+							};
+
+					// perform trust validation
 					result = TrustComputation.validate(
 								trustView, config,
 								request.getCertifiactePath(),
 								request.getsecurityLevel(),
-								Service.getValidationService(request.getURL()));
+								validationService);
 				}
 				catch (Exception e) {
 					if (attempts == 0)
