@@ -30,8 +30,8 @@ TVE.CertHandler = {
      */
     getValidationResult : function(browser) {
         let secUI = browser.securityUI; // get securityUI
-        secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl and certificate status
-        let status = secUI.SSLStatus; // get certificate
+        secUI.QueryInterface(Components.interfaces.nsISSLStatusProvider); // query ssl status
+        let status = secUI.SSLStatus; // get ssl status
         
         if(status.isUntrusted)
             return "invalid";
