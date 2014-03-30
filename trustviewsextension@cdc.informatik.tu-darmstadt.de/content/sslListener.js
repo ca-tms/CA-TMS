@@ -36,7 +36,7 @@ TVE.SSLListener = {
                                 try {
                                     // query CTMS!
                                     let ctmsResult = TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel);
-                                    if(ctmsResult == "UNTRUSTED") {
+                                    if(ctmsResult != "TRUSTED") {
                                         aRequest.resume();
                                         // display warning page when result is bad
                                         TVE.State.untrusted(aBrowser, url);
