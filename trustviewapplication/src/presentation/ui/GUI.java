@@ -67,6 +67,10 @@ import javax.swing.JSeparator;
 
 import java.awt.Color;
 
+/**
+ * the whole GUI interface for the Trustview application
+ *
+ */
 public class GUI {
 
 	private static JFrame frame;
@@ -75,12 +79,12 @@ public class GUI {
 	private JTable table_uTC;
 	private JTable table_Ass;
 
-	private int[] PreferredWidth_TC ={120,145,145,123,102,102};
-	private int[] PreferredWidth_uTC ={120,145,145,123,102,102};
-	private int[] PreferredWidth_Ass ={122,157,123,89,89};
-	TableColumn[] Trust_Cert_TableCol= new TableColumn[6];
-	TableColumn[] UnTrust_Cert_TableCol= new TableColumn[6];
-	TableColumn[] Ass_TableCol= new TableColumn[5];
+	private int[] PreferredWidth_TC = { 120, 145, 145, 123, 102, 102 };
+	private int[] PreferredWidth_uTC = { 120, 145, 145, 123, 102, 102 };
+	private int[] PreferredWidth_Ass = { 122, 157, 123, 89, 89 };
+	TableColumn[] Trust_Cert_TableCol = new TableColumn[6];
+	TableColumn[] UnTrust_Cert_TableCol = new TableColumn[6];
+	TableColumn[] Ass_TableCol = new TableColumn[5];
 
 	private JTextField textField_high;
 	private JTextField textField_med;
@@ -100,19 +104,17 @@ public class GUI {
 
 	static SystemTray tray = SystemTray.getSystemTray();
 	private static TrayIcon trayIcon = null;
-	static JToggleButton tglbtnStartService = new JToggleButton("Start Webserver");
+	static JToggleButton tglbtnStartService = new JToggleButton(
+			"Start Webserver");
 	int port;
 	WebServer server;
 	ImageIcon trayImg_on;
 	ImageIcon trayImg_off;
 
-
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) throws Exception {
-
-
 
 		EventQueue.invokeLater(new Runnable() {
 			@SuppressWarnings("static-access")
@@ -132,103 +134,114 @@ public class GUI {
 		initialize();
 	}
 
+
+
 	/**
-	 * Initialize the contents of the frame.
+	 * load the application configuration from the database
 	 */
+	public void Configurate() {
 
-	public void Configurate()
-	{
+		assessment_expiration_millis = PresentationLogic.get_Configuration(
+				Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
 
+		Port = PresentationLogic.get_Configuration(Configuration.SERVER_PORT,
+				Integer.class);
 
-			assessment_expiration_millis=PresentationLogic.get_Configuration(Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
-
-			 Port=PresentationLogic.get_Configuration(Configuration.SERVER_PORT, Integer.class);
-
-			security_level_low=PresentationLogic.get_Configuration(Configuration.SECURITY_LEVEL_LOW, Float.class);
-			security_level_med=PresentationLogic.get_Configuration(Configuration.SECURITY_LEVEL_MEDIUM, Float.class);
-			security_level_high=PresentationLogic.get_Configuration(Configuration.SECURITY_LEVEL_HIGH, Float.class);
-
+		security_level_low = PresentationLogic.get_Configuration(
+				Configuration.SECURITY_LEVEL_LOW, Float.class);
+		security_level_med = PresentationLogic.get_Configuration(
+				Configuration.SECURITY_LEVEL_MEDIUM, Float.class);
+		security_level_high = PresentationLogic.get_Configuration(
+				Configuration.SECURITY_LEVEL_HIGH, Float.class);
 
 	}
 
-	 private static void miniTray(ImageIcon on,ImageIcon off) {
-		 ImageIcon trayImg=null;
-		 if (tglbtnStartService.isSelected())
-		   trayImg = on;
-		 else
-			 trayImg = off;
+	/**
+	 * the icon and popup menu when app minimized to the systemtray
+	 * @param on icon to be showed when service on
+	 * @param off icon to be showed when service off
+	 */
+	private static void miniTray(ImageIcon on, ImageIcon off) {
+		ImageIcon trayImg = null;
+		if (tglbtnStartService.isSelected())
+			trayImg = on;
+		else
+			trayImg = off;
 
+		PopupMenu pop = new PopupMenu();
+		MenuItem resume = new MenuItem("Resume");
+		MenuItem exit = new MenuItem("Exit");
 
-		  PopupMenu pop = new PopupMenu();
-		  MenuItem resume = new MenuItem("Resume");
-		  MenuItem exit = new MenuItem("Exit");
+		resume.addActionListener(new ActionListener() {
 
-		  resume.addActionListener(new ActionListener() {
-
-		   @Override
-		public void actionPerformed(ActionEvent e) {
-
-		    
-		    frame.setVisible(true);
-		    frame.setExtendedState(JFrame.NORMAL);
-		    frame.toFront();
-		    tray.remove(trayIcon);
-		   }
-
-		  });
-
-		  exit.addActionListener(new ActionListener() {
-
-		     @Override
+			@Override
 			public void actionPerformed(ActionEvent e) {
 
-		      tray.remove(trayIcon);
-		      System.exit(0);
+				frame.setVisible(true);
+				frame.setExtendedState(JFrame.NORMAL);
+				frame.toFront();
+				tray.remove(trayIcon);
+			}
 
-		     }
+		});
+		
+		
 
-		    });
+		exit.addActionListener(new ActionListener() {
 
-		  pop.add(resume);
-		  pop.add(exit);
+			@Override
+			public void actionPerformed(ActionEvent e) {
 
+				tray.remove(trayIcon);
+				System.exit(0);
 
-		  if (tglbtnStartService.isSelected())
-			  trayIcon = new TrayIcon(trayImg.getImage(), "Trust Service on", pop);
-			 else
-				 trayIcon = new TrayIcon(trayImg.getImage(), "Trust Service off", pop);
+			}
 
+		});
 
-		  trayIcon.setImageAutoSize(true);
+		pop.add(resume);
+		pop.add(exit);
 
-		  trayIcon.addMouseListener(new MouseAdapter() {
+		if (tglbtnStartService.isSelected())
+			trayIcon = new TrayIcon(trayImg.getImage(), "Trust Service on", pop);
+		else
+			trayIcon = new TrayIcon(trayImg.getImage(), "Trust Service off",
+					pop);
+
+		trayIcon.setImageAutoSize(true);
+
+		trayIcon.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
 				if (e.getClickCount() == 2) {
 
-					
 					frame.setVisible(true);
 					frame.setExtendedState(JFrame.NORMAL);
 					frame.toFront();
 					tray.remove(trayIcon);
 				}
 
-			}});
+			}
+		});
 
-		  try {
+		try {
 
-		   tray.add(trayIcon);
+			tray.add(trayIcon);
 
-		  } catch (AWTException e1) {
+		} catch (AWTException e1) {
 
-		   e1.printStackTrace();
-		  }
+			e1.printStackTrace();
+		}
 
-		 }
+	}
 
-
+	
+	
+	/**
+	 * Initialize the contents of the frame.
+	 */
 	private void initialize() {
 
 		try {
@@ -255,12 +268,14 @@ public class GUI {
 		scrollPane_TC.setBounds(10, 10, 549, 448);
 		panel_TC.add(scrollPane_TC);
 
-		
-		trayImg_on=new ImageIcon(this.getClass().getResource("resources/on.png"));
-		trayImg_off=new ImageIcon(this.getClass().getResource("resources/off.png"));
-		//trayImg_off=new ImageIcon(this.getClass().getResource("../resources/off.png").getPath());
-		//System.out.println(this.getClass().getResource("").getPath()+"resources/on.png"));
-		//System.out.println(this.getClass().getResource("resources/on.png").getPath());
+		trayImg_on = new ImageIcon(this.getClass().getResource(
+				"resources/on.png"));
+		trayImg_off = new ImageIcon(this.getClass().getResource(
+				"resources/off.png"));
+		// trayImg_off=new
+		// ImageIcon(this.getClass().getResource("../resources/off.png").getPath());
+		// System.out.println(this.getClass().getResource("").getPath()+"resources/on.png"));
+		// System.out.println(this.getClass().getResource("resources/on.png").getPath());
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
 		table_TC = new JTable(PresentationLogic.refresh_TC_Table());
@@ -271,8 +286,7 @@ public class GUI {
 		refresh_ColWidth();
 
 		scrollPane_TC.setViewportView(table_TC);
-		
-		
+
 		// ////////////////////////////////////////////////////////////////Popupmenu
 		// for
 		// TrustCertificate_Table////////////////////////////////////////////////////
@@ -317,7 +331,8 @@ public class GUI {
 			}
 		});
 
-		// /////////////////////////////////////////////////////////////////////////Insert menu//////////////////////////////////
+		// /////////////////////////////////////////////////////////////////////////Insert
+		// menu//////////////////////////////////
 		Insert_TC.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -336,9 +351,9 @@ public class GUI {
 						Cert_Path = Cert_Chooser.getSelectedFile()
 								.getAbsolutePath();
 					}
-						if(!new File(Cert_Path).exists())
-					{PresentationLogic.msg("File not found!");
-					return;
+					if (!new File(Cert_Path).exists()) {
+						PresentationLogic.msg("File not found!");
+						return;
 					}
 
 					try {
@@ -349,21 +364,25 @@ public class GUI {
 						view.close();
 
 						table_TC.setModel(PresentationLogic.refresh_TC_Table());
-						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+						table_uTC.setModel(PresentationLogic
+								.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (CertificateException e) {
-						PresentationLogic.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
+						PresentationLogic
+								.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
 						e.printStackTrace();
 					} catch (IOException e) {
 						if (Cert_Path.equals(""))
 							return;
 						else
-							PresentationLogic.msg("Error reading Certificate File ");
+							PresentationLogic
+									.msg("Error reading Certificate File ");
 
 						e.printStackTrace();
 					} catch (ModelAccessException e) {
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -392,16 +411,17 @@ public class GUI {
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
 
-
 				}
 			}
 		});
-		// ////////////////////////////////////////////////////////////Set untrust////////////////////////////////////////////////////
+		// ////////////////////////////////////////////////////////////Set
+		// untrust////////////////////////////////////////////////////
 		Set_uTC.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -424,7 +444,8 @@ public class GUI {
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -451,7 +472,8 @@ public class GUI {
 		refresh_ColWidth();
 		scrollPane_uTC.setViewportView(table_uTC);
 
-		// /////////////////////////////////////////////////Popupmenu for unTrustCertificate_Table////////////////////////////
+		// /////////////////////////////////////////////////Popupmenu for
+		// unTrustCertificate_Table////////////////////////////
 
 		final JPopupMenu PopMenu_unTrustCert = new JPopupMenu();
 		final JMenuItem Insert_uTC = new JMenuItem("Insert");
@@ -462,7 +484,8 @@ public class GUI {
 		PopMenu_unTrustCert.add(Delete_uTC);
 		PopMenu_unTrustCert.add(Set_TC);
 
-		// //////////////////////////////////////////////////////////////////Listener for POPUP////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////Listener
+		// for POPUP////////////////////////////////////////////////////
 
 		table_uTC.addMouseListener(new MouseAdapter() {
 			@Override
@@ -493,7 +516,8 @@ public class GUI {
 			}
 		});
 
-		// //////////////////////////////////////////////////Insert for unTrustCertificate//////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////Insert for
+		// unTrustCertificate//////////////////////////////////////////////////////
 		Insert_uTC.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -513,9 +537,9 @@ public class GUI {
 								.getAbsolutePath();
 					}
 
-					if(!new File(Cert_Path).exists())
-					{PresentationLogic.msg("File not found!");
-					return;
+					if (!new File(Cert_Path).exists()) {
+						PresentationLogic.msg("File not found!");
+						return;
 					}
 
 					try {
@@ -531,18 +555,21 @@ public class GUI {
 						refresh_ColWidth();
 
 					} catch (CertificateException e) {
-						PresentationLogic.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
+						PresentationLogic
+								.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
 
 						e.printStackTrace();
 					} catch (IOException e) {
 						if (Cert_Path.equals(""))
 							return;
 						else
-							PresentationLogic.msg("Error reading Certificate File ");
+							PresentationLogic
+									.msg("Error reading Certificate File ");
 
 						e.printStackTrace();
 					} catch (ModelAccessException e) {
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -558,22 +585,23 @@ public class GUI {
 
 					TrustCertificate Cert = PresentationLogic
 							.getuTCert_by_Click(table_uTC);
-					if (Cert == null)
-						{
-						return;}
+					if (Cert == null) {
+						return;
+					}
 
 					try {
 						view = data.Model.openTrustView();
 						view.removeCertificate(Cert);
 						view.close();
 
-
-						table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+						table_uTC.setModel(PresentationLogic
+								.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -594,7 +622,6 @@ public class GUI {
 					if (TCertificate == null)
 						return;
 
-
 					try {
 						view = data.Model.openTrustView();
 						view.setTrustedCertificate(TCertificate);
@@ -606,7 +633,8 @@ public class GUI {
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -632,7 +660,8 @@ public class GUI {
 		table_Ass.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		refresh_ColWidth();
 		scrollPane_Ass.setViewportView(table_Ass);
-		// //////////////////////////////////////////////Popupmenufor ASS//////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////Popupmenufor
+		// ASS//////////////////////////////////////////////////////////
 
 		final JPopupMenu PopMenu_Ass = new JPopupMenu();
 		final JMenuItem Delete_Ass = new JMenuItem("Delete");
@@ -644,7 +673,8 @@ public class GUI {
 		PopMenu_Ass.add(Delete_Ass);
 		PopMenu_Ass.add(Set_Valid_Ass);
 		PopMenu_Ass.add(Clean_Ass);
-		// /////////////////////////////////////////////\////////////////////Listener for Ass//////////////////////////////////////////////////
+		// /////////////////////////////////////////////\////////////////////Listener
+		// for Ass//////////////////////////////////////////////////
 		table_Ass.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -682,7 +712,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					 TrustAssessment Ass = PresentationLogic
+					TrustAssessment Ass = PresentationLogic
 							.getAss_by_Click(table_Ass);
 					if (Ass == null)
 						return;
@@ -692,16 +722,17 @@ public class GUI {
 						view.removeAssessment(Ass.getK(), Ass.getCa());
 						view.close();
 
-						table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+						table_Ass.setModel(PresentationLogic
+								.refresh_Ass_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
-
 
 				}
 			}
@@ -718,7 +749,7 @@ public class GUI {
 				}
 			}
 		});
-	///////////////////////////////////////////////////////////////////Set_Valid_Ass/////////////////////////////////////////////////
+		// /////////////////////////////////////////////////////////////////Set_Valid_Ass/////////////////////////////////////////////////
 		Set_Valid_Ass.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -732,13 +763,13 @@ public class GUI {
 					k = (String) table_Ass.getValueAt(row, 0);
 					ca = (String) table_Ass.getValueAt(row, 1);
 
-
 					try {
 						view = data.Model.openTrustView();
 						view.setAssessmentValid(k, ca);
 						view.close();
 					} catch (ModelAccessException e) {
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 					}
 
@@ -756,7 +787,8 @@ public class GUI {
 						view.clean();
 						view.close();
 					} catch (ModelAccessException e) {
-						PresentationLogic.msg("Error reading or concurrent modifying the database! ");
+						PresentationLogic
+								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -766,7 +798,8 @@ public class GUI {
 				}
 			}
 		});
-		// //////////////////////////////////////////////////////////////////////////configuration pannel///////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////////configuration
+		// pannel///////////////////////////////////////////////
 		final JPanel panel_Conf = new JPanel();
 		tabbedPane.addTab("Configuration", null, panel_Conf, null);
 		panel_Conf.setLayout(null);
@@ -777,20 +810,22 @@ public class GUI {
 				.createTitledBorder("Security Level Setting"));
 		Outer_Security_Level.setLayout(null);
 		panel_Conf.add(Outer_Security_Level);
-/////////////////////////////////////////////////////////////Security level setting panel/////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////Security
+		// level setting
+		// panel/////////////////////////////////////////////////////
 		final JSlider slider_high = new JSlider();
-		slider_high.setValue((int)(security_level_high*100));
+		slider_high.setValue((int) (security_level_high * 100));
 		slider_high.setBounds(30, 24, 143, 26);
 		Outer_Security_Level.add(slider_high);
 
 		final JSlider slider_med = new JSlider();
 		slider_med.setBounds(203, 24, 143, 26);
-		slider_med.setValue((int)(security_level_med*100));
+		slider_med.setValue((int) (security_level_med * 100));
 		Outer_Security_Level.add(slider_med);
 
 		final JSlider slider_low = new JSlider();
 		slider_low.setBounds(376, 24, 143, 26);
-		slider_low.setValue((int)(security_level_low*100));
+		slider_low.setValue((int) (security_level_low * 100));
 		Outer_Security_Level.add(slider_low);
 
 		JLabel label_min_high = new JLabel("0.0");
@@ -801,7 +836,8 @@ public class GUI {
 		label_max_high.setBounds(153, 49, 30, 15);
 		Outer_Security_Level.add(label_max_high);
 
-		textField_high = new JTextField("" + (float) slider_high.getValue() / 100);
+		textField_high = new JTextField("" + (float) slider_high.getValue()
+				/ 100);
 		textField_high.setBounds(97, 72, 37, 21);
 		textField_high.setEditable(false);
 		Outer_Security_Level.add(textField_high);
@@ -845,18 +881,21 @@ public class GUI {
 		Outer_Security_Level.add(lblLow);
 
 		JPanel Outer_General_Setting = new JPanel();
-		Outer_General_Setting.setBorder(new TitledBorder(null, "General Setting", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		Outer_General_Setting.setBorder(new TitledBorder(null,
+				"General Setting", TitledBorder.LEADING, TitledBorder.TOP,
+				null, null));
 		Outer_General_Setting.setBounds(10, 143, 549, 243);
 		panel_Conf.add(Outer_General_Setting);
 		Outer_General_Setting.setLayout(null);
 
-		JLabel lblNewLabel_1 = new JLabel("Assessment Expiration (in Milliseconds):");
+		JLabel lblNewLabel_1 = new JLabel(
+				"Assessment Expiration (in Milliseconds):");
 		lblNewLabel_1.setBounds(10, 29, 270, 15);
 		Outer_General_Setting.add(lblNewLabel_1);
 
 		textField_Expiration = new JTextField();
 		textField_Expiration.setBounds(264, 26, 172, 21);
-		textField_Expiration.setText(""+assessment_expiration_millis);
+		textField_Expiration.setText("" + assessment_expiration_millis);
 		Outer_General_Setting.add(textField_Expiration);
 		textField_Expiration.setColumns(10);
 
@@ -871,7 +910,7 @@ public class GUI {
 
 		textField_Port = new JTextField();
 		textField_Port.setBounds(370, 67, 66, 21);
-		textField_Port.setText(""+Port);
+		textField_Port.setText("" + Port);
 		Outer_General_Setting.add(textField_Port);
 		textField_Port.setColumns(10);
 
@@ -879,49 +918,52 @@ public class GUI {
 
 		btnChange.setBounds(446, 66, 93, 23);
 		Outer_General_Setting.add(btnChange);
-		
+
 		JSeparator separator = new JSeparator();
 		separator.setForeground(Color.LIGHT_GRAY);
 		separator.setBounds(120, 118, 419, 11);
 		Outer_General_Setting.add(separator);
-		
+
 		JLabel lblResetDatabase = new JLabel("Reset trust view");
 		lblResetDatabase.setBounds(10, 109, 100, 15);
 		Outer_General_Setting.add(lblResetDatabase);
-		
-		JLabel lblDeleteAllThe = new JLabel("All of the Trust/Untrust Certificates, Assessments will");
+
+		JLabel lblDeleteAllThe = new JLabel(
+				"All of the Trust/Untrust Certificates, Assessments will");
 		lblDeleteAllThe.setBounds(42, 130, 343, 15);
 		Outer_General_Setting.add(lblDeleteAllThe);
-		
+
 		JLabel lblAndAllThe = new JLabel("be deleted.");
 		lblAndAllThe.setBounds(42, 148, 343, 15);
 		Outer_General_Setting.add(lblAndAllThe);
-		
+
 		JButton btnReset = new JButton("Reset");
-		
+
 		btnReset.setBounds(422, 134, 93, 23);
 		Outer_General_Setting.add(btnReset);
-		
+
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setForeground(Color.LIGHT_GRAY);
 		separator_1.setBounds(149, 187, 390, 2);
 		Outer_General_Setting.add(separator_1);
-		
+
 		JLabel lblDefaultSetting = new JLabel("Default configuration");
 		lblDefaultSetting.setBounds(10, 178, 129, 15);
 		Outer_General_Setting.add(lblDefaultSetting);
-		
-		JLabel lblAllOfThe = new JLabel("All of the configurations will be set to default value.");
+
+		JLabel lblAllOfThe = new JLabel(
+				"All of the configurations will be set to default value.");
 		lblAllOfThe.setBounds(42, 199, 359, 15);
 		Outer_General_Setting.add(lblAllOfThe);
-		
+
 		JButton btnDefault = new JButton("Default");
-		
+
 		btnDefault.setBounds(422, 198, 93, 23);
 		Outer_General_Setting.add(btnDefault);
 
 		JPanel Outer_Data_Backup = new JPanel();
-		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		Outer_Data_Backup.setBounds(10, 396, 549, 62);
 		panel_Conf.add(Outer_Data_Backup);
 		Outer_Data_Backup.setLayout(null);
@@ -935,7 +977,9 @@ public class GUI {
 
 		btnExport.setBounds(345, 29, 93, 23);
 		Outer_Data_Backup.add(btnExport);
-///////////////////////////////////////////////////////////////////////////////////Security level setting listner//////////////////////////////////////////////////////////////////////////////
+		// /////////////////////////////////////////////////////////////////////////////////Security
+		// level setting
+		// listner//////////////////////////////////////////////////////////////////////////////
 		slider_high.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent event) {
@@ -944,21 +988,21 @@ public class GUI {
 					String str = "" + val;
 					textField_high.setText(str);
 
-					if(!slider_high.getValueIsAdjusting())
-					{
-						if(slider_high.getValue()<=slider_med.getValue())
-						{
-							PresentationLogic.msg("Please select a correct value(not smaller than medium level)! ");
+					if (!slider_high.getValueIsAdjusting()) {
+						if (slider_high.getValue() <= slider_med.getValue()) {
+							PresentationLogic
+									.msg("Please select a correct value(not smaller than medium level)! ");
 
-							slider_high.setValue((int)(security_level_high*100));
+							slider_high
+									.setValue((int) (security_level_high * 100));
 
-						}
-						else
-						{
+						} else {
 
-							security_level_high=(float)slider_high.getValue()/100;
-							PresentationLogic.set_Configuration(Configuration.SECURITY_LEVEL_HIGH,security_level_high );
-
+							security_level_high = (float) slider_high
+									.getValue() / 100;
+							PresentationLogic.set_Configuration(
+									Configuration.SECURITY_LEVEL_HIGH,
+									security_level_high);
 
 						}
 					}
@@ -974,21 +1018,22 @@ public class GUI {
 					String str = "" + val;
 					textField_med.setText(str);
 
-					if(!slider_med.getValueIsAdjusting())
-					{
-						if(slider_med.getValue()>=slider_high.getValue()||slider_med.getValue()<=slider_low.getValue())
-						{
-							PresentationLogic.msg("Please select a correct value(not bigger than high level and not smaller than low level)! ");
+					if (!slider_med.getValueIsAdjusting()) {
+						if (slider_med.getValue() >= slider_high.getValue()
+								|| slider_med.getValue() <= slider_low
+										.getValue()) {
+							PresentationLogic
+									.msg("Please select a correct value(not bigger than high level and not smaller than low level)! ");
 
-							slider_med.setValue((int)(security_level_med*100));
+							slider_med
+									.setValue((int) (security_level_med * 100));
 
-						}
-						else
-						{
+						} else {
 
-							security_level_med=(float)slider_med.getValue()/100;
-							PresentationLogic.set_Configuration(Configuration.SECURITY_LEVEL_MEDIUM,security_level_med );
-
+							security_level_med = (float) slider_med.getValue() / 100;
+							PresentationLogic.set_Configuration(
+									Configuration.SECURITY_LEVEL_MEDIUM,
+									security_level_med);
 
 						}
 					}
@@ -1005,21 +1050,20 @@ public class GUI {
 					String str = "" + val;
 					textField_low.setText(str);
 
-					if(!slider_low.getValueIsAdjusting())
-					{
-						if(slider_med.getValue()<=slider_low.getValue())
-						{
-							PresentationLogic.msg("Please select a correct value(not bigger medium level)! ");
+					if (!slider_low.getValueIsAdjusting()) {
+						if (slider_med.getValue() <= slider_low.getValue()) {
+							PresentationLogic
+									.msg("Please select a correct value(not bigger medium level)! ");
 
-							slider_low.setValue((int)(security_level_low*100));
+							slider_low
+									.setValue((int) (security_level_low * 100));
 
-						}
-						else
-						{
+						} else {
 
-							security_level_low=(float)slider_low.getValue()/100;
-							PresentationLogic.set_Configuration(Configuration.SECURITY_LEVEL_LOW,security_level_low );
-
+							security_level_low = (float) slider_low.getValue() / 100;
+							PresentationLogic.set_Configuration(
+									Configuration.SECURITY_LEVEL_LOW,
+									security_level_low);
 
 						}
 					}
@@ -1028,22 +1072,21 @@ public class GUI {
 			}
 		});
 
-////////////////////////////////////////////////////////////////////////////////Backup listner/////////////////////////////////////////////////////
-
+		// //////////////////////////////////////////////////////////////////////////////Backup
+		// listner/////////////////////////////////////////////////////
 
 		btnImport.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 				String Import_Path = "";
 				JFileChooser Import_Chooser = new JFileChooser();
-				Import_Chooser.setFileSelectionMode( JFileChooser.OPEN_DIALOG );
+				Import_Chooser.setFileSelectionMode(JFileChooser.OPEN_DIALOG);
 				Import_Chooser.setDialogTitle("Import Backup File");
 				FileFilter Import_filter = new FileNameExtensionFilter(
 						"Trust Service Backup File(.bak)", "bak");
 				Import_Chooser.setDialogType(JFileChooser.OPEN_DIALOG);
 				Import_Chooser.setApproveButtonText("Open");
 				Import_Chooser.setFileFilter(Import_filter);
-
 
 				int returnVal = Import_Chooser.showOpenDialog(panel_Conf);
 
@@ -1053,35 +1096,29 @@ public class GUI {
 							.getAbsolutePath();
 				}
 
-				if(!new File(Import_Path).exists())
-				{
-					PresentationLogic
-					.msg("Import Backup File not exist !");
-				return;}
-
+				if (!new File(Import_Path).exists()) {
+					PresentationLogic.msg("Import Backup File not exist !");
+					return;
+				}
 
 				try {
 
 					Model.restore(new File(Import_Path));
 
 				} catch (ModelAccessException e) {
-					PresentationLogic
-					.msg("Importing Backup File Error !");
+					PresentationLogic.msg("Importing Backup File Error !");
 					e.printStackTrace();
 					return;
 				}
 
 				table_TC.setModel(PresentationLogic.refresh_TC_Table());
-				table_uTC.setModel(PresentationLogic
-						.refresh_uTC_Table());
-				table_Ass.setModel(PresentationLogic
-						.refresh_Ass_Table());
+				table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
+				table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
 
 				refresh_ColWidth();
 
-
-				PresentationLogic
-				.msg("Success Importing Backup File !","Success");
+				PresentationLogic.msg("Success Importing Backup File !",
+						"Success");
 			}
 		});
 		btnExport.addMouseListener(new MouseAdapter() {
@@ -1094,13 +1131,13 @@ public class GUI {
 
 					JFileChooser Export_Chooser = new JFileChooser();
 					Export_Chooser.setDialogTitle("Save Backup File");
-					Export_Chooser.setFileSelectionMode( JFileChooser.APPROVE_OPTION  );
+					Export_Chooser
+							.setFileSelectionMode(JFileChooser.APPROVE_OPTION);
 					Export_Chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 					Export_Chooser.setApproveButtonText("Save");
-					FileFilter Export_filter= new FileNameExtensionFilter(
+					FileFilter Export_filter = new FileNameExtensionFilter(
 							"Trust Service Backup File(.bak)", "bak");
 					Export_Chooser.setFileFilter(Export_filter);
-
 
 					int returnVal = Export_Chooser.showSaveDialog(panel_Conf);
 
@@ -1110,43 +1147,45 @@ public class GUI {
 								.getAbsolutePath();
 					}
 
-					Export_File=new File(Export_Path);
+					Export_File = new File(Export_Path);
 
-					if(!Export_Path.endsWith(".bak"))
-						Export_Path=Export_Path+".bak";
+					if (!Export_Path.endsWith(".bak"))
+						Export_Path = Export_Path + ".bak";
 
-					if(Export_File.exists())
-					{
-						int n = JOptionPane.showConfirmDialog(null, "Are you sure to overwrite file "+new File(Export_Path).getName()+" with the new backup file ?", "Are you Sure ?", JOptionPane.YES_NO_OPTION);
-						if(n == JOptionPane.NO_OPTION)
-						return;
+					if (Export_File.exists()) {
+						int n = JOptionPane.showConfirmDialog(null,
+								"Are you sure to overwrite file "
+										+ new File(Export_Path).getName()
+										+ " with the new backup file ?",
+								"Are you Sure ?", JOptionPane.YES_NO_OPTION);
+						if (n == JOptionPane.NO_OPTION)
+							return;
 					}
 
-					if(!Export_Path.equals(".bak"))
-						{try {
+					if (!Export_Path.equals(".bak")) {
+						try {
 
 							Model.backup(Export_File);
 
 						} catch (ModelAccessException e) {
 							PresentationLogic
-							.msg("Exporting Backup File Error !");
+									.msg("Exporting Backup File Error !");
 							e.printStackTrace();
 							return;
 						}
 
-						PresentationLogic
-						.msg("Success Exporting Backup File !","Success");
+						PresentationLogic.msg(
+								"Success Exporting Backup File !", "Success");
 
 					}
-					}
-
-
+				}
 
 			}
-			}
-		);
+		});
 
-///////////////////////////////////////////////////////////////////////////////////General setting setting//////////////////////////////////////////////////////////////////////////////
+		// /////////////////////////////////////////////////////////////////////////////////General
+		// setting
+		// setting//////////////////////////////////////////////////////////////////////////////
 		btnChange.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -1157,7 +1196,8 @@ public class GUI {
 
 				} else {
 					Port = get_port;
-					PresentationLogic.set_Configuration(Configuration.SERVER_PORT, Port);
+					PresentationLogic.set_Configuration(
+							Configuration.SERVER_PORT, Port);
 
 					PresentationLogic.msg("The service will be bound to port "
 							+ Port + " when it is started next time!",
@@ -1167,109 +1207,119 @@ public class GUI {
 			}
 		});
 
-		textField_Expiration.addKeyListener(new KeyAdapter(){
-            @Override
+		textField_Expiration.addKeyListener(new KeyAdapter() {
+			@Override
 			public void keyTyped(KeyEvent e) {
-                int keyChar = e.getKeyChar();
-                if(keyChar >= KeyEvent.VK_0 && keyChar <= KeyEvent.VK_9){
+				int keyChar = e.getKeyChar();
+				if (keyChar >= KeyEvent.VK_0 && keyChar <= KeyEvent.VK_9) {
 
-                }else{
-                    e.consume();
-                }
-            }
-        });
+				} else {
+					e.consume();
+				}
+			}
+		});
 
-		textField_Port.addKeyListener(new KeyAdapter(){
-            @Override
+		textField_Port.addKeyListener(new KeyAdapter() {
+			@Override
 			public void keyTyped(KeyEvent e) {
-                int keyChar = e.getKeyChar();
-                if(keyChar >= KeyEvent.VK_0 && keyChar <= KeyEvent.VK_9){
+				int keyChar = e.getKeyChar();
+				if (keyChar >= KeyEvent.VK_0 && keyChar <= KeyEvent.VK_9) {
 
-                }else{
-                    e.consume();
-                }
-            }
-        });
+				} else {
+					e.consume();
+				}
+			}
+		});
 
 		btnApply.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				long expire=Long.valueOf(textField_Expiration.getText());
-				if(expire>0)
-				{
+				long expire = Long.valueOf(textField_Expiration.getText());
+				if (expire > 0) {
 
-					int n = JOptionPane.showConfirmDialog(null, "Are you sure to set Expiration Time to "+expire+" ? If it's set too small, all the \"out-dated\" Assessments will be deleted !", "Are you Sure ?", JOptionPane.YES_NO_OPTION);
-					if(n == JOptionPane.YES_OPTION)
-					{assessment_expiration_millis=expire;
-					PresentationLogic.set_Configuration(Configuration.ASSESSMENT_EXPIRATION_MILLIS, assessment_expiration_millis);
-					try {
-						view = data.Model.openTrustView();
-						view.clean();
-						view.close();
-					} catch (ModelAccessException arg) {
-						JOptionPane
-								.showConfirmDialog(
-										null,
-										"Error reading or concurrent modifying the database! ",
-										"Error", JOptionPane.DEFAULT_OPTION);
-						arg.printStackTrace();
+					int n = JOptionPane
+							.showConfirmDialog(
+									null,
+									"Are you sure to set Expiration Time to "
+											+ expire
+											+ " ? If it's set too small, all the \"out-dated\" Assessments will be deleted !",
+									"Are you Sure ?", JOptionPane.YES_NO_OPTION);
+					if (n == JOptionPane.YES_OPTION) {
+						assessment_expiration_millis = expire;
+						PresentationLogic.set_Configuration(
+								Configuration.ASSESSMENT_EXPIRATION_MILLIS,
+								assessment_expiration_millis);
+						try {
+							view = data.Model.openTrustView();
+							view.clean();
+							view.close();
+						} catch (ModelAccessException arg) {
+							JOptionPane
+									.showConfirmDialog(
+											null,
+											"Error reading or concurrent modifying the database! ",
+											"Error", JOptionPane.DEFAULT_OPTION);
+							arg.printStackTrace();
+						}
+
+						table_Ass.setModel(PresentationLogic
+								.refresh_Ass_Table());
+						refresh_ColWidth();
+
+					} else {
+						textField_Expiration.setText(""
+								+ assessment_expiration_millis);
 					}
 
-					table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
-					refresh_ColWidth();
+				} else {
 
-					}else
-					{
-						textField_Expiration.setText(""+assessment_expiration_millis);
-					}
-
-				}
-				else
-				{
-
-					PresentationLogic.msg("Please enter a valid Expiration Time in millisecond !" );
+					PresentationLogic
+							.msg("Please enter a valid Expiration Time in millisecond !");
 				}
 
 			}
 		});
-		
-		
+
 		btnReset.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
-				
-				int n = JOptionPane.showConfirmDialog(null, "Are you sure to reset all the data in the database ?", "Are you Sure ?", JOptionPane.YES_NO_OPTION);
-				if(n == JOptionPane.YES_OPTION)
-				{
+
+				int n = JOptionPane.showConfirmDialog(null,
+						"Are you sure to reset all the data in the database ?",
+						"Are you Sure ?", JOptionPane.YES_NO_OPTION);
+				if (n == JOptionPane.YES_OPTION) {
 					try {
 						view = data.Model.openTrustView();
 						view.erase();
 						view.close();
 					} catch (ModelAccessException e) {
 						JOptionPane
-						.showConfirmDialog(
-								null,
-								"Error reading or concurrent modifying the database! ",
-								"Error", JOptionPane.DEFAULT_OPTION);
+								.showConfirmDialog(
+										null,
+										"Error reading or concurrent modifying the database! ",
+										"Error", JOptionPane.DEFAULT_OPTION);
 						e.printStackTrace();
 					}
 					table_TC.setModel(PresentationLogic.refresh_TC_Table());
 					table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
 					table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
 					refresh_ColWidth();
-					
-				
-				}}
-			
+
+				}
+			}
+
 		});
-		
+
 		btnDefault.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
-				int n = JOptionPane.showConfirmDialog(null, "Are you sure to restore the configurations of the application ? This function should only be used if the Application is in an unusable state !", "Are you Sure ?", JOptionPane.YES_NO_OPTION);
-				if(n == JOptionPane.YES_OPTION)
-				{
-					
+				int n = JOptionPane
+						.showConfirmDialog(
+								null,
+								"Are you sure to restore the configurations of the application ? This function should only be used if the Application is in an unusable state !",
+								"Are you Sure ?", JOptionPane.YES_NO_OPTION);
+				if (n == JOptionPane.YES_OPTION) {
+
 					Configuration conf;
 					try {
 						conf = data.Model.openConfiguration();
@@ -1277,22 +1327,23 @@ public class GUI {
 						conf.close();
 					} catch (ModelAccessException e) {
 						JOptionPane
-						.showConfirmDialog(
-								null,
-								"Error reading or concurrent modifying the database! ",
-								"Error", JOptionPane.DEFAULT_OPTION);
+								.showConfirmDialog(
+										null,
+										"Error reading or concurrent modifying the database! ",
+										"Error", JOptionPane.DEFAULT_OPTION);
 						e.printStackTrace();
 					}
-					
+
 					JOptionPane
-					.showConfirmDialog(
-							null,
-							"All of the configurations are restored, please restart the application !",
-							"Please restart the Application !", JOptionPane.DEFAULT_OPTION);
+							.showConfirmDialog(
+									null,
+									"All of the configurations are restored, please restart the application !",
+									"Please restart the Application !",
+									JOptionPane.DEFAULT_OPTION);
 				}
 			}
 		});
-		/////////////////////////////////////////////////////////////////panel_About////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////panel_About////////////////////////////////////////////////////////////////////
 
 		JPanel panel_About = new JPanel();
 		tabbedPane.addTab("About", null, panel_About, null);
@@ -1301,47 +1352,50 @@ public class GUI {
 		JTextPane txtpnTrustServiceApplication = new JTextPane();
 		txtpnTrustServiceApplication.setBounds(136, 70, 292, 292);
 		txtpnTrustServiceApplication.setEditable(false);
-		txtpnTrustServiceApplication.setBackground(UIManager.getColor("Button.background"));
-		txtpnTrustServiceApplication.setText("Trust Service Application\r\n\r\nVersion 1.0\r\n\r\nProduced by :\r\nJannik Vieten\r\nPascal Weisenburger\r\nHaixin Cai\r\n\r\nTU Darmstadt");
+		txtpnTrustServiceApplication.setBackground(UIManager
+				.getColor("Button.background"));
+		txtpnTrustServiceApplication
+				.setText("Trust Service Application\r\n\r\nVersion 1.0\r\n\r\nProduced by :\r\nJannik Vieten\r\nPascal Weisenburger\r\nHaixin Cai\r\n\r\nTU Darmstadt");
 		panel_About.add(txtpnTrustServiceApplication);
 
-		/////////////////////////////////////////////////////////////////JToggleButton////////////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////JToggleButton////////////////////////////////////////////////////////////////////
 
 		tglbtnStartService.setBounds(27, 534, 160, 23);
 		tglbtnStartService.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent ev) {
-	            if(ev.getStateChange()==ItemEvent.SELECTED) {
-            		try {
-            			server = new WebServer();
-            			server.start();
-    	            	((JToggleButton) ev.getSource()).setText("Stop Webserver");
+				if (ev.getStateChange() == ItemEvent.SELECTED) {
+					try {
+						server = new WebServer();
+						server.start();
+						((JToggleButton) ev.getSource())
+								.setText("Stop Webserver");
 
 					} catch (IOException e) {
 						e.printStackTrace();
 						((JToggleButton) ev.getSource()).setSelected(false);
 					}
-	            } else if(ev.getStateChange()==ItemEvent.DESELECTED) {
-	            	server.stop();
-	            	server = null;
-	            	((JToggleButton) ev.getSource()).setText("Start Webserver");
-	            }
-	       }
+				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
+					server.stop();
+					server = null;
+					((JToggleButton) ev.getSource()).setText("Start Webserver");
+				}
+			}
 		});
 		frame.getContentPane().add(tglbtnStartService);
-/////////////////////////////////////////////////////////////////////////////Minimize//////////////////////////////////////////////////////////////
+		// ///////////////////////////////////////////////////////////////////////////Minimize//////////////////////////////////////////////////////////////
 		JButton btnMiniminze = new JButton("Minimize");
 		btnMiniminze.setBounds(359, 534, 100, 23);
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				//frame.setVisible(false);
+				// frame.setVisible(false);
 				frame.dispose();
-			      miniTray(trayImg_on,trayImg_off);
+				miniTray(trayImg_on, trayImg_off);
 			}
 		});
 		frame.getContentPane().add(btnMiniminze);
-//////////////////////////////////////////////////////////////////////////////Close/////////////////////////////////////////////////////////////
+		// ////////////////////////////////////////////////////////////////////////////Close/////////////////////////////////////////////////////////////
 		JButton btnClose = new JButton("Close");
 		btnClose.setBounds(475, 534, 93, 23);
 		btnClose.addMouseListener(new MouseAdapter() {
@@ -1351,7 +1405,7 @@ public class GUI {
 			}
 		});
 		frame.getContentPane().add(btnClose);
-		//////////////////////////////////////////////////////////////////////////Refresh///////////////////////////////////////////////////////////
+		// ////////////////////////////////////////////////////////////////////////Refresh///////////////////////////////////////////////////////////
 		JButton btnRefresh = new JButton("Refresh");
 		btnRefresh.addMouseListener(new MouseAdapter() {
 			@Override
@@ -1367,199 +1421,223 @@ public class GUI {
 		btnRefresh.setBounds(245, 534, 93, 23);
 		frame.getContentPane().add(btnRefresh);
 
-		///////////////////////////////////////////////////////////////////////close////////////////////////////////////////////////////////////////
-		 frame.addWindowListener(new WindowAdapter() {
-		     @Override
+		// /////////////////////////////////////////////////////////////////////close////////////////////////////////////////////////////////////////
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
-		      System.exit(0);
-		     };
+				System.exit(0);
+			};
 
-		     @Override
+			@Override
 			public void windowIconified(WindowEvent e) {
 
-		    	 //frame.setVisible(false);
-		    	 frame.dispose();
-		      miniTray(trayImg_on,trayImg_off);
+				// frame.setVisible(false);
+				frame.dispose();
+				miniTray(trayImg_on, trayImg_off);
 
-		     }
-
-		    });
-
-
-
-	}
-
-
-
-
-
-
-
-	public void refresh_ColWidth ()
-	{
-
-
-
-
-		if(table_TC!=null){
-			DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table_TC.getColumnModel();
-			for (int i = 0; i < table_TC.getColumnCount(); i++) {
-			TableColumn column = cmodel.getColumn(i);
-			column.setPreferredWidth(PreferredWidth_TC[i]);
 			}
-		for(int i=0;i<Trust_Cert_TableCol.length;i++)
-		{
-			Trust_Cert_TableCol[i]= table_TC.getColumnModel().getColumn(i);
-			Trust_Cert_TableCol[i].addPropertyChangeListener(new TC_ColumnListener ());
-		}}
 
+		});
 
-
-		if(table_uTC!=null){
-
-			DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table_uTC.getColumnModel();
-				for (int i = 0; i < table_uTC.getColumnCount(); i++) {
-				TableColumn column = cmodel.getColumn(i);
-				column.setPreferredWidth(PreferredWidth_uTC[i]);
-				}
-
-			for(int i=0;i<UnTrust_Cert_TableCol.length;i++)
-			{
-			UnTrust_Cert_TableCol[i]= table_uTC.getColumnModel().getColumn(i);
-		UnTrust_Cert_TableCol[i].addPropertyChangeListener(new uTC_ColumnListener ());
-	}}
-
-
-
-		if(table_Ass!=null){
-
-			DefaultTableColumnModel cmodel = (DefaultTableColumnModel)table_Ass.getColumnModel();
-				for (int i = 0; i < table_Ass.getColumnCount(); i++) {
-				TableColumn column = cmodel.getColumn(i);
-				column.setPreferredWidth(PreferredWidth_Ass[i]);
-				}
-
-				DefaultTableModel Model_Ass=(DefaultTableModel)table_Ass.getModel();
-				Model_Ass.addTableModelListener(new Ass_ModelListener());
-
-			for(int i=0;i<Ass_TableCol.length;i++)
-			{
-				Ass_TableCol[i]= table_Ass.getColumnModel().getColumn(i);
-				Ass_TableCol[i].addPropertyChangeListener(new Ass_ColumnListener ());
-	}}
 	}
 
-	class TC_ColumnListener implements PropertyChangeListener  {
-	    @Override
-		public void propertyChange(PropertyChangeEvent e)  {
-	         if (e.getPropertyName().equals("preferredWidth"))  {
+	
+	/**
+	 * to refresh the table with the modified colum width
+	 */
+	public void refresh_ColWidth() {
 
-	              TableColumn tableColumn= (TableColumn)e.getSource();
-	              int index= table_TC.getColumnModel().getColumnIndex(tableColumn.getHeaderValue());
-	              PreferredWidth_TC[index]=(int)e.getNewValue();
-
-
-
-	        }}}
-
-	class uTC_ColumnListener implements PropertyChangeListener  {
-	    @Override
-		public void propertyChange(PropertyChangeEvent e)  {
-	         if (e.getPropertyName().equals("preferredWidth"))  {
-
-	              TableColumn tableColumn= (TableColumn)e.getSource();
-	              int index= table_uTC.getColumnModel().getColumnIndex(tableColumn.getHeaderValue());
-	              PreferredWidth_uTC[index]=(int)e.getNewValue();
-
-
-	        }}}
-
-	class Ass_ColumnListener implements PropertyChangeListener  {
-	    @Override
-		public void propertyChange(PropertyChangeEvent e)  {
-	         if (e.getPropertyName().equals("preferredWidth"))  {
-
-	              TableColumn tableColumn= (TableColumn)e.getSource();
-	              int index= table_Ass.getColumnModel().getColumnIndex(tableColumn.getHeaderValue());
-	              PreferredWidth_Ass[index]=(int)e.getNewValue();
-
-
-	        }}}
-
-
-	  class  Ass_ModelListener implements TableModelListener {
-	      @Override
-		public void tableChanged(TableModelEvent e) {
-
-	  TrustAssessment Clicked_Ass = PresentationLogic.getAss_by_Click(table_Ass);
-	  TrustAssessment new_Ass=Clicked_Ass;
-	  String Change=(String)table_Ass.getValueAt(e.getFirstRow(), e.getColumn());
-
-
-	  String regex="^\\s*\\(\\s*(\\s*0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0\\s*)\\s*\\)\\s*$";
-
-	  if (!Change.matches(regex))
-	  {
-		  PresentationLogic.msg("Please enter the valid value(between 0.0 and 1.0) for each item. example:(0.5, 0.5, 0.5)");
-
-		  if(e.getColumn()==3)
-		  Change= "(" + Clicked_Ass.getO_it_ca().getT() + ", "
-					+ Clicked_Ass.getO_it_ca().getC() + ", "
-					+ Clicked_Ass.getO_it_ca().getF() + ")";
-		  else
-			  if(e.getColumn()==4)
-		  Change="(" + Clicked_Ass.getO_it_ee().getT() + ", "
-						+ Clicked_Ass.getO_it_ee().getC() + ", "
-						+ Clicked_Ass.getO_it_ee().getF() + ")";
-
-				  table_Ass.setValueAt(Change, e.getFirstRow(), e.getColumn());
-			return;
-	  }//if
-
-	  Change=Change.substring(Change.indexOf("(")+1, Change.indexOf(")"));
-
-	  double T,C,F;
-	  String[] tcf = Change.split(",");
-
-	  T=Double.valueOf(tcf[0]);
-	  C=Double.valueOf(tcf[1]);
-	  F=Double.valueOf(tcf[2]);
-	  CertainTrust new_CertT;
-
-	  if(e.getColumn()==3)
-	  {
-		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ca().getN());
-		  new_CertT.setRS(Clicked_Ass.getO_it_ca().getR(), Clicked_Ass.getO_it_ca().getS());
-		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), new_CertT, Clicked_Ass.getO_it_ee());
-
-	  }
-	  else if(e.getColumn()==4)
-	  {
-		  new_CertT=new CertainTrust(T, C, F, Clicked_Ass.getO_it_ee().getN());
-		  new_CertT.setRS(Clicked_Ass.getO_it_ee().getR(), Clicked_Ass.getO_it_ee().getS());
-		  new_Ass=new TrustAssessment(Clicked_Ass.getK(), Clicked_Ass.getCa(), Clicked_Ass.getS(), Clicked_Ass.getO_kl(), Clicked_Ass.getO_it_ca(), new_CertT);
-
-	  }
-
-
-	  try {
-			TrustView view = data.Model.openTrustView();
-			view.setAssessment(new_Ass);
-			view.close();
-
-
-		} catch (ModelAccessException e1) {
-			PresentationLogic.msg("Error reading or concurrent modifying the database! ");
-
-			e1.printStackTrace();
+		if (table_TC != null) {
+			DefaultTableColumnModel cmodel = (DefaultTableColumnModel) table_TC
+					.getColumnModel();
+			for (int i = 0; i < table_TC.getColumnCount(); i++) {
+				TableColumn column = cmodel.getColumn(i);
+				column.setPreferredWidth(PreferredWidth_TC[i]);
+			}
+			for (int i = 0; i < Trust_Cert_TableCol.length; i++) {
+				Trust_Cert_TableCol[i] = table_TC.getColumnModel().getColumn(i);
+				Trust_Cert_TableCol[i]
+						.addPropertyChangeListener(new TC_ColumnListener());
+			}
 		}
 
-		table_Ass.setModel(PresentationLogic
-				.refresh_Ass_Table());
-		refresh_ColWidth();
+		if (table_uTC != null) {
 
+			DefaultTableColumnModel cmodel = (DefaultTableColumnModel) table_uTC
+					.getColumnModel();
+			for (int i = 0; i < table_uTC.getColumnCount(); i++) {
+				TableColumn column = cmodel.getColumn(i);
+				column.setPreferredWidth(PreferredWidth_uTC[i]);
+			}
 
-	      }
-	    }
+			for (int i = 0; i < UnTrust_Cert_TableCol.length; i++) {
+				UnTrust_Cert_TableCol[i] = table_uTC.getColumnModel()
+						.getColumn(i);
+				UnTrust_Cert_TableCol[i]
+						.addPropertyChangeListener(new uTC_ColumnListener());
+			}
+		}
+
+		if (table_Ass != null) {
+
+			DefaultTableColumnModel cmodel = (DefaultTableColumnModel) table_Ass
+					.getColumnModel();
+			for (int i = 0; i < table_Ass.getColumnCount(); i++) {
+				TableColumn column = cmodel.getColumn(i);
+				column.setPreferredWidth(PreferredWidth_Ass[i]);
+			}
+
+			DefaultTableModel Model_Ass = (DefaultTableModel) table_Ass
+					.getModel();
+			Model_Ass.addTableModelListener(new Ass_ModelListener());
+
+			for (int i = 0; i < Ass_TableCol.length; i++) {
+				Ass_TableCol[i] = table_Ass.getColumnModel().getColumn(i);
+				Ass_TableCol[i]
+						.addPropertyChangeListener(new Ass_ColumnListener());
+			}
+		}
+	}
+
+	
+	/**
+	 * to remember the width of the trust certificate table after adjustment form user
+	 *
+	 */
+	class TC_ColumnListener implements PropertyChangeListener {
+		@Override
+		public void propertyChange(PropertyChangeEvent e) {
+			if (e.getPropertyName().equals("preferredWidth")) {
+
+				TableColumn tableColumn = (TableColumn) e.getSource();
+				int index = table_TC.getColumnModel().getColumnIndex(
+						tableColumn.getHeaderValue());
+				PreferredWidth_TC[index] = (int) e.getNewValue();
+
+			}
+		}
+	}
+
+	/**
+	 * to remember the width of the untrust certificate table after adjustment form user
+	 *
+	 */
+	class uTC_ColumnListener implements PropertyChangeListener {
+		@Override
+		public void propertyChange(PropertyChangeEvent e) {
+			if (e.getPropertyName().equals("preferredWidth")) {
+
+				TableColumn tableColumn = (TableColumn) e.getSource();
+				int index = table_uTC.getColumnModel().getColumnIndex(
+						tableColumn.getHeaderValue());
+				PreferredWidth_uTC[index] = (int) e.getNewValue();
+
+			}
+		}
+	}
+
+	
+	/**
+	 * to remember the width of the trust assessment table after adjustment form user
+	 *
+	 */
+	class Ass_ColumnListener implements PropertyChangeListener {
+		@Override
+		public void propertyChange(PropertyChangeEvent e) {
+			if (e.getPropertyName().equals("preferredWidth")) {
+
+				TableColumn tableColumn = (TableColumn) e.getSource();
+				int index = table_Ass.getColumnModel().getColumnIndex(
+						tableColumn.getHeaderValue());
+				PreferredWidth_Ass[index] = (int) e.getNewValue();
+
+			}
+		}
+	}
+
+	
+	/**
+	 * rewrite the mouselistener for adjusting the table width
+	 *
+	 */
+	class Ass_ModelListener implements TableModelListener {
+		@Override
+		public void tableChanged(TableModelEvent e) {
+
+			TrustAssessment Clicked_Ass = PresentationLogic
+					.getAss_by_Click(table_Ass);
+			TrustAssessment new_Ass = Clicked_Ass;
+			String Change = (String) table_Ass.getValueAt(e.getFirstRow(),
+					e.getColumn());
+
+			String regex = "^\\s*\\(\\s*(\\s*0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0\\s*)\\s*\\)\\s*$";
+
+			if (!Change.matches(regex)) {
+				PresentationLogic
+						.msg("Please enter the valid value(between 0.0 and 1.0) for each item. example:(0.5, 0.5, 0.5)");
+
+				if (e.getColumn() == 3)
+					Change = "(" + Clicked_Ass.getO_it_ca().getT() + ", "
+							+ Clicked_Ass.getO_it_ca().getC() + ", "
+							+ Clicked_Ass.getO_it_ca().getF() + ")";
+				else if (e.getColumn() == 4)
+					Change = "(" + Clicked_Ass.getO_it_ee().getT() + ", "
+							+ Clicked_Ass.getO_it_ee().getC() + ", "
+							+ Clicked_Ass.getO_it_ee().getF() + ")";
+
+				table_Ass.setValueAt(Change, e.getFirstRow(), e.getColumn());
+				return;
+			}// if
+
+			Change = Change.substring(Change.indexOf("(") + 1,
+					Change.indexOf(")"));
+
+			double T, C, F;
+			String[] tcf = Change.split(",");
+
+			T = Double.valueOf(tcf[0]);
+			C = Double.valueOf(tcf[1]);
+			F = Double.valueOf(tcf[2]);
+			CertainTrust new_CertT;
+
+			if (e.getColumn() == 3) {
+				new_CertT = new CertainTrust(T, C, F, Clicked_Ass.getO_it_ca()
+						.getN());
+				new_CertT.setRS(Clicked_Ass.getO_it_ca().getR(), Clicked_Ass
+						.getO_it_ca().getS());
+				new_Ass = new TrustAssessment(Clicked_Ass.getK(),
+						Clicked_Ass.getCa(), Clicked_Ass.getS(),
+						Clicked_Ass.getO_kl(), new_CertT,
+						Clicked_Ass.getO_it_ee());
+
+			} else if (e.getColumn() == 4) {
+				new_CertT = new CertainTrust(T, C, F, Clicked_Ass.getO_it_ee()
+						.getN());
+				new_CertT.setRS(Clicked_Ass.getO_it_ee().getR(), Clicked_Ass
+						.getO_it_ee().getS());
+				new_Ass = new TrustAssessment(Clicked_Ass.getK(),
+						Clicked_Ass.getCa(), Clicked_Ass.getS(),
+						Clicked_Ass.getO_kl(), Clicked_Ass.getO_it_ca(),
+						new_CertT);
+
+			}
+
+			try {
+				TrustView view = data.Model.openTrustView();
+				view.setAssessment(new_Ass);
+				view.close();
+
+			} catch (ModelAccessException e1) {
+				PresentationLogic
+						.msg("Error reading or concurrent modifying the database! ");
+
+				e1.printStackTrace();
+			}
+
+			table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+			refresh_ColWidth();
+
+		}
+	}
 }
 
