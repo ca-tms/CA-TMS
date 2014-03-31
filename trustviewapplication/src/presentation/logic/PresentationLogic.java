@@ -50,6 +50,7 @@ public class PresentationLogic {
 	/**
 	 * to refresh the Trust Certificates Table in the GUI
 	 */
+	@SuppressWarnings("deprecation")
 	public static DefaultTableModel refresh_TC_Table() {
 
 		DefaultTableModel Model = new DefaultTableModel(new Object[][] {},
@@ -113,6 +114,7 @@ public class PresentationLogic {
 	 * to refresh the unTrust Certificates Table in the GUI
 	 */
 	 
+	@SuppressWarnings("deprecation")
 	public static DefaultTableModel refresh_uTC_Table() {
 		DefaultTableModel Model = new DefaultTableModel(new Object[][] {},
 				new String[] { "Serial", "Issuer", "Subject", "PublicKey",
