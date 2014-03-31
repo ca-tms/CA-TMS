@@ -403,6 +403,7 @@ public class PresentationLogic {
 							"Error reading or concurrent modifying the database! Please restart the application ",
 							"Error", JOptionPane.DEFAULT_OPTION);
 			e.printStackTrace();
+			
 		}
 		return type_temp;
 

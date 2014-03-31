@@ -99,6 +99,8 @@ public class GUI {
 	private long assessment_expiration_millis;
 
 	private int Port;
+	private boolean Vali_Notary;
+	
 	private JTextField textField_Expiration;
 	private JTextField textField_Port;
 
@@ -152,7 +154,11 @@ public class GUI {
 		security_level_med = PresentationLogic.get_Configuration(
 				Configuration.SECURITY_LEVEL_MEDIUM, Float.class);
 		security_level_high = PresentationLogic.get_Configuration(
-				Configuration.SECURITY_LEVEL_HIGH, Float.class);
+				Configuration.SECURITY_LEVEL_HIGH, Float.class);		
+		
+		Vali_Notary= PresentationLogic.get_Configuration(
+				Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, Boolean.class);
+		
 
 	}
 
@@ -252,12 +258,12 @@ public class GUI {
 
 		frame = new JFrame("CA Trust Management System");
 		frame.setResizable(true);
-		frame.setBounds(100, 100, 610, 621);
+		frame.setBounds(100, 100, 610, 660);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(10, 10, 574, 497);
+		tabbedPane.setBounds(10, 10, 574, 547);
 		frame.getContentPane().add(tabbedPane);
 
 		JPanel panel_TC = new JPanel();
@@ -265,17 +271,14 @@ public class GUI {
 		panel_TC.setLayout(null);
 
 		JScrollPane scrollPane_TC = new JScrollPane();
-		scrollPane_TC.setBounds(10, 10, 549, 448);
+		scrollPane_TC.setBounds(10, 10, 549, 497);
 		panel_TC.add(scrollPane_TC);
 
 		trayImg_on = new ImageIcon(this.getClass().getResource(
 				"resources/on.png"));
 		trayImg_off = new ImageIcon(this.getClass().getResource(
 				"resources/off.png"));
-		// trayImg_off=new
-		// ImageIcon(this.getClass().getResource("../resources/off.png").getPath());
-		// System.out.println(this.getClass().getResource("").getPath()+"resources/on.png"));
-		// System.out.println(this.getClass().getResource("resources/on.png").getPath());
+		
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
 		table_TC = new JTable(PresentationLogic.refresh_TC_Table());
@@ -461,7 +464,7 @@ public class GUI {
 		panel_uTC.setLayout(null);
 
 		JScrollPane scrollPane_uTC = new JScrollPane();
-		scrollPane_uTC.setBounds(10, 10, 549, 448);
+		scrollPane_uTC.setBounds(10, 10, 549, 497);
 		panel_uTC.add(scrollPane_uTC);
 		// ///////////////////////////////////////////////////////////////////unTrustCertificate_Table////////////////////////////////////
 
@@ -650,7 +653,7 @@ public class GUI {
 		panel_Ass.setLayout(null);
 
 		JScrollPane scrollPane_Ass = new JScrollPane();
-		scrollPane_Ass.setBounds(10, 10, 549, 448);
+		scrollPane_Ass.setBounds(10, 10, 549, 497);
 		panel_Ass.add(scrollPane_Ass);
 		// ///////////////////////////////////////////////////////////////////Assessment_Table///////////////////////////////////
 
@@ -884,7 +887,7 @@ public class GUI {
 		Outer_General_Setting.setBorder(new TitledBorder(null,
 				"General Setting", TitledBorder.LEADING, TitledBorder.TOP,
 				null, null));
-		Outer_General_Setting.setBounds(10, 143, 549, 243);
+		Outer_General_Setting.setBounds(10, 143, 549, 291);
 		panel_Conf.add(Outer_General_Setting);
 		Outer_General_Setting.setLayout(null);
 
@@ -921,61 +924,77 @@ public class GUI {
 
 		JSeparator separator = new JSeparator();
 		separator.setForeground(Color.LIGHT_GRAY);
-		separator.setBounds(120, 118, 419, 11);
+		separator.setBounds(120, 171, 419, 11);
 		Outer_General_Setting.add(separator);
 
 		JLabel lblResetDatabase = new JLabel("Reset trust view");
-		lblResetDatabase.setBounds(10, 109, 100, 15);
+		lblResetDatabase.setBounds(10, 162, 100, 15);
 		Outer_General_Setting.add(lblResetDatabase);
 
 		JLabel lblDeleteAllThe = new JLabel(
 				"All of the Trust/Untrust Certificates, Assessments will");
-		lblDeleteAllThe.setBounds(42, 130, 343, 15);
+		lblDeleteAllThe.setBounds(42, 183, 343, 15);
 		Outer_General_Setting.add(lblDeleteAllThe);
 
 		JLabel lblAndAllThe = new JLabel("be deleted.");
-		lblAndAllThe.setBounds(42, 148, 343, 15);
+		lblAndAllThe.setBounds(42, 201, 343, 15);
 		Outer_General_Setting.add(lblAndAllThe);
 
 		JButton btnReset = new JButton("Reset");
 
-		btnReset.setBounds(422, 134, 93, 23);
+		btnReset.setBounds(422, 187, 93, 23);
 		Outer_General_Setting.add(btnReset);
 
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setForeground(Color.LIGHT_GRAY);
-		separator_1.setBounds(149, 187, 390, 2);
+		separator_1.setBounds(149, 240, 390, 2);
 		Outer_General_Setting.add(separator_1);
 
 		JLabel lblDefaultSetting = new JLabel("Default configuration");
-		lblDefaultSetting.setBounds(10, 178, 129, 15);
+		lblDefaultSetting.setBounds(10, 231, 129, 15);
 		Outer_General_Setting.add(lblDefaultSetting);
 
 		JLabel lblAllOfThe = new JLabel(
 				"All of the configurations will be set to default value.");
-		lblAllOfThe.setBounds(42, 199, 359, 15);
+		lblAllOfThe.setBounds(42, 252, 359, 15);
 		Outer_General_Setting.add(lblAllOfThe);
 
 		JButton btnDefault = new JButton("Default");
 
-		btnDefault.setBounds(422, 198, 93, 23);
+		btnDefault.setBounds(422, 251, 93, 23);
 		Outer_General_Setting.add(btnDefault);
+		
+		JToggleButton tglbtnVali_Nortary = new JToggleButton("");
+		if(Vali_Notary)
+			tglbtnVali_Nortary.setText("Enable"); 
+		else
+			tglbtnVali_Nortary.setText("Disable");
+		tglbtnVali_Nortary.setSelected(Vali_Notary);
+		
+		
+	
+		tglbtnVali_Nortary.setBounds(446, 108, 93, 23);
+		Outer_General_Setting.add(tglbtnVali_Nortary);
 
+		JLabel lblValidationNortaries = new JLabel("Validation Nortaries Service :");
+		lblValidationNortaries.setBounds(248, 112, 188, 15);
+		Outer_General_Setting.add(lblValidationNortaries);
+		
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_Data_Backup.setBounds(10, 396, 549, 62);
+		Outer_Data_Backup.setBounds(10, 445, 549, 62);
 		panel_Conf.add(Outer_Data_Backup);
 		Outer_Data_Backup.setLayout(null);
 
 		JButton btnImport = new JButton("Import");
 
-		btnImport.setBounds(107, 29, 93, 23);
+		btnImport.setBounds(107, 27, 93, 23);
 		Outer_Data_Backup.add(btnImport);
 
 		JButton btnExport = new JButton("Export");
 
-		btnExport.setBounds(345, 29, 93, 23);
+		btnExport.setBounds(345, 27, 93, 23);
 		Outer_Data_Backup.add(btnExport);
 		// /////////////////////////////////////////////////////////////////////////////////Security
 		// level setting
@@ -1280,6 +1299,25 @@ public class GUI {
 			}
 		});
 
+		tglbtnVali_Nortary.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent ev) {
+				if (ev.getStateChange() == ItemEvent.SELECTED) {
+					PresentationLogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, true);
+					
+					((JToggleButton) ev.getSource())
+							.setText("Enable");
+					
+					
+				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
+					PresentationLogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, false);
+					((JToggleButton) ev.getSource()).setText("Disable");
+					
+				}
+			}
+		});
+		
+		
 		btnReset.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -1360,7 +1398,7 @@ public class GUI {
 
 		// ///////////////////////////////////////////////////////////////JToggleButton////////////////////////////////////////////////////////////////////
 
-		tglbtnStartService.setBounds(27, 534, 160, 23);
+		tglbtnStartService.setBounds(27, 578, 160, 23);
 		tglbtnStartService.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent ev) {
@@ -1385,7 +1423,7 @@ public class GUI {
 		frame.getContentPane().add(tglbtnStartService);
 		// ///////////////////////////////////////////////////////////////////////////Minimize//////////////////////////////////////////////////////////////
 		JButton btnMiniminze = new JButton("Minimize");
-		btnMiniminze.setBounds(359, 534, 100, 23);
+		btnMiniminze.setBounds(359, 578, 100, 23);
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -1397,7 +1435,7 @@ public class GUI {
 		frame.getContentPane().add(btnMiniminze);
 		// ////////////////////////////////////////////////////////////////////////////Close/////////////////////////////////////////////////////////////
 		JButton btnClose = new JButton("Close");
-		btnClose.setBounds(475, 534, 93, 23);
+		btnClose.setBounds(475, 578, 93, 23);
 		btnClose.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -1418,7 +1456,7 @@ public class GUI {
 
 			}
 		});
-		btnRefresh.setBounds(245, 534, 93, 23);
+		btnRefresh.setBounds(245, 578, 93, 23);
 		frame.getContentPane().add(btnRefresh);
 
 		// /////////////////////////////////////////////////////////////////////close////////////////////////////////////////////////////////////////
