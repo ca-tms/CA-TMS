@@ -50,24 +50,24 @@ public class SQLiteBackedModel implements AutoCloseable {
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS assessments (" +
-						"k VARCHAR NOT NULL," +
-						"ca VARCHAR NOT NULL," +
-						"o_kl_t REAL," +
+						"k VARCHAR NOT NULL," +          // public key
+						"ca VARCHAR NOT NULL," +         // CA name
+						"o_kl_t REAL," +                 // key legitimacy
 						"o_kl_c REAL," +
 						"o_kl_f REAL," +
 						"o_kl_r REAL," +
 						"o_kl_s REAL," +
-						"o_it_ca_t REAL NOT NULL," +
+						"o_it_ca_t REAL NOT NULL," +     // issuer trust (to sign CAs)
 						"o_it_ca_c REAL NOT NULL," +
 						"o_it_ca_f REAL NOT NULL," +
 						"o_it_ca_r REAL NOT NULL," +
 						"o_it_ca_s REAL NOT NULL," +
-						"o_it_ee_t REAL NOT NULL," +
+						"o_it_ee_t REAL NOT NULL," +     // issuer trust (to sign end entities)
 						"o_it_ee_c REAL NOT NULL," +
 						"o_it_ee_f REAL NOT NULL," +
 						"o_it_ee_r REAL NOT NULL," +
 						"o_it_ee_s REAL NOT NULL," +
-						"timestamp DATETIME NOT NULL," +
+						"timestamp DATETIME NOT NULL," + // last access time
 						"" +
 						"CHECK (o_kl_t BETWEEN 0 AND 1)," +
 						"CHECK (o_kl_c BETWEEN 0 AND 1)," +
@@ -89,16 +89,16 @@ public class SQLiteBackedModel implements AutoCloseable {
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS certificates (" +
-						"serial VARCHAR NOT NULL," +
-						"issuer VARCHAR NOT NULL," +
-						"subject VARCHAR NOT NULL," +
-						"publickey VARCHAR NOT NULL," +
-						"notbefore DATETIME NOT NULL," +
-						"notafter DATETIME NOT NULL," +
-						"trusted BOOLEAN NOT NULL," +
-						"untrusted BOOLEAN NOT NULL," +
-						"S BOOLEAN NOT NULL," +
-						"" +
+						"serial VARCHAR NOT NULL," +     // serial
+						"issuer VARCHAR NOT NULL," +     // issuer
+						"subject VARCHAR NOT NULL," +    // subject
+						"publickey VARCHAR NOT NULL," +  // public key
+						"notbefore DATETIME NOT NULL," + // not before
+						"notafter DATETIME NOT NULL," +  // not after
+						"trusted BOOLEAN NOT NULL," +    // is certificate trusted
+						"untrusted BOOLEAN NOT NULL," +  // is certificate untrusted
+						"S BOOLEAN NOT NULL," +          // is certificate in the S set
+						"" +                             //  of the related assessment
 						"CHECK (S IN (0, 1))," +
 						"CHECK (trusted IN (0, 1))," +
 						"CHECK (untrusted IN (0, 1))," +
@@ -108,8 +108,8 @@ public class SQLiteBackedModel implements AutoCloseable {
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS configuration (" +
-						"key VARCHAR NOT NULL," +
-						"value VARCHAR NOT NULL," +
+						"key VARCHAR NOT NULL," +    // key
+						"value VARCHAR NOT NULL," +  // value of the related key
 						"" +
 						"PRIMARY KEY (key))");
 
