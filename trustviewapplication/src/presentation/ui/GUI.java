@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -67,6 +68,8 @@ import javax.swing.JSeparator;
 
 import java.awt.Color;
 
+import javax.swing.JComboBox;
+
 /**
  * the whole GUI interface for the Trustview application
  *
@@ -99,7 +102,7 @@ public class GUI {
 	private long assessment_expiration_millis;
 
 	private int Port;
-	private boolean Vali_Notary;
+	private String Vali_Notary;
 	
 	private JTextField textField_Expiration;
 	private JTextField textField_Port;
@@ -157,9 +160,8 @@ public class GUI {
 				Configuration.SECURITY_LEVEL_HIGH, Float.class);		
 		
 		Vali_Notary= PresentationLogic.get_Configuration(
-				Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, Boolean.class);
+				Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
 		
-
 	}
 
 	/**
@@ -448,7 +450,7 @@ public class GUI {
 					} catch (ModelAccessException e) {
 
 						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+								.msg("Error reading or concurrent modifying the database !");
 
 						e.printStackTrace();
 					}
@@ -964,21 +966,21 @@ public class GUI {
 		btnDefault.setBounds(422, 251, 93, 23);
 		Outer_General_Setting.add(btnDefault);
 		
-		JToggleButton tglbtnVali_Nortary = new JToggleButton("");
-		if(Vali_Notary)
-			tglbtnVali_Nortary.setText("Enable"); 
-		else
-			tglbtnVali_Nortary.setText("Disable");
-		tglbtnVali_Nortary.setSelected(Vali_Notary);
-		
-		
-	
-		tglbtnVali_Nortary.setBounds(446, 108, 93, 23);
-		Outer_General_Setting.add(tglbtnVali_Nortary);
 
-		JLabel lblValidationNortaries = new JLabel("Validation Nortaries Service :");
-		lblValidationNortaries.setBounds(248, 112, 188, 15);
+		JLabel lblValidationNortaries = new JLabel("Validation Nortary Results Override With :");
+		lblValidationNortaries.setBounds(160, 112, 276, 15);
 		Outer_General_Setting.add(lblValidationNortaries);
+		
+		Vector<String> Choices = new Vector<String>();
+		Choices.add("trusted");
+		Choices.add("untrusted");
+		Choices.add("unknown");
+		Choices.add("off");
+		final JComboBox<String> comboBox = new JComboBox<String>(Choices);
+		comboBox.setSelectedItem(Vali_Notary);
+		
+		comboBox.setBounds(446, 109, 93, 21);
+		Outer_General_Setting.add(comboBox);
 		
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup",
@@ -1202,14 +1204,26 @@ public class GUI {
 			}
 		});
 
+		
+		
 		// /////////////////////////////////////////////////////////////////////////////////General
 		// setting
 		// setting//////////////////////////////////////////////////////////////////////////////
+		
+		comboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(arg0.getSource()==comboBox)
+				{
+						   PresentationLogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, comboBox.getSelectedItem().toString());
+				}
+			}
+		});
+		
 		btnChange.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 				int get_port = Integer.valueOf(textField_Port.getText());
-				if (get_port < 200 || get_port > 65535) {
+				if (get_port < 200 || get_port > 65535) { 
 					PresentationLogic
 							.msg("Please enter a valid Port Number(200 < Number < 65535)! ");
 
@@ -1296,24 +1310,6 @@ public class GUI {
 							.msg("Please enter a valid Expiration Time in millisecond !");
 				}
 
-			}
-		});
-
-		tglbtnVali_Nortary.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent ev) {
-				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					PresentationLogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, true);
-					
-					((JToggleButton) ev.getSource())
-							.setText("Enable");
-					
-					
-				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					PresentationLogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, false);
-					((JToggleButton) ev.getSource()).setText("Disable");
-					
-				}
 			}
 		});
 		
