@@ -9,6 +9,6 @@
 	<classpathentry kind="lib" path="lib/javax.json-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/miniconnectionpoolmanager.jar"/>
 	<classpathentry kind="lib" path="lib/sqlite-connection-pool_v1.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/sslcheck-0.8-jar-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/sslcheck-1.0-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
