@@ -33,9 +33,9 @@ TVE.SSLListener = {
                                 let rawChain = TVE.CertHandler.getRawChain(aBrowser);
                                 let secLevel = TVE.Prefs.getCharPref("secLevel");
                                 
-                                try {
-                                    // query CTMS!
-                                    let ctmsResult = TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel);
+                                // this is called when CTMS successfully answered the request
+                                var requestSuccessCallback = function(evt) {
+                                    var ctmsResult = evt.target.responseText;
                                     if(ctmsResult != "TRUSTED") {
                                         aRequest.resume();
                                         // display warning page when result is bad
@@ -43,11 +43,17 @@ TVE.SSLListener = {
                                     } else {
                                         aRequest.resume();
                                     }
-                                } catch(err) {
+                                }
+                                
+                                // this is called when connecting to the CTMS failed
+                                var requestErrorCallback = function(evt) {
                                     // happens when CTMS server is unreachable
                                     aRequest.resume();
                                     TVE.State.unreachable(aBrowser, url);
                                 }
+                                
+                                // query CTMS!
+                                TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, requestSuccessCallback, requestErrorCallback);
                             
                             } else {
                                 // when standard validation result is not valid
