@@ -80,14 +80,21 @@ public final class Validator {
 								request.getsecurityLevel(),
 								validationService);
 				}
-				catch (Exception e) {
+				catch (ModelAccessException e) {
 					if (attempts == 0)
 						e.printStackTrace();
 
-					if (++attempts >= MAX_ATTEMPTS)
+					if (++attempts >= MAX_ATTEMPTS) {
+						System.err.println(
+								"TrustView update failed. " +
+								"The TrustView could not be updated. " +
+								"The validation request could not be fulfilled.");
 						throw e;
+					}
 
-					System.err.println("TrustView update failed. This may happen due to concurrent access. Retrying ...");
+					System.err.println(
+							"TrustView update failed. " + 
+							"This may happen due to concurrent access. Retrying ...");
 
 					try {
 						Thread.sleep(WAIT_ATTEMPT_MILLIS);
@@ -99,6 +106,8 @@ public final class Validator {
 				}
 
 				System.out.println("Trust validation completed.");
+				System.out.println("  URL: " + request.getURL());
+				System.out.println("  Security Level: " + request.getsecurityLevel());
 				System.out.println("  Result was " + result);
 				break;
 			}
