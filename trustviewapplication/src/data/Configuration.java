@@ -23,6 +23,7 @@ public interface Configuration extends AutoCloseable {
 	static String ASSESSMENT_EXPIRATION_MILLIS = "assessment-expiration-millis";
 	static String SERVER_PORT = "server-port";
 	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
+	static String VALIDATION_TIMEOUT_MILLIS = "validation-timeout-millis";
 	static String OVERRIDE_VALIDATION_SERVICE_RESULT = "override-validation-service-result";
 
 	/**

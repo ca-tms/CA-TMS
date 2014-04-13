@@ -135,11 +135,13 @@ public class WebServer {
 		public void run() {
 			try (Reader reader = Channels.newReader(socketChannel, "UTF-8");
 			     Writer writer = Channels.newWriter(socketChannel, "UTF-8")) {
+
+				Future<JsonObject> objectFuture = null;
 				try {
 					if (socketChannel.socket().getInetAddress().isLoopbackAddress()) {
 						// parse incoming data as JSON
 						// but cancel if a specified timeout expires
-						Future<JsonObject> objectFuture = executorService.submit(
+						objectFuture = executorService.submit(
 								new JsonObjectReader(reader));
 						JsonObject object = objectFuture.get(
 								timeoutMillis, TimeUnit.MILLISECONDS);
@@ -173,6 +175,9 @@ public class WebServer {
 					}
 				}
 				catch (TimeoutException e) {
+					if (objectFuture != null)
+						objectFuture.cancel(true);
+
 					System.err.println("408 Request Timeout");
 					e.printStackTrace();
 					writer.write(
@@ -185,6 +190,9 @@ public class WebServer {
 							dateFormat.format(new Date()));
 				}
 				catch (Exception e) {
+					if (objectFuture != null)
+						objectFuture.cancel(true);
+
 					System.err.println("500 Internal Server Error");
 					e.printStackTrace();
 					writer.write(
