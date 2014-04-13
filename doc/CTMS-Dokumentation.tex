@@ -56,6 +56,17 @@ Dieses \textit{CA Trust Management System (CTMS)} wurde nun implementiert und be
 
 Im Folgenden wird das CTMS-System beschrieben.
 
+\subsection{Entwicklungsumgebung}
+Die Anwendung baut auf Java 7 auf. Da zur Entwicklung Eclipse genutzt wurde, liegt ein Eclipse-Projekt vor. Die gesamte Anwendung lässt sich aber auch mit Hilfe einer Ant-Build-Datei kompilieren. Die dabei generierte \texttt{JAR}-Datei enthält alle nötigen Abhängigkeiten. Dabei handelt es sich um die folgenden Bibliotheken:
+\begin{description}
+\item[CertainTrust SDK (CertainTrustSDK-1.0.jar)] ist das grundlegende Toolkit zur Modellierung/Berechnung von Computational Trust
+\item[Java JSON API (javax.json-1.0.4.jar)] wird benötigt um eingehende Validierungsanfragen (von der Firefox-Extension) zu lesen, die in JSON kodiert sind
+\item[Java JDBC connection pool manager (miniconnectionpoolmanager.jar)] ist ein einfacher Manager, um JDBC-Datenbankverbindungen zu verwalten
+\item[SQLite connection pool (sqlite-connection-pool\_v1.1.0.jar)] stellt einen Pool für SQLite-Verbindungen zur Verfügung, der im Zusammenspiel mit dem \textit{Java JDBC connection pool manager} genutzt wird, um einen Pool von wiederverwendbaren und potentiell nebenläufigen SQLite-Verbindungen zu verwalten
+\item[SQLite JDBC (sqlite-jdbc-3.7.2.jar)] stellt den Zugriff auf SQLite-Datenbanken zur Verfügung, der zur persistenten Daten-Speicherung genutzt wird
+\item[Notary module (sslcheck-1.0-jar-with-dependencies.jar)] stellt das Modul zur Abfrage von Notaries zur Verfügung
+\end{description}
+
 \subsection{Überblick}
 Das System besteht im Wesentlichen aus
 \begin{itemize}
@@ -79,8 +90,8 @@ Das Datenmodell verwaltet den Trust View, in dem die \textit{Public Key Trust As
 Darüber hinaus stellt das Datenmodell den Zugriff auf die Benutzerkonfiguration zur Verfügung. Standardwerte sind in der Datei \texttt{configuration.properties} im Wurzelverzeichnis der Applikation/\texttt{JAR}-Datei festgelegt und können dort modifiziert werden. Vom Benutzer angepasste Werte werden von der zugrunde liegenden Implementierung des Modells an einem benutzerspezifischem Ort gespeichert, wie dies auch mit dem Trust View geschieht.
 
 Die momentane Implementierung des Modells in den Klassen \texttt{data.sqlite.SQLiteBackedTrustView} und \texttt{data.sqlite.SQLiteBackedConfiguration} nutzt eine SQLite-Datenbank zum Speichern der Daten. Die Datenbank-Datei \texttt{ctms.sqlite} wird abgelegt im Verzeichnis:
-\vspace{1em}
 
+\vspace{1em}
 \begin{minipage}{\textwidth}
 \begin{description}
 \item[Windows] \%APPDATA\%\textbackslash ctms
@@ -89,6 +100,7 @@ Die momentane Implementierung des Modells in den Klassen \texttt{data.sqlite.SQL
 \item[andere (falls \$XDG\_DATA\_HOME nicht gesetzt)] \textasciitilde/.local/share/ctms
 \end{description}
 \end{minipage}
+\vspace{1em}
 
 Die Implementierung des Datenmodells kann ggf. einfach gegen eine andere ausgetauscht werden. Dazu muss lediglich die Klasse \texttt{data.Model} angepasst werden, sodass eine andere Implementierung genutzt wird, welche Realisierungen der Interfaces \texttt{data.TrustView} und \texttt{data.Configuration} bereitstellt.
 
