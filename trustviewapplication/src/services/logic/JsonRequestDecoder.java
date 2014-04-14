@@ -46,7 +46,7 @@ public final class JsonRequestDecoder {
 
 		// get security level
 		String securityLevel = Configuration.SECURITY_LEVEL_HIGH;
-		switch (object.getString("secLevel")) {
+		switch (object.getString("secLevel", "")) {
 		case "high":
 			securityLevel = Configuration.SECURITY_LEVEL_HIGH;
 			break;
@@ -61,7 +61,7 @@ public final class JsonRequestDecoder {
 		// get validation result
 		CertificatePathValidity certificatePathValidity =
 				CertificatePathValidity.UNKNOWN;
-		switch (object.getString("validationResult")) {
+		switch (object.getString("validationResult", "")) {
 		case "valid":
 			certificatePathValidity = CertificatePathValidity.VALID;
 			break;
@@ -76,10 +76,13 @@ public final class JsonRequestDecoder {
 		// get host url
 		String host = object.getString("url");
 
+		// determine whether the host certificate is trusted directly
+		boolean hostCertTrusted = object.getBoolean("hostCertTrusted", false);
+
 		// return the decoded the request object
 		try (Configuration config = Model.openConfiguration()) {
 			return new ValidationRequest(host, certifiactePath, certificatePathValidity,
-					config.get(securityLevel, Double.class));
+					config.get(securityLevel, Double.class), hostCertTrusted);
 		}
 	}
 }

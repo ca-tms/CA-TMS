@@ -13,6 +13,7 @@ public class ValidationRequest {
 	private final List<TrustCertificate> certifiactePath;
 	private final double securityLevel;
 	private final CertificatePathValidity certificatePathValidity;
+	private final boolean hostCertTrusted;
 
 	/**
 	 * Creates a new <code>ValidationRequest</code> instance
@@ -22,11 +23,13 @@ public class ValidationRequest {
 	 * @param securityLevel
 	 */
 	public ValidationRequest(String url, List<TrustCertificate> certifiactePath,
-			CertificatePathValidity certificatePathValidity, double securityLevel) {
+			CertificatePathValidity certificatePathValidity, double securityLevel,
+			boolean hostCertTrusted) {
 		this.url = url;
 		this.certifiactePath = certifiactePath;
 		this.certificatePathValidity = certificatePathValidity;
 		this.securityLevel = securityLevel;
+		this.hostCertTrusted = hostCertTrusted;
 
 		if (securityLevel < 0.0 || securityLevel > 1.0)
 			throw new IllegalArgumentException(
@@ -61,5 +64,12 @@ public class ValidationRequest {
 	 */
 	public double getsecurityLevel() {
 		return securityLevel;
+	}
+
+	/**
+	 * @return indicated whether the user trusts the host certificate directly
+	 */
+	public boolean isHostCertTrusted() {
+		return hostCertTrusted;
 	}
 }

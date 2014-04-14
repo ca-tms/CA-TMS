@@ -1,5 +1,6 @@
 package services.logic;
 
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -33,7 +34,7 @@ public final class Validator {
 	 */
 	public static ValidationResult validate(ValidationRequest request)
 			throws ModelAccessException {
-		ValidationResult result = ValidationResult.UNTRUSTED;
+		ValidationResult result = ValidationResult.UNKNOWN;
 
 		try {
 			if (request.getCertificatePathValidity() == CertificatePathValidity.VALID) {
@@ -41,53 +42,71 @@ public final class Validator {
 				System.out.println("  URL: " + request.getURL());
 				System.out.println("  Security Level: " + request.getsecurityLevel());
 
+				if (request.isHostCertTrusted()) {
+					System.out.println(
+							"User trusts host certificate directly.");
+					System.out.println(
+							"Adding certificate to the trusted certificates set " +
+							"bypassing trust validation algorithm.");
+				}
+
 				int attempts = 0;
 				while (true) {
 					try (TrustView trustView = Model.openTrustView();
 					     Configuration config = Model.openConfiguration()) {
-
-						// initialize validation service
-						// normally external notaries are queried but the validation
-						// service result can be forced to be a given outcome for
-						// testing purposes
-						String overrideValidationServiceResult =
-								config.get(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
-
-						final ValidationResult validationServiceResult;
-						switch (overrideValidationServiceResult.toLowerCase()) {
-						case "trusted":
-							validationServiceResult = ValidationResult.TRUSTED;
-							break;
-						case "untrusted":
-							validationServiceResult = ValidationResult.UNTRUSTED;
-							break;
-						case "unknown":
-							validationServiceResult = ValidationResult.UNKNOWN;
-							break;
-						default:
-							validationServiceResult = null;
-							break;
+						if (request.isHostCertTrusted()) {
+							// if the user trusts the host certificate directly,
+							// we will not run whole trust validation algorithm,
+							// but just add the certificate to the trusted
+							// certificates set
+							List<TrustCertificate> path = request.getCertifiactePath();
+							trustView.setTrustedCertificate(path.get(path.size() - 1));
+							result = ValidationResult.TRUSTED;
 						}
+						else {
+							// initialize validation service
+							// normally external notaries are queried but the validation
+							// service result can be forced to be a given outcome for
+							// testing purposes
+							String overrideValidationServiceResult =
+									config.get(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
 
-						long validationTimeoutMillis =
-								config.get(Configuration.VALIDATION_TIMEOUT_MILLIS, Long.class);
+							final ValidationResult validationServiceResult;
+							switch (overrideValidationServiceResult.toLowerCase()) {
+							case "trusted":
+								validationServiceResult = ValidationResult.TRUSTED;
+								break;
+							case "untrusted":
+								validationServiceResult = ValidationResult.UNTRUSTED;
+								break;
+							case "unknown":
+								validationServiceResult = ValidationResult.UNKNOWN;
+								break;
+							default:
+								validationServiceResult = null;
+								break;
+							}
 
-						ValidationService validationService =
-								validationServiceResult == null ?
-									Service.getValidationService(request.getURL(), validationTimeoutMillis) :
-									new ValidationService() {
-										@Override
-										public ValidationResult query(TrustCertificate certificate) {
-											return validationServiceResult;
-										}
-									};
+							long validationTimeoutMillis =
+									config.get(Configuration.VALIDATION_TIMEOUT_MILLIS, Long.class);
 
-						// perform trust validation
-						result = TrustComputation.validate(
-									trustView, config,
-									request.getCertifiactePath(),
-									request.getsecurityLevel(),
-									validationService);
+							ValidationService validationService =
+									validationServiceResult == null ?
+										Service.getValidationService(request.getURL(), validationTimeoutMillis) :
+										new ValidationService() {
+											@Override
+											public ValidationResult query(TrustCertificate certificate) {
+												return validationServiceResult;
+											}
+										};
+
+							// perform trust validation
+							result = TrustComputation.validate(
+										trustView, config,
+										request.getCertifiactePath(),
+										request.getsecurityLevel(),
+										validationService);
+						}
 					}
 					catch (ModelAccessException | CancellationException e) {
 						if (attempts == 0)
@@ -101,9 +120,15 @@ public final class Validator {
 							throw e;
 						}
 
-						System.err.println(
-								"TrustView update failed. " +
-								"This may happen due to concurrent access. Retrying ...");
+						if (e instanceof CancellationException)
+							System.err.println(
+									"TrustView update failed due validation service time out. " +
+									"Retrying ...");
+						else
+							System.err.println(
+									"TrustView update failed. " +
+									"This may happen due to concurrent access. " +
+									"Retrying ...");
 
 						if (!lock.isHeldByCurrentThread())
 							lock.lock();
