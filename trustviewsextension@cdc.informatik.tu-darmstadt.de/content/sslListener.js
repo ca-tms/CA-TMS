@@ -32,14 +32,19 @@ TVE.SSLListener = {
                                 // gather data for upcoming CTMS validation
                                 let rawChain = TVE.CertHandler.getRawChain(aBrowser);
                                 let secLevel = TVE.Prefs.getCharPref("secLevel");
+                                let hostCertTrusted = TVE.State.doWeWantToTrust(url);
                                 
                                 // this is called when CTMS successfully answered the request
                                 var requestSuccessCallback = function(evt) {
                                     var ctmsResult = evt.target.responseText;
-                                    if(ctmsResult != "TRUSTED") {
+                                    if(ctmsResult == "UNTRUSTED") {
                                         aRequest.resume();
-                                        // display warning page when result is bad
+                                        // display untrusted warning page
                                         TVE.State.untrusted(aBrowser, url);
+                                    } else if(ctmsResult == "UNKNOWN") {
+                                        aRequest.resume();
+                                        // display unknown warning page
+                                        TVE.State.unknown(aBrowser, url);
                                     } else {
                                         aRequest.resume();
                                     }
@@ -53,7 +58,7 @@ TVE.SSLListener = {
                                 }
                                 
                                 // query CTMS!
-                                TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, requestSuccessCallback, requestErrorCallback);
+                                TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, hostCertTrusted, requestSuccessCallback, requestErrorCallback);
                             
                             } else {
                                 // when standard validation result is not valid

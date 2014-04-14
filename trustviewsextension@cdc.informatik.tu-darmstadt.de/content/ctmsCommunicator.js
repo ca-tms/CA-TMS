@@ -9,10 +9,11 @@ TVE.CTMSCommunicator = {
      * certChain - the chain to validate
      * validationResult - Firefox's standard validation result ("invalid", "unknown" or "valid")
      * secLevel - user defined level ("high", "medium" or "low")
+     * hostCertTrusted - boolean, if true accept cert even if unknown
      * successCallback - callback function for successfull requests
      * errorCallback - callback function for failed requests
      */
-    requestValidation : function(url, certChain, validationResult, secLevel, successCallback, errorCallback) {
+    requestValidation : function(url, certChain, validationResult, secLevel, hostCertTrusted, successCallback, errorCallback) {
         
         // build object around data
         let data = new Object();
@@ -20,6 +21,7 @@ TVE.CTMSCommunicator = {
         data.certChain = certChain;
         data.validationResult = validationResult;
         data.secLevel = secLevel;
+        data.hostCertTrusted = hostCertTrusted;
 
         // read ctms address from preferences
         let ctms = TVE.Prefs.getCharPref("ctmsURL") + ":" + TVE.Prefs.getCharPref("ctmsPort");

@@ -27,3 +27,12 @@
 <!ENTITY trustviewsextension.untrusted.visit               "Visiting the website anyway. This would disable the warning for this particular page during this session.">
 <!ENTITY trustviewsextension.untrusted.tryagain            "Try Again">
 <!ENTITY trustviewsextension.untrusted.forcevisiting       "Visit the page!">
+
+<!ENTITY trustviewsextension.unknown.heading               "Unknown Certificate">
+<!ENTITY trustviewsextension.unknown.description           "The certificate provided by the website is unknown. The Trust Views System can't decide if the connection is trustworthy.">
+<!ENTITY trustviewsextension.unknown.solutionpreface       "You can try:">
+<!ENTITY trustviewsextension.unknown.mistrust              "Mistrusting the website and decide to better not visit it.">
+<!ENTITY trustviewsextension.unknown.retry                 "Simply try it again.">
+<!ENTITY trustviewsextension.unknown.settrusted            "Visit the page anyway and trust the certificate in the future.">
+<!ENTITY trustviewsextension.unknown.tryagain              "Try Again">
+<!ENTITY trustviewsextension.unknown.forcevisiting         "Visit anyway and trust certificate">
