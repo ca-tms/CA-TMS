@@ -17,7 +17,7 @@
         <description class="trustviewsextension-solutionPreface">&trustviewsextension.unknown.solutionpreface;</description>
         <ul xmlns="http://www.w3.org/1999/xhtml">
             <li>&trustviewsextension.unknown.mistrust;</li>
-            <li>&trustviewsextension.unknwon.retry;</li>
+            <li>&trustviewsextension.unknown.retry;</li>
             <li>&trustviewsextension.unknown.settrusted;</li>
         </ul>
         <hbox>
