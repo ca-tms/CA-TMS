@@ -1,6 +1,7 @@
 package presentation.ui;
 
 import java.awt.AWTException;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.MenuItem;
@@ -9,6 +10,7 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
@@ -74,13 +76,21 @@ import javax.swing.JComboBox;
  * the whole GUI interface for the Trustview application
  *
  */
+/**
+ * @author Haixin
+ *
+ */
 public class GUI {
 
 	private static JFrame frame;
-
+	private JTabbedPane tabbedPane;
 	private JTable table_TC;
 	private JTable table_uTC;
 	private JTable table_Ass;
+	
+	JScrollPane scrollPane_TC;
+	JScrollPane scrollPane_uTC;
+	JScrollPane scrollPane_Ass;
 
 	private int[] PreferredWidth_TC = { 120, 145, 145, 123, 102, 102 };
 	private int[] PreferredWidth_uTC = { 120, 145, 145, 123, 102, 102 };
@@ -111,11 +121,15 @@ public class GUI {
 	private static TrayIcon trayIcon = null;
 	static JToggleButton tglbtnStartService = new JToggleButton(
 			"Start Webserver");
+	JButton btnRefresh;
+	JButton btnMiniminze;
+	JButton btnClose;
+	
 	int port;
 	WebServer server;
 	ImageIcon trayImg_on;
 	ImageIcon trayImg_off;
-
+	Dimension frame_size;
 	/**
 	 * Launch the application.
 	 */
@@ -247,6 +261,24 @@ public class GUI {
 
 	
 	
+	  /**
+	 * @param e , frame changes reacted to the Frame size change action
+	 */
+	void Frame_Resized(ComponentEvent e) {
+		
+		frame_size=frame.getSize();
+		tglbtnStartService.setLocation(tglbtnStartService.getLocation().x, (int) (frame_size.getHeight()-82));
+		btnRefresh.setLocation(btnRefresh.getLocation().x,  (int) (frame_size.getHeight()-82));
+		btnMiniminze.setLocation(btnMiniminze.getLocation().x,  (int) (frame_size.getHeight()-82));
+		btnClose.setLocation(btnClose.getLocation().x,  (int) (frame_size.getHeight()-82));
+		tabbedPane.setSize((int)frame_size.getWidth()-36,(int) frame_size.getHeight()-113);
+		scrollPane_TC.setSize((int)frame_size.getWidth()-61,(int) frame_size.getHeight()-163);
+		scrollPane_uTC.setSize((int)frame_size.getWidth()-61,(int) frame_size.getHeight()-163);
+		scrollPane_Ass.setSize((int)frame_size.getWidth()-61,(int) frame_size.getHeight()-163);
+		
+		  }
+	
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -263,8 +295,11 @@ public class GUI {
 		frame.setBounds(100, 100, 610, 660);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
-
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		frame.addComponentListener(new componentAdapter(this));
+		frame.setMinimumSize(new Dimension(610,660));
+		
+		
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(10, 10, 574, 547);
 		frame.getContentPane().add(tabbedPane);
 
@@ -272,7 +307,7 @@ public class GUI {
 		tabbedPane.addTab("Trusted Certificates", null, panel_TC, null);
 		panel_TC.setLayout(null);
 
-		JScrollPane scrollPane_TC = new JScrollPane();
+		scrollPane_TC = new JScrollPane();
 		scrollPane_TC.setBounds(10, 10, 549, 497);
 		panel_TC.add(scrollPane_TC);
 
@@ -280,6 +315,8 @@ public class GUI {
 				"resources/on.png"));
 		trayImg_off = new ImageIcon(this.getClass().getResource(
 				"resources/off.png"));
+		
+		
 		
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
@@ -465,7 +502,7 @@ public class GUI {
 		tabbedPane.addTab("unTrusted Certificates", null, panel_uTC, null);
 		panel_uTC.setLayout(null);
 
-		JScrollPane scrollPane_uTC = new JScrollPane();
+		scrollPane_uTC = new JScrollPane();
 		scrollPane_uTC.setBounds(10, 10, 549, 497);
 		panel_uTC.add(scrollPane_uTC);
 		// ///////////////////////////////////////////////////////////////////unTrustCertificate_Table////////////////////////////////////
@@ -654,7 +691,7 @@ public class GUI {
 		tabbedPane.addTab("Assessments Management", null, panel_Ass, null);
 		panel_Ass.setLayout(null);
 
-		JScrollPane scrollPane_Ass = new JScrollPane();
+		scrollPane_Ass = new JScrollPane();
 		scrollPane_Ass.setBounds(10, 10, 549, 497);
 		panel_Ass.add(scrollPane_Ass);
 		// ///////////////////////////////////////////////////////////////////Assessment_Table///////////////////////////////////
@@ -1418,7 +1455,7 @@ public class GUI {
 		});
 		frame.getContentPane().add(tglbtnStartService);
 		// ///////////////////////////////////////////////////////////////////////////Minimize//////////////////////////////////////////////////////////////
-		JButton btnMiniminze = new JButton("Minimize");
+		btnMiniminze = new JButton("Minimize");
 		btnMiniminze.setBounds(359, 578, 100, 23);
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
@@ -1430,7 +1467,7 @@ public class GUI {
 		});
 		frame.getContentPane().add(btnMiniminze);
 		// ////////////////////////////////////////////////////////////////////////////Close/////////////////////////////////////////////////////////////
-		JButton btnClose = new JButton("Close");
+		btnClose = new JButton("Close");
 		btnClose.setBounds(475, 578, 93, 23);
 		btnClose.addMouseListener(new MouseAdapter() {
 			@Override
@@ -1440,7 +1477,7 @@ public class GUI {
 		});
 		frame.getContentPane().add(btnClose);
 		// ////////////////////////////////////////////////////////////////////////Refresh///////////////////////////////////////////////////////////
-		JButton btnRefresh = new JButton("Refresh");
+		btnRefresh = new JButton("Refresh");
 		btnRefresh.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -1673,5 +1710,17 @@ public class GUI {
 
 		}
 	}
+	
+	
+	class componentAdapter extends java.awt.event.ComponentAdapter {
+		GUI frame;
+
+		  componentAdapter(GUI frame) {
+		    this.frame = frame;
+		  }
+		  public void componentResized(ComponentEvent e) {
+			  frame.Frame_Resized(e);
+		  }
+		}
 }
 
