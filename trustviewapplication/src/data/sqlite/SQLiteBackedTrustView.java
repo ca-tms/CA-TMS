@@ -1,5 +1,9 @@
 package data.sqlite;
 
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -71,7 +75,7 @@ public class SQLiteBackedTrustView implements TrustView {
 						"                                           ?, ?, ?, ?, ?, ?)");
 
 				setAssessmentS = connection.prepareStatement(
-						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, " +
+						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, " +
 						"  COALESCE((SELECT trusted FROM certificates " +
 						"            WHERE serial=? AND issuer=?), 0)," +
 						"  COALESCE((SELECT untrusted FROM certificates " +
@@ -90,7 +94,7 @@ public class SQLiteBackedTrustView implements TrustView {
 
 				// setting certificates
 				setCertificateTrust = connection.prepareStatement(
-						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, " +
+						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, " +
 						"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
 
 				// cleaning the trust view
@@ -146,10 +150,7 @@ public class SQLiteBackedTrustView implements TrustView {
 					getAssessmentsS.setString(2, result.getString(2));
 					try (ResultSet resultS = getAssessmentsS.executeQuery()) {
 						while (resultS.next())
-							S.add(new TrustCertificate(
-									resultS.getString(1), resultS.getString(2),
-									resultS.getString(3), resultS.getString(4),
-									resultS.getTimestamp(5), resultS.getTimestamp(6)));
+							S.add(constructCertificate(resultS));
 					}
 
 					Option<CertainTrust> o_kl = new Option<CertainTrust>();
@@ -192,7 +193,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				}
 			}
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return assessment;
@@ -238,15 +239,19 @@ public class SQLiteBackedTrustView implements TrustView {
 				setAssessmentS.setString(4, cert.getPublicKey());
 				setAssessmentS.setTimestamp(5, new Timestamp(cert.getNotBefore().getTime()));
 				setAssessmentS.setTimestamp(6, new Timestamp(cert.getNotAfter().getTime()));
-				setAssessmentS.setString(7, cert.getSerial());
-				setAssessmentS.setString(8, cert.getIssuer());
-				setAssessmentS.setString(9, cert.getSerial());
-				setAssessmentS.setString(10, cert.getIssuer());
-				setAssessmentS.setBoolean(11, true);
+				if (cert.getCertificate() != null)
+					setAssessmentS.setBytes(7, cert.getCertificate().getEncoded());
+				else
+					setAssessmentS.setNull(7, Types.BLOB);
+				setAssessmentS.setString(8, cert.getSerial());
+				setAssessmentS.setString(9, cert.getIssuer());
+				setAssessmentS.setString(10, cert.getSerial());
+				setAssessmentS.setString(11, cert.getIssuer());
+				setAssessmentS.setBoolean(12, true);
 				setAssessmentS.executeUpdate();
 			}
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateEncodingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -292,10 +297,7 @@ public class SQLiteBackedTrustView implements TrustView {
 					getAssessmentsS.setString(2, result.getString(2));
 					try (ResultSet resultS = getAssessmentsS.executeQuery()) {
 						while (resultS.next())
-							S.add(new TrustCertificate(
-									resultS.getString(1), resultS.getString(2),
-									resultS.getString(3), resultS.getString(4),
-									resultS.getTimestamp(5), resultS.getTimestamp(6)));
+							S.add(constructCertificate(resultS));
 					}
 
 					Option<CertainTrust> o_kl = new Option<CertainTrust>();
@@ -338,7 +340,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				}
 			}
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return assessments;
@@ -353,13 +355,10 @@ public class SQLiteBackedTrustView implements TrustView {
 			getCertificateTrust.setBoolean(2, false);
 			try (ResultSet result = getCertificateTrust.executeQuery()) {
 				while (result.next())
-					certificates.add(new TrustCertificate(
-							result.getString(1), result.getString(2),
-							result.getString(3), result.getString(4),
-							result.getTimestamp(5), result.getTimestamp(6)));
+					certificates.add(constructCertificate(result));
 			}
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return certificates;
@@ -374,14 +373,11 @@ public class SQLiteBackedTrustView implements TrustView {
 			getCertificateTrust.setBoolean(2, true);
 			try (ResultSet result = getCertificateTrust.executeQuery()) {
 				while (result.next())
-					certificates.add(new TrustCertificate(
-							result.getString(1), result.getString(2),
-							result.getString(3), result.getString(4),
-							result.getTimestamp(5), result.getTimestamp(6)));
+					certificates.add(constructCertificate(result));
 			}
 			return certificates;
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return certificates;
@@ -391,19 +387,9 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void setTrustedCertificate(TrustCertificate S) {
 		try {
 			validateDatabaseConnection();
-			setCertificateTrust.setString(1, S.getSerial());
-			setCertificateTrust.setString(2, S.getIssuer());
-			setCertificateTrust.setString(3, S.getSubject());
-			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
-			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
-			setCertificateTrust.setBoolean(7, true);
-			setCertificateTrust.setBoolean(8, false);
-			setCertificateTrust.setString(9, S.getSerial());
-			setCertificateTrust.setString(10, S.getIssuer());
-			setCertificateTrust.executeUpdate();
+			writeCertificateTrust(S, true, false);
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateEncodingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -412,19 +398,9 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void setUntrustedCertificate(TrustCertificate S) {
 		try {
 			validateDatabaseConnection();
-			setCertificateTrust.setString(1, S.getSerial());
-			setCertificateTrust.setString(2, S.getIssuer());
-			setCertificateTrust.setString(3, S.getSubject());
-			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
-			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
-			setCertificateTrust.setBoolean(7, false);
-			setCertificateTrust.setBoolean(8, true);
-			setCertificateTrust.setString(9, S.getSerial());
-			setCertificateTrust.setString(10, S.getIssuer());
-			setCertificateTrust.executeUpdate();
+			writeCertificateTrust(S, false, true);
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateEncodingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -433,19 +409,9 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void removeCertificate(TrustCertificate S) {
 		try {
 			validateDatabaseConnection();
-			setCertificateTrust.setString(1, S.getSerial());
-			setCertificateTrust.setString(2, S.getIssuer());
-			setCertificateTrust.setString(3, S.getSubject());
-			setCertificateTrust.setString(4, S.getPublicKey());
-			setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
-			setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
-			setCertificateTrust.setBoolean(7, false);
-			setCertificateTrust.setBoolean(8, false);
-			setCertificateTrust.setString(9, S.getSerial());
-			setCertificateTrust.setString(10, S.getIssuer());
-			setCertificateTrust.executeUpdate();
+			writeCertificateTrust(S, false, false);
 		}
-		catch (SQLException e) {
+		catch (SQLException | CertificateEncodingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -473,11 +439,12 @@ public class SQLiteBackedTrustView implements TrustView {
 								setAssessmentS.setString(4, resultS.getString(4));
 								setAssessmentS.setString(5, resultS.getString(5));
 								setAssessmentS.setString(6, resultS.getString(6));
-								setAssessmentS.setString(7, resultS.getString(1));
-								setAssessmentS.setString(8, resultS.getString(2));
-								setAssessmentS.setString(9, resultS.getString(1));
-								setAssessmentS.setString(10, resultS.getString(2));
-								setAssessmentS.setBoolean(11, false);
+								setAssessmentS.setString(7, resultS.getString(7));
+								setAssessmentS.setString(8, resultS.getString(1));
+								setAssessmentS.setString(9, resultS.getString(2));
+								setAssessmentS.setString(10, resultS.getString(1));
+								setAssessmentS.setString(11, resultS.getString(2));
+								setAssessmentS.setBoolean(12, false);
 								setAssessmentS.executeUpdate();
 							}
 						}
@@ -562,6 +529,54 @@ public class SQLiteBackedTrustView implements TrustView {
 				connection.close();
 			}
 		}
+	}
+
+	private void writeCertificateTrust(TrustCertificate S, boolean trusted, boolean untrusted)
+			throws SQLException, CertificateEncodingException {
+		setCertificateTrust.setString(1, S.getSerial());
+		setCertificateTrust.setString(2, S.getIssuer());
+		setCertificateTrust.setString(3, S.getSubject());
+		setCertificateTrust.setString(4, S.getPublicKey());
+		setCertificateTrust.setTimestamp(5, new Timestamp(S.getNotBefore().getTime()));
+		setCertificateTrust.setTimestamp(6, new Timestamp(S.getNotAfter().getTime()));
+		if (S.getCertificate() != null)
+			setCertificateTrust.setBytes(7, S.getCertificate().getEncoded());
+		else
+			setCertificateTrust.setNull(7, Types.BLOB);
+		setCertificateTrust.setBoolean(8, trusted);
+		setCertificateTrust.setBoolean(9, untrusted);
+		setCertificateTrust.setString(10, S.getSerial());
+		setCertificateTrust.setString(11, S.getIssuer());
+		setCertificateTrust.executeUpdate();
+	}
+
+	private TrustCertificate constructCertificate(ResultSet result)
+			throws CertificateException, SQLException {
+		TrustCertificate cert = null;
+
+		byte[] blob = result.getBytes(7);
+		if (!result.wasNull())
+			cert = new TrustCertificate(
+					CertificateFactory.getInstance("X.509").
+						generateCertificate(
+								new ByteArrayInputStream(blob)));
+
+		if (cert != null && (
+				!cert.getSerial().equals(result.getString(1)) ||
+				!cert.getIssuer().equals(result.getString(2)) ||
+				!cert.getSubject().equals(result.getString(3)) ||
+				!cert.getPublicKey().equals(result.getString(4)) ||
+				!cert.getNotBefore().equals(result.getTimestamp(5)) ||
+				!cert.getNotAfter().equals(result.getTimestamp(6))))
+			cert = null;
+
+		if (cert == null) 
+			cert = new TrustCertificate(
+					result.getString(1), result.getString(2),
+					result.getString(3), result.getString(4),
+					result.getTimestamp(5), result.getTimestamp(6));
+
+		return cert;
 	}
 
 	private void validateDatabaseConnection() throws SQLException {
