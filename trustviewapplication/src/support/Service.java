@@ -9,6 +9,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
 import data.TrustCertificate;
 
 import sslcheck.core.NotaryManager;
@@ -31,9 +35,24 @@ public final class Service {
 			@Override
 			public ValidationResult query(final TrustCertificate certificate) {
 				try {
-					TLSConnectionInfo info = new TLSConnectionInfo(
-							host, new Certificate[] { certificate.getCertificate() });
+					
 					NotaryManager nm = new NotaryManager();
+				
+					// Install the all-trusting trust manager
+					final SSLContext sslContext = SSLContext.getInstance("TLS");
+					sslContext.init(null,
+							new TrustManager[] { nm.getTrustManager() 
+							},
+							new java.security.SecureRandom());
+
+					// Install as default TLS Socket Factory, so it is also used by
+					// notaries!
+					// https://stackoverflow.com/questions/6047996/ignore-self-signed-ssl-cert-using-jersey-client
+					HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
+							.getSocketFactory());
+					
+					TLSConnectionInfo info = new TLSConnectionInfo(
+							host,443, new Certificate[] { certificate.getCertificate() });
 					info.validateCertificates(nm);
 					return info.isTrusted() ?
 							ValidationResult.TRUSTED : ValidationResult.UNTRUSTED;
