@@ -119,12 +119,14 @@ public final class Service {
 	 * @return a service that can be used to bootstrap the trust view
 	 * @param bootstrapBase the file or directory which the bootstrapping
 	 * should be based on
+	 * @throws IllegalArgumentException if the given bootstrap base
+	 * cannot be used for bootstrapping the trust view
 	 */
 	public static BootstrapService getBootstrapService(File bootstrapBase) {
 		if (FirefoxBootstrapService.canUseAsBootstrapBase(bootstrapBase))
 			return new FirefoxBootstrapService(bootstrapBase);
 
-		throw new IllegalArgumentException(
+		throw new UnsupportedOperationException(
 				"The given argument is no legal bootstrapping base directory or file: " +
 				bootstrapBase);
 	}
