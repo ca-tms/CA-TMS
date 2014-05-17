@@ -139,58 +139,11 @@ public class SQLiteBackedTrustView implements TrustView {
 		TrustAssessment assessment = null;
 		try {
 			validateDatabaseConnection();
-			final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
-
 			getAssessment.setString(1, k);
 			getAssessment.setString(2, ca);
 			try (ResultSet result = getAssessment.executeQuery()) {
-				if (result.next()) {
-					Set<TrustCertificate> S = new HashSet<>();
-					getAssessmentsS.setString(1, result.getString(1));
-					getAssessmentsS.setString(2, result.getString(2));
-					try (ResultSet resultS = getAssessmentsS.executeQuery()) {
-						while (resultS.next())
-							S.add(constructCertificate(resultS));
-					}
-
-					Option<CertainTrust> o_kl = new Option<CertainTrust>();
-					double t = result.getDouble(3);
-					if (!result.wasNull()) {
-						double c = result.getDouble(4);
-						if (!result.wasNull()) {
-							double f = result.getDouble(5);
-							if (!result.wasNull()) {
-								if (!result.wasNull()) {
-									double r = result.getDouble(6);
-									if (!result.wasNull()) {
-										if (!result.wasNull()) {
-											double s = result.getDouble(7);
-											if (!result.wasNull()) {
-												o_kl = new Option<CertainTrust>(
-														new CertainTrust(t, c, f, opinionN));
-												o_kl.get().setRS(r, s);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					CertainTrust o_it_ca = new CertainTrust(
-							result.getDouble(8), result.getDouble(9),
-							result.getDouble(10), opinionN);
-					o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
-
-					CertainTrust o_it_ee = new CertainTrust(
-							result.getDouble(13), result.getDouble(14),
-							result.getDouble(15), opinionN);
-					o_it_ee.setRS(result.getDouble(16), result.getDouble(17));
-
-					assessment = new TrustAssessment(
-							result.getString(1), result.getString(2), S,
-							o_kl, o_it_ca, o_it_ee);
-				}
+				if (result.next())
+					assessment = constructAssessment(result);
 			}
 		}
 		catch (SQLException | CertificateException e) {
@@ -288,56 +241,9 @@ public class SQLiteBackedTrustView implements TrustView {
 		List<TrustAssessment> assessments = new ArrayList<>();
 		try {
 			validateDatabaseConnection();
-			final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
-
 			try (ResultSet result = getAssessments.executeQuery()) {
-				while (result.next()) {
-					Set<TrustCertificate> S = new HashSet<>();
-					getAssessmentsS.setString(1, result.getString(1));
-					getAssessmentsS.setString(2, result.getString(2));
-					try (ResultSet resultS = getAssessmentsS.executeQuery()) {
-						while (resultS.next())
-							S.add(constructCertificate(resultS));
-					}
-
-					Option<CertainTrust> o_kl = new Option<CertainTrust>();
-					double t = result.getDouble(3);
-					if (!result.wasNull()) {
-						double c = result.getDouble(4);
-						if (!result.wasNull()) {
-							double f = result.getDouble(5);
-							if (!result.wasNull()) {
-								if (!result.wasNull()) {
-									double r = result.getDouble(6);
-									if (!result.wasNull()) {
-										if (!result.wasNull()) {
-											double s = result.getDouble(7);
-											if (!result.wasNull()) {
-												o_kl = new Option<CertainTrust>(
-														new CertainTrust(t, c, f, opinionN));
-												o_kl.get().setRS(r, s);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					CertainTrust o_it_ca = new CertainTrust(
-							result.getDouble(8), result.getDouble(9),
-							result.getDouble(10), opinionN);
-					o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
-
-					CertainTrust o_it_ee = new CertainTrust(
-							result.getDouble(13), result.getDouble(14),
-							result.getDouble(15), opinionN);
-					o_it_ee.setRS(result.getDouble(16), result.getDouble(17));
-
-					assessments.add(new TrustAssessment(
-							result.getString(1), result.getString(2), S,
-							o_kl, o_it_ca, o_it_ee));
-				}
+				while (result.next())
+					assessments.add(constructAssessment(result));
 			}
 		}
 		catch (SQLException | CertificateException e) {
@@ -499,7 +405,7 @@ public class SQLiteBackedTrustView implements TrustView {
 		}
 	}
 
-	public void finalizeConnection() throws ModelAccessException, SQLException {
+	private void finalizeConnection() throws ModelAccessException, SQLException {
 		try {
 			config.close();
 			connection.commit();
@@ -577,6 +483,57 @@ public class SQLiteBackedTrustView implements TrustView {
 					result.getTimestamp(5), result.getTimestamp(6));
 
 		return cert;
+	}
+
+	private TrustAssessment constructAssessment(ResultSet result)
+			throws CertificateException, SQLException {
+		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
+
+		Set<TrustCertificate> S = new HashSet<>();
+		getAssessmentsS.setString(1, result.getString(1));
+		getAssessmentsS.setString(2, result.getString(2));
+		try (ResultSet resultS = getAssessmentsS.executeQuery()) {
+			while (resultS.next())
+				S.add(constructCertificate(resultS));
+		}
+
+		Option<CertainTrust> o_kl = new Option<CertainTrust>();
+		double t = result.getDouble(3);
+		if (!result.wasNull()) {
+			double c = result.getDouble(4);
+			if (!result.wasNull()) {
+				double f = result.getDouble(5);
+				if (!result.wasNull()) {
+					if (!result.wasNull()) {
+						double r = result.getDouble(6);
+						if (!result.wasNull()) {
+							if (!result.wasNull()) {
+								double s = result.getDouble(7);
+								if (!result.wasNull()) {
+									o_kl = new Option<CertainTrust>(
+											new CertainTrust(t, c, f, opinionN));
+									o_kl.get().setRS(r, s);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		CertainTrust o_it_ca = new CertainTrust(
+				result.getDouble(8), result.getDouble(9),
+				result.getDouble(10), opinionN);
+		o_it_ca.setRS(result.getDouble(11), result.getDouble(12));
+
+		CertainTrust o_it_ee = new CertainTrust(
+				result.getDouble(13), result.getDouble(14),
+				result.getDouble(15), opinionN);
+		o_it_ee.setRS(result.getDouble(16), result.getDouble(17));
+
+		return new TrustAssessment(
+				result.getString(1), result.getString(2), S,
+				o_kl, o_it_ca, o_it_ee);
 	}
 
 	private void validateDatabaseConnection() throws SQLException {
