@@ -4,10 +4,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import data.ModelAccessException;
 import data.TrustView;
-import support.BoostrapService;
+import support.BootstrapService;
 
-public class FirefoxBootstrapService implements BoostrapService {
+public class FirefoxBootstrapService implements BootstrapService {
 	public FirefoxBootstrapService(File bootstrapBase) {
 		// TODO: implement
 	}
@@ -23,7 +24,7 @@ public class FirefoxBootstrapService implements BoostrapService {
 	}
 
 	@Override
-	public void bootstrap(TrustView trustView) {
+	public void bootstrap(double securityLevel) throws ModelAccessException {
 		// TODO: implement
 	}
 }

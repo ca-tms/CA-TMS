@@ -1,5 +1,6 @@
 package support;
 
+import data.ModelAccessException;
 import data.TrustView;
 
 /**
@@ -11,10 +12,11 @@ import data.TrustView;
  * <p>[1] Johannes Braun, Florian Volk, Johannes Buchmann, and Max Mühlhäuser.
  * Trust views for the web pki. 2013.</p>
  */
-public interface BoostrapService {
+public interface BootstrapService {
 	/**
 	 * Bootstraps the given trust view
-	 * @param trustView
+	 * @param securityLevel
+	 * @throws ModelAccessException
 	 */
-	void bootstrap(TrustView trustView);
+	void bootstrap(double securityLevel) throws ModelAccessException;
 }

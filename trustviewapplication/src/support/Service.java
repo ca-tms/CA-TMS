@@ -120,7 +120,7 @@ public final class Service {
 	 * @param bootstrapBase the file or directory which the bootstrapping
 	 * should be based on
 	 */
-	public static BoostrapService getBoostrapService(File bootstrapBase) {
+	public static BootstrapService getBootstrapService(File bootstrapBase) {
 		if (FirefoxBootstrapService.canUseAsBootstrapBase(bootstrapBase))
 			return new FirefoxBootstrapService(bootstrapBase);
 
