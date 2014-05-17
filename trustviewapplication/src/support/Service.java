@@ -1,6 +1,8 @@
 package support;
 
+import java.io.File;
 import java.security.cert.Certificate;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
@@ -17,6 +19,7 @@ import data.TrustCertificate;
 
 import sslcheck.core.NotaryManager;
 import sslcheck.core.TLSConnectionInfo;
+import support.bootstrap.FirefoxBootstrapService;
 import util.ValidationResult;
 
 /**
@@ -35,14 +38,13 @@ public final class Service {
 			@Override
 			public ValidationResult query(final TrustCertificate certificate) {
 				try {
-					
+
 					NotaryManager nm = new NotaryManager();
-				
+
 					// Install the all-trusting trust manager
 					final SSLContext sslContext = SSLContext.getInstance("TLS");
 					sslContext.init(null,
-							new TrustManager[] { nm.getTrustManager() 
-							},
+							new TrustManager[] { nm.getTrustManager() },
 							new java.security.SecureRandom());
 
 					// Install as default TLS Socket Factory, so it is also used by
@@ -50,7 +52,7 @@ public final class Service {
 					// https://stackoverflow.com/questions/6047996/ignore-self-signed-ssl-cert-using-jersey-client
 					HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
 							.getSocketFactory());
-					
+
 					TLSConnectionInfo info = new TLSConnectionInfo(
 							host,443, new Certificate[] { certificate.getCertificate() });
 					info.validateCertificates(nm);
@@ -103,5 +105,27 @@ public final class Service {
 				}
 			}
 		};
+	}
+
+	/**
+	 * @return A list of files from well-known locations that can be used to
+	 * bootstrap the trust view using {@link #getBoostrapService(File)}.
+	 */
+	public static List<File> findBoostrapBaseFiles() {
+		return FirefoxBootstrapService.findBootstrapBases();
+	}
+
+	/**
+	 * @return a service that can be used to bootstrap the trust view
+	 * @param bootstrapBase the file or directory which the bootstrapping
+	 * should be based on
+	 */
+	public static BoostrapService getBoostrapService(File bootstrapBase) {
+		if (FirefoxBootstrapService.canUseAsBootstrapBase(bootstrapBase))
+			return new FirefoxBootstrapService(bootstrapBase);
+
+		throw new IllegalArgumentException(
+				"The given argument is no legal bootstrapping base directory or file: " +
+				bootstrapBase);
 	}
 }
