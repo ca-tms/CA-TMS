@@ -277,6 +277,32 @@ public final class TrustComputation {
 	 *
 	 * @param trustView the Trust View to be used
 	 * @param config the configuration to be used
+	 * @param path a certificate path
+	 *        (starting with the certificate for the end entity and ending with
+	 *        the self-signed root certificate)
+	 * @param pathAnchor the self-signed root certificate
+	 * @param l the security level (between 0 and 1) to be used
+	 * @param VS an external validation service
+	 * @return the result of the trust validation
+	 */
+	public static ValidationResult validate(TrustView trustView, Configuration config,
+			Certificate[] path, double l, ValidationService VS) {
+		List<TrustCertificate> p = new ArrayList<>(
+				Collections.<TrustCertificate>nCopies(path.length, null));
+
+		int i = path.length - 1;
+		for (Certificate cert : path)
+			p.set(i--, new TrustCertificate(cert));
+
+		return validate(trustView, config, p, l, VS);
+	}
+
+	/**
+	 * Implements the Trust Validation as described in
+	 * <q>Trust views for the web pki</q> [1], section 4.4
+	 *
+	 * @param trustView the Trust View to be used
+	 * @param config the configuration to be used
 	 * @param p a certificate path
 	 *        (starting with the self-signed root certificate and ending with
 	 *        the certificate for the end entity,
