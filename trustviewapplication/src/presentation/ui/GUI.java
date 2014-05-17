@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -58,6 +59,7 @@ import javax.swing.table.TableColumn;
 
 import presentation.logic.PresentationLogic;
 import services.bindings.WebServer;
+import support.Service;
 import CertainTrust.CertainTrust;
 import data.Configuration;
 import data.Model;
@@ -87,7 +89,7 @@ public class GUI {
 	private JTable table_TC;
 	private JTable table_uTC;
 	private JTable table_Ass;
-	
+
 	JScrollPane scrollPane_TC;
 	JScrollPane scrollPane_uTC;
 	JScrollPane scrollPane_Ass;
@@ -113,7 +115,7 @@ public class GUI {
 
 	private int Port;
 	private String Vali_Notary;
-	
+
 	private JTextField textField_Expiration;
 	private JTextField textField_Port;
 
@@ -124,7 +126,7 @@ public class GUI {
 	JButton btnRefresh;
 	JButton btnMiniminze;
 	JButton btnClose;
-	
+
 	int port;
 	WebServer server;
 	ImageIcon trayImg_on;
@@ -171,11 +173,11 @@ public class GUI {
 		security_level_med = PresentationLogic.get_Configuration(
 				Configuration.SECURITY_LEVEL_MEDIUM, Float.class);
 		security_level_high = PresentationLogic.get_Configuration(
-				Configuration.SECURITY_LEVEL_HIGH, Float.class);		
-		
+				Configuration.SECURITY_LEVEL_HIGH, Float.class);
+
 		Vali_Notary= PresentationLogic.get_Configuration(
 				Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
-		
+
 	}
 
 	/**
@@ -206,8 +208,8 @@ public class GUI {
 			}
 
 		});
-		
-		
+
+
 
 		exit.addActionListener(new ActionListener() {
 
@@ -259,13 +261,13 @@ public class GUI {
 
 	}
 
-	
-	
+
+
 	  /**
 	 * @param e , frame changes reacted to the Frame size change action
 	 */
 	void Frame_Resized(ComponentEvent e) {
-		
+
 		frame_size=frame.getSize();
 		tglbtnStartService.setLocation(tglbtnStartService.getLocation().x, (int) (frame_size.getHeight()-82));
 		btnRefresh.setLocation(btnRefresh.getLocation().x,  (int) (frame_size.getHeight()-82));
@@ -275,10 +277,10 @@ public class GUI {
 		scrollPane_TC.setSize((int)frame_size.getWidth()-61,(int) frame_size.getHeight()-163);
 		scrollPane_uTC.setSize((int)frame_size.getWidth()-61,(int) frame_size.getHeight()-163);
 		scrollPane_Ass.setSize((int)frame_size.getWidth()-61,(int) frame_size.getHeight()-163);
-		
+
 		  }
-	
-	
+
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -296,9 +298,9 @@ public class GUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.addComponentListener(new componentAdapter(this));
-		frame.setMinimumSize(new Dimension(610,660));
-		
-		
+		frame.setMinimumSize(new Dimension(610,730));
+
+
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(10, 10, 574, 547);
 		frame.getContentPane().add(tabbedPane);
@@ -315,9 +317,9 @@ public class GUI {
 				"resources/on.png"));
 		trayImg_off = new ImageIcon(this.getClass().getResource(
 				"resources/off.png"));
-		
-		
-		
+
+
+
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
 		table_TC = new JTable(PresentationLogic.refresh_TC_Table());
@@ -926,7 +928,7 @@ public class GUI {
 		Outer_General_Setting.setBorder(new TitledBorder(null,
 				"General Setting", TitledBorder.LEADING, TitledBorder.TOP,
 				null, null));
-		Outer_General_Setting.setBounds(10, 143, 549, 291);
+		Outer_General_Setting.setBounds(10, 143, 549, 387);
 		panel_Conf.add(Outer_General_Setting);
 		Outer_General_Setting.setLayout(null);
 
@@ -986,28 +988,50 @@ public class GUI {
 
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setForeground(Color.LIGHT_GRAY);
-		separator_1.setBounds(149, 240, 390, 2);
+		separator_1.setBounds(74, 240, 465, 2);
 		Outer_General_Setting.add(separator_1);
 
+		JLabel lblBootstrapWithBrowserHistory = new JLabel("Bootstrap");
+		lblBootstrapWithBrowserHistory.setBounds(10, 231, 64, 15);
+		Outer_General_Setting.add(lblBootstrapWithBrowserHistory);
+
+		JLabel lblBootstrap = new JLabel(
+				"Bootstrap trust view by scanning the browser history");
+		lblBootstrap.setBounds(42, 252, 359, 15);
+		Outer_General_Setting.add(lblBootstrap);
+
+		JLabel lblBootstrap_2 = new JLabel("using the medium security level");
+		lblBootstrap_2.setBounds(42, 270, 343, 15);
+		Outer_General_Setting.add(lblBootstrap_2);
+
+		JButton btnBootstrap = new JButton("Bootstrap");
+
+		btnBootstrap.setBounds(422, 251, 93, 23);
+		Outer_General_Setting.add(btnBootstrap);
+
+		JSeparator separator_2 = new JSeparator();
+		separator_2.setForeground(Color.LIGHT_GRAY);
+		separator_2.setBounds(149, 309, 390, 2);
+		Outer_General_Setting.add(separator_2);
+
 		JLabel lblDefaultSetting = new JLabel("Default configuration");
-		lblDefaultSetting.setBounds(10, 231, 129, 15);
+		lblDefaultSetting.setBounds(10, 300, 129, 15);
 		Outer_General_Setting.add(lblDefaultSetting);
 
 		JLabel lblAllOfThe = new JLabel(
 				"All of the configurations will be set to default value.");
-		lblAllOfThe.setBounds(42, 252, 359, 15);
+		lblAllOfThe.setBounds(42, 321, 359, 15);
 		Outer_General_Setting.add(lblAllOfThe);
 
 		JButton btnDefault = new JButton("Default");
 
-		btnDefault.setBounds(422, 251, 93, 23);
+		btnDefault.setBounds(422, 321, 93, 23);
 		Outer_General_Setting.add(btnDefault);
-		
 
 		JLabel lblValidationNortaries = new JLabel("Validation Nortary Results Override With :");
 		lblValidationNortaries.setBounds(160, 112, 276, 15);
 		Outer_General_Setting.add(lblValidationNortaries);
-		
+
 		Vector<String> Choices = new Vector<String>();
 		Choices.add("trusted");
 		Choices.add("untrusted");
@@ -1015,14 +1039,14 @@ public class GUI {
 		Choices.add("off");
 		final JComboBox<String> comboBox = new JComboBox<String>(Choices);
 		comboBox.setSelectedItem(Vali_Notary);
-		
+
 		comboBox.setBounds(446, 109, 93, 21);
 		Outer_General_Setting.add(comboBox);
-		
+
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		Outer_Data_Backup.setBounds(10, 445, 549, 62);
+		Outer_Data_Backup.setBounds(10, 541, 549, 62);
 		panel_Conf.add(Outer_Data_Backup);
 		Outer_Data_Backup.setLayout(null);
 
@@ -1241,13 +1265,14 @@ public class GUI {
 			}
 		});
 
-		
-		
+
+
 		// /////////////////////////////////////////////////////////////////////////////////General
 		// setting
 		// setting//////////////////////////////////////////////////////////////////////////////
-		
+
 		comboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if(arg0.getSource()==comboBox)
 				{
@@ -1255,12 +1280,12 @@ public class GUI {
 				}
 			}
 		});
-		
+
 		btnChange.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 				int get_port = Integer.valueOf(textField_Port.getText());
-				if (get_port < 200 || get_port > 65535) { 
+				if (get_port < 200 || get_port > 65535) {
 					PresentationLogic
 							.msg("Please enter a valid Port Number(200 < Number < 65535)! ");
 
@@ -1349,8 +1374,8 @@ public class GUI {
 
 			}
 		});
-		
-		
+
+
 		btnReset.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
@@ -1379,6 +1404,60 @@ public class GUI {
 				}
 			}
 
+		});
+
+		btnBootstrap.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				final double securityLevel;
+				try (Configuration config = Model.openConfiguration()) {
+					securityLevel = config.get(
+							Configuration.SECURITY_LEVEL_MEDIUM, Double.class);
+				}
+				catch (ModelAccessException e) {
+					e.printStackTrace();
+					return;
+				}
+
+				final JButton button = (JButton) evt.getSource();
+
+				List<File> files = Service.findBoostrapBaseFiles();
+
+				JPopupMenu popup = new JPopupMenu();
+				for (final File file : files) {
+					JMenuItem item = new JMenuItem(file.getPath());
+					popup.add(item);
+					item.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent evt) {
+							PresentationLogic.bootstrapTrustView(
+									file, securityLevel);
+						}
+					});
+				}
+
+				if (!files.isEmpty())
+					popup.addSeparator();
+
+				JMenuItem item = new JMenuItem("Choose bootstrapping base ...");
+				popup.add(item);
+				item.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent evt) {
+						JFileChooser fileChooser = new JFileChooser();
+						fileChooser.setFileSelectionMode(
+								JFileChooser.FILES_AND_DIRECTORIES);
+
+						if (fileChooser.showOpenDialog(button) ==
+								JFileChooser.APPROVE_OPTION) {
+							PresentationLogic.bootstrapTrustView(
+									fileChooser.getSelectedFile(), securityLevel);
+						}
+					}
+				});
+
+				popup.show(button, 0, button.getHeight());
+			}
 		});
 
 		btnDefault.addMouseListener(new MouseAdapter() {
@@ -1512,7 +1591,7 @@ public class GUI {
 
 	}
 
-	
+
 	/**
 	 * to refresh the table with the modified colum width
 	 */
@@ -1570,7 +1649,7 @@ public class GUI {
 		}
 	}
 
-	
+
 	/**
 	 * to remember the width of the trust certificate table after adjustment form user
 	 *
@@ -1607,7 +1686,7 @@ public class GUI {
 		}
 	}
 
-	
+
 	/**
 	 * to remember the width of the trust assessment table after adjustment form user
 	 *
@@ -1626,7 +1705,7 @@ public class GUI {
 		}
 	}
 
-	
+
 	/**
 	 * rewrite the mouselistener for adjusting the table width
 	 *
@@ -1710,15 +1789,16 @@ public class GUI {
 
 		}
 	}
-	
-	
+
+
 	class componentAdapter extends java.awt.event.ComponentAdapter {
 		GUI frame;
 
 		  componentAdapter(GUI frame) {
 		    this.frame = frame;
 		  }
-		  public void componentResized(ComponentEvent e) {
+		  @Override
+		public void componentResized(ComponentEvent e) {
 			  frame.Frame_Resized(e);
 		  }
 		}

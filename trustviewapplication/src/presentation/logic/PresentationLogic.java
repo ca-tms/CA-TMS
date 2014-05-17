@@ -1,5 +1,6 @@
 package presentation.logic;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,8 @@ import java.util.Iterator;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import support.Service;
 
 import data.Configuration;
 import data.ModelAccessException;
@@ -45,8 +48,26 @@ public class PresentationLogic {
 		return Cert;
 	}
 
+	/**
+	 * Bootstraps the trust view using the given bootstrap file and the given
+	 * security level
+	 * @param bootstrapBase
+	 * @param securityLevel
+	 */
+	public static void bootstrapTrustView(File bootstrapBase, double securityLevel) {
+		try {
+			Service.getBootstrapService(bootstrapBase).bootstrap(securityLevel);
+		}
+		catch (ModelAccessException e) {
+			msg("Error reading or concurrent modifying the database!");
+		}
+		catch (UnsupportedOperationException e) {
+			msg("The selected file cannot be used to bootstrap the trust view!");
+		}
+	}
+
 	// /////////////////////////////////////////////////////////refresh_TC_Table/////////////////////////////////////////////////////////////////////////////////////
-	
+
 	/**
 	 * to refresh the Trust Certificates Table in the GUI
 	 */
@@ -62,6 +83,7 @@ public class PresentationLogic {
 			Class[] columnTypes = new Class[] { String.class, String.class,
 					String.class, String.class, String.class, String.class };
 
+			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
@@ -70,6 +92,7 @@ public class PresentationLogic {
 			boolean[] columnEditables = new boolean[] { false, false, false,
 					false, false, false };
 
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return columnEditables[column];
 			}
@@ -93,7 +116,7 @@ public class PresentationLogic {
 		TrustCertificate Certificate;
 
 		while (it_cert.hasNext()) {
-			Certificate = (TrustCertificate) it_cert.next();
+			Certificate = it_cert.next();
 
 			Model.addRow(new Object[] { Certificate.getSerial(),
 					Certificate.getIssuer(), Certificate.getSubject(),
@@ -108,23 +131,24 @@ public class PresentationLogic {
 
 	// /////////////////////////////////////////////////////////refresh_uTC_Table/////////////////////////////////////////////////////////////////////////////////////
 
-	
+
 	/**
-	 * 
+	 *
 	 * to refresh the unTrust Certificates Table in the GUI
 	 */
-	 
+
 	@SuppressWarnings("deprecation")
 	public static DefaultTableModel refresh_uTC_Table() {
 		DefaultTableModel Model = new DefaultTableModel(new Object[][] {},
 				new String[] { "Serial", "Issuer", "Subject", "PublicKey",
 						"NotBefore", "NotAfter" }) {
-		
+
 							private static final long serialVersionUID = 1L;
 			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] { String.class, String.class,
 					String.class, String.class, String.class, String.class };
 
+			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
@@ -133,6 +157,7 @@ public class PresentationLogic {
 			boolean[] columnEditables = new boolean[] { false, false, false,
 					false, false, false };
 
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return columnEditables[column];
 			}
@@ -154,7 +179,7 @@ public class PresentationLogic {
 		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
 		TrustCertificate Certificate;
 		while (it_cert.hasNext()) {
-			Certificate = (TrustCertificate) it_cert.next();
+			Certificate = it_cert.next();
 
 			Model.addRow(new Object[] { Certificate.getSerial(),
 					Certificate.getIssuer(), Certificate.getSubject(),
@@ -168,22 +193,23 @@ public class PresentationLogic {
 
 	// /////////////////////////////////////////////////////////refresh_Ass_Table/////////////////////////////////////////////////////////////////////////////////////
 
-	
+
 	/**
-	 * 
+	 *
 	 * to refresh the Trust Assessment Table in the GUI
 	 */
-	 
+
 	public static DefaultTableModel refresh_Ass_Table() {
 		DefaultTableModel Model = new DefaultTableModel(
 				new Object[][] {},
 				new String[] { "PublicKey", "CA", "O_kl", "O_it_ca", "O_it_ee" }) {
-			
+
 					private static final long serialVersionUID = 1L;
 			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] { String.class, String.class,
 					String.class, String.class, Object.class };
 
+			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
@@ -192,6 +218,7 @@ public class PresentationLogic {
 			boolean[] columnEditables = new boolean[] { false, false, false,
 					true, true };
 
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return columnEditables[column];
 			}
@@ -214,7 +241,7 @@ public class PresentationLogic {
 		TrustAssessment Assessment;
 
 		while (it_ass.hasNext()) {
-			Assessment = (TrustAssessment) it_ass.next();
+			Assessment = it_ass.next();
 
 			String o_kl = "";
 			o_kl += Assessment.getO_kl().isSet() ? "("
@@ -267,7 +294,7 @@ public class PresentationLogic {
 		TrustCertificate Certificate = null;
 
 		while (it_cert.hasNext()) {
-			Certificate = (TrustCertificate) it_cert.next();
+			Certificate = it_cert.next();
 
 			if (Certificate.getSerial().equals(Serial)
 					&& Certificate.getIssuer().equals(Issuer))
@@ -312,7 +339,7 @@ public class PresentationLogic {
 		TrustCertificate Certificate = null;
 
 		while (it_cert.hasNext()) {
-			Certificate = (TrustCertificate) it_cert.next();
+			Certificate = it_cert.next();
 
 			if (Certificate.getSerial().equals(Serial)
 					&& Certificate.getIssuer().equals(Issuer))
@@ -357,7 +384,7 @@ public class PresentationLogic {
 	}
 
 	/**
-	 * store a k/v vaule pair for configuration 
+	 * store a k/v vaule pair for configuration
 	 * @param key
 	 * @param value
 	 */
@@ -381,7 +408,7 @@ public class PresentationLogic {
 	}
 
 	/**
-	 * retrieval a k/v vaule pair for configuration 
+	 * retrieval a k/v vaule pair for configuration
 	 * @param key
 	 * @param type
 	 * @return
@@ -403,7 +430,7 @@ public class PresentationLogic {
 							"Error reading or concurrent modifying the database! Please restart the application ",
 							"Error", JOptionPane.DEFAULT_OPTION);
 			e.printStackTrace();
-			
+
 		}
 		return type_temp;
 
@@ -427,5 +454,4 @@ public class PresentationLogic {
 		JOptionPane.showConfirmDialog(null, msg, type,
 				JOptionPane.DEFAULT_OPTION);
 	}
-
 }
