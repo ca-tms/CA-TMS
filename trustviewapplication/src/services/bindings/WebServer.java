@@ -55,8 +55,8 @@ public class WebServer {
 			final int port;
 			final int timeoutMillis;
 			try (Configuration config = Model.openConfiguration()) {
-				port = config.get("server-port", Integer.class);
-				timeoutMillis = config.get("server-request-timeout-millis", Integer.class);
+				port = config.get(Configuration.SERVER_PORT, Integer.class);
+				timeoutMillis = config.get(Configuration.SERVER_REQUEST_TIMEOUT_MILLIS, Integer.class);
 			}
 			catch (Exception e) {
 				// this should never happen, since we only read configuration values

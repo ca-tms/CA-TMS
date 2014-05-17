@@ -1,7 +1,6 @@
 package util;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
