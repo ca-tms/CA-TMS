@@ -152,7 +152,7 @@ public class FirefoxBootstrapService implements BootstrapService {
 	}
 
 	@Override
-	public void bootstrap(double securityLevel)
+	public void bootstrap(double securityLevel, Observer observer)
 			throws ModelAccessException {
 		if (databaseFile == null)
 			throw new UnsupportedOperationException(
@@ -165,13 +165,23 @@ public class FirefoxBootstrapService implements BootstrapService {
 		SQLiteDataSource dataSource = new SQLiteDataSource();
 		dataSource.setUrl("jdbc:sqlite:" + databaseFile.getPath());
 		try (Connection connection = dataSource.getConnection();
-			 Statement statement = connection.createStatement()) {
-			ResultSet result = statement.executeQuery(
-					"SELECT url, visit_date " +
-					"FROM moz_places JOIN moz_historyvisits ON " +
-					"     moz_places.id = moz_historyvisits.place_id " +
-					"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0 " +
-					"ORDER BY visit_date asc");
+			 Statement statementCount = connection.createStatement();
+			 ResultSet resultCount = statementCount.executeQuery(
+						"SELECT COUNT(*) " +
+						"FROM moz_places JOIN moz_historyvisits ON " +
+						"     moz_places.id = moz_historyvisits.place_id " +
+						"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0");
+			 Statement statement = connection.createStatement();
+			 ResultSet result = statement.executeQuery(
+						"SELECT url " +
+						"FROM moz_places JOIN moz_historyvisits ON " +
+						"     moz_places.id = moz_historyvisits.place_id " +
+						"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0 " +
+						"ORDER BY visit_date asc")) {
+
+			resultCount.next();
+			double max = resultCount.getInt(1);
+			double cur = 0;
 
 			// we are going to replay the browser history
 			// thus we are going to apply all visited URLs in the correct order
@@ -185,6 +195,20 @@ public class FirefoxBootstrapService implements BootstrapService {
 				try {
 					url = result.getString(1);
 					host = new URL(url).getHost();
+
+					cur++;
+					if (observer != null)
+						try {
+							if (!observer.update(cur / max, url)) {
+								System.out.println("Bootstrapping canceled.");
+								System.out.println("  Bootstrapping base: Firefox browser history");
+								System.out.println("  Database: " + databaseFile.getPath());
+								return;
+							}
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
 
 					System.out.println("Performing bootstrapping validation ...");
 					System.out.println("  URL: " + url);

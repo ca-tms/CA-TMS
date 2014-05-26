@@ -1,5 +1,7 @@
 package presentation.logic;
 
+import java.awt.Component;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,11 +11,15 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
+import support.BootstrapService;
 import support.Service;
 
 import data.Configuration;
@@ -54,16 +60,66 @@ public class PresentationLogic {
 	 * @param bootstrapBase
 	 * @param securityLevel
 	 */
-	public static void bootstrapTrustView(File bootstrapBase, double securityLevel) {
-		try {
-			Service.getBootstrapService(bootstrapBase).bootstrap(securityLevel);
-		}
-		catch (ModelAccessException e) {
-			msg("Error reading or concurrent modifying the database!");
-		}
-		catch (UnsupportedOperationException e) {
-			msg("The selected file cannot be used to bootstrap the trust view!");
-		}
+	public static void bootstrapTrustView(final File bootstrapBase,
+			final double securityLevel, Component dialogParent) {
+		final ProgressMonitor progressMonitor = new ProgressMonitor(
+				dialogParent,
+				"Bootstrapping the trust view using the Firefox browser history",
+				"", 0, 1000);
+
+		final SwingWorker<Void, Object> task = new SwingWorker<Void, Object>() {
+			@Override
+			protected Void doInBackground() throws Exception {
+				try {
+					Service.getBootstrapService(bootstrapBase).bootstrap(
+							securityLevel,
+							new BootstrapService.Observer() {
+								@Override
+								public boolean update(double progress, String item) {
+									if (isCancelled())
+										return false;
+
+									publish((int)(1000 * progress));
+									publish(item);
+									return true;
+								}
+							});
+				}
+				catch (ModelAccessException | UnsupportedOperationException e) {
+					cancel(false);
+					publish(e);
+				}
+				return null;
+			}
+
+			@Override
+			public void done() {
+				if (isCancelled())
+					msg("Bootstrapping was aborted before it has been finished.", "Aborted");
+				else
+					msg("Bootstrapping was completed successfully.", "Success");
+				Toolkit.getDefaultToolkit().beep();
+				progressMonitor.close();
+			}
+
+			@Override
+			protected void process(List<Object> chunks) {
+				for (Object chunk : chunks)
+					if (chunk instanceof Integer)
+						progressMonitor.setProgress((int) chunk);
+					else if (chunk instanceof String)
+						progressMonitor.setNote((String) chunk);
+					else if (chunk instanceof ModelAccessException)
+						msg("Error reading or concurrent modifying the database!");
+					else if (chunk instanceof UnsupportedOperationException)
+						msg("The selected file cannot be used to bootstrap the trust view!");
+
+				if (progressMonitor.isCanceled())
+					cancel(false);
+			}
+		};
+
+		task.execute();
 	}
 
 	// /////////////////////////////////////////////////////////refresh_TC_Table/////////////////////////////////////////////////////////////////////////////////////

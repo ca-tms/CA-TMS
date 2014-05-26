@@ -1431,7 +1431,7 @@ public class GUI {
 						@Override
 						public void actionPerformed(ActionEvent evt) {
 							PresentationLogic.bootstrapTrustView(
-									file, securityLevel);
+									file, securityLevel, frame);
 						}
 					});
 				}
@@ -1451,7 +1451,7 @@ public class GUI {
 						if (fileChooser.showOpenDialog(button) ==
 								JFileChooser.APPROVE_OPTION) {
 							PresentationLogic.bootstrapTrustView(
-									fileChooser.getSelectedFile(), securityLevel);
+									fileChooser.getSelectedFile(), securityLevel, frame);
 						}
 					}
 				});

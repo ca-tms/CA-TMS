@@ -119,7 +119,7 @@ public final class Service {
 	 * @return a service that can be used to bootstrap the trust view
 	 * @param bootstrapBase the file or directory which the bootstrapping
 	 * should be based on
-	 * @throws IllegalArgumentException if the given bootstrap base
+	 * @throws UnsupportedOperationException if the given bootstrap base
 	 * cannot be used for bootstrapping the trust view
 	 */
 	public static BootstrapService getBootstrapService(File bootstrapBase) {
