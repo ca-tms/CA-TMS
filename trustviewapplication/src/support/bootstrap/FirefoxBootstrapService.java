@@ -2,16 +2,10 @@ package support.bootstrap;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import org.sqlite.SQLiteDataSource;
 
 import data.ModelAccessException;
 import support.BootstrapService;
@@ -63,30 +57,10 @@ public class FirefoxBootstrapService implements BootstrapService {
 			}
 		}
 
-		if (databaseFile != null) {
-			// check if the file could be accessed as SQLite database
-			// and if the expected tables are present
-			SQLiteDataSource dataSource = new SQLiteDataSource();
-			dataSource.setUrl("jdbc:sqlite:" + databaseFile.getPath());
-			try (Connection connection = dataSource.getConnection();
-				 Statement statement = connection.createStatement()) {
-				ResultSet result;
-				result = statement.executeQuery(
-						"SELECT name FROM sqlite_master WHERE " +
-						"type='table' AND name='moz_places'");
-				if (!result.next())
-					databaseFile = null;
-
-				result = statement.executeQuery(
-						"SELECT name FROM sqlite_master WHERE " +
-						"type='table' AND name='moz_historyvisits'");
-				if (!result.next())
-					databaseFile = null;
-			}
-			catch (SQLException e) {
+		if (databaseFile != null &&
+			!SQLiteURLBootstrapping.areTablesPresent(databaseFile,
+					"moz_places", "moz_historyvisits"))
 				databaseFile = null;
-			}
-		}
 
 		return databaseFile;
 	}
@@ -150,50 +124,20 @@ public class FirefoxBootstrapService implements BootstrapService {
 			throw new UnsupportedOperationException(
 					"No places.sqlite file found in regard to " + bootstrapBase);
 
-		System.out.println("Performing bootstrapping ...");
-		System.out.println("  Bootstrapping base: Firefox browser history");
-		System.out.println("  Database: " + databaseFile.getPath());
+		SQLiteURLBootstrapping.bootstrap(securityLevel, observer,
+				"Firefox browser history",
 
-		SQLiteDataSource dataSource = new SQLiteDataSource();
-		dataSource.setUrl("jdbc:sqlite:" + databaseFile.getPath());
-		try (Connection connection = dataSource.getConnection();
-			 Statement statementCount = connection.createStatement();
-			 ResultSet resultCount = statementCount.executeQuery(
-						"SELECT COUNT(*) " +
-						"FROM moz_places JOIN moz_historyvisits ON " +
-						"     moz_places.id = moz_historyvisits.place_id " +
-						"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0");
-			 Statement statement = connection.createStatement();
-			 ResultSet result = statement.executeQuery(
-						"SELECT url " +
-						"FROM moz_places JOIN moz_historyvisits ON " +
-						"     moz_places.id = moz_historyvisits.place_id " +
-						"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0 " +
-						"ORDER BY visit_date asc")) {
+				"SELECT COUNT(*) " +
+				"FROM moz_places JOIN moz_historyvisits ON " +
+				"     moz_places.id = moz_historyvisits.place_id " +
+				"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0",
 
-			resultCount.next();
-			if (!URLBootstrapping.bootstrap(
-					URLBootstrapping.iterator(result, 1),
-					resultCount.getInt(1),
-					securityLevel,
-					observer)) {
-				System.out.println("Bootstrapping canceled.");
-				System.out.println("  Bootstrapping base: Firefox browser history");
-				System.out.println("  Database: " + databaseFile.getPath());
-				return;
-			}
-		}
-		catch (Exception e) {
-			System.out.println("Bootstrapping failed.");
-			System.out.println("  Bootstrapping base: Firefox browser history");
-			System.out.println("  Database: " + databaseFile.getPath());
+				"SELECT url " +
+				"FROM moz_places JOIN moz_historyvisits ON " +
+				"     moz_places.id = moz_historyvisits.place_id " +
+				"WHERE moz_places.url LIKE 'https:%' AND last_visit_date > 0 " +
+				"ORDER BY visit_date asc",
 
-			e.printStackTrace();
-			return;
-		}
-
-		System.out.println("Bootstrapping completed.");
-		System.out.println("  Bootstrapping base: Firefox browser history");
-		System.out.println("  Database: " + databaseFile.getPath());
+				databaseFile);
 	}
 }
