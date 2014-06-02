@@ -2,8 +2,6 @@ package support.bootstrap;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URL;
-import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,18 +9,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.sqlite.SQLiteDataSource;
 
 import data.ModelAccessException;
-import data.TrustCertificate;
-import services.logic.ValidationRequest;
-import services.logic.Validator;
 import support.BootstrapService;
-import util.CertificatePathValidity;
 import util.Util;
 
 public class FirefoxBootstrapService implements BootstrapService {
@@ -180,73 +172,18 @@ public class FirefoxBootstrapService implements BootstrapService {
 						"ORDER BY visit_date asc")) {
 
 			resultCount.next();
-			double max = resultCount.getInt(1);
-			double cur = 0;
-
-			// we are going to replay the browser history
-			// thus we are going to apply all visited URLs in the correct order
-			// even if they contain duplicate hosts
-			// although this may not be necessary with respect to the trust
-			// computation, we think of the validation algorithm as black-box
-			Map<String, List<TrustCertificate>> hostCertificates = new HashMap<>();
-			while (result.next()) {
-				String url = "";
-				String host = "";
-				try {
-					url = result.getString(1);
-					host = new URL(url).getHost();
-
-					cur++;
-					if (observer != null)
-						try {
-							if (!observer.update(cur / max, url)) {
-								System.out.println("Bootstrapping canceled.");
-								System.out.println("  Bootstrapping base: Firefox browser history");
-								System.out.println("  Database: " + databaseFile.getPath());
-								return;
-							}
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
-
-					System.out.println("Performing bootstrapping validation ...");
-					System.out.println("  URL: " + url);
-					System.out.println("  Host: " + host);
-
-					List<TrustCertificate> certificates = hostCertificates.get(host);
-					if (certificates == null) {
-						Certificate[] path = Util.retrieveCertificateChain(host);
-
-						certificates = new ArrayList<>(
-								Collections.<TrustCertificate>nCopies(
-										path.length, null));
-
-						int i = path.length - 1;
-						for (Certificate cert : path)
-							certificates.set(i--, new TrustCertificate(cert));
-
-						hostCertificates.put(host, certificates);
-					}
-
-					ValidationRequest request = new ValidationRequest(
-							url,
-							certificates,
-							CertificatePathValidity.VALID,
-							securityLevel,
-							false);
-
-					Validator.validate(request);
-				}
-				catch (Exception e) {
-					System.out.println("Bootstrapping validation failed");
-					System.out.println("  URL: " + url);
-					System.out.println("  Host: " + host);
-					e.printStackTrace();
-				}
+			if (!URLBootstrapping.bootstrap(
+					URLBootstrapping.iterator(result, 1),
+					resultCount.getInt(1),
+					securityLevel,
+					observer)) {
+				System.out.println("Bootstrapping canceled.");
+				System.out.println("  Bootstrapping base: Firefox browser history");
+				System.out.println("  Database: " + databaseFile.getPath());
+				return;
 			}
 		}
-		catch (SQLException e) {
+		catch (Exception e) {
 			System.out.println("Bootstrapping failed.");
 			System.out.println("  Bootstrapping base: Firefox browser history");
 			System.out.println("  Database: " + databaseFile.getPath());
