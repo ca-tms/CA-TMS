@@ -38,6 +38,25 @@ public final class Util {
 	}
 
 	/**
+	 * @return the user configuration directory,
+	 * this is where an application can store user-specific preferences
+	 */
+	public static String getConfigDirectory() {
+		String OS = System.getProperty("os.name").toUpperCase();
+		if (OS.contains("WIN"))
+			return System.getenv("APPDATA");
+		else if (OS.contains("MAC"))
+			return System.getProperty("user.home") + "/Library/Preferences";
+		else if (OS.contains("NUX")) {
+			String dir = System.getenv("XDG_CONFIG_HOME");
+			if (dir != null && !dir.isEmpty())
+				return dir;
+			return System.getProperty("user.home") + "/.config";
+		}
+		return System.getProperty("user.dir");
+	}
+
+	/**
 	 * Retrieves the certificate chain from the given host
 	 * @return the certificate chain with the certificate for the host first
 	 * followed by the certificates for any certificate authorities

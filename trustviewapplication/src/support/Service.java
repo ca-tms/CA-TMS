@@ -2,6 +2,7 @@ package support;
 
 import java.io.File;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -19,6 +20,7 @@ import data.TrustCertificate;
 
 import sslcheck.core.NotaryManager;
 import sslcheck.core.TLSConnectionInfo;
+import support.bootstrap.ChromiumBootstrapService;
 import support.bootstrap.FirefoxBootstrapService;
 import util.ValidationResult;
 
@@ -112,7 +114,10 @@ public final class Service {
 	 * bootstrap the trust view using {@link #getBoostrapService(File)}.
 	 */
 	public static List<File> findBoostrapBaseFiles() {
-		return FirefoxBootstrapService.findBootstrapBases();
+		List<File> bootstrapBases = new ArrayList<>();
+		bootstrapBases.addAll(FirefoxBootstrapService.findBootstrapBases());
+		bootstrapBases.addAll(ChromiumBootstrapService.findBootstrapBases());
+		return bootstrapBases;
 	}
 
 	/**
@@ -125,6 +130,9 @@ public final class Service {
 	public static BootstrapService getBootstrapService(File bootstrapBase) {
 		if (FirefoxBootstrapService.canUseAsBootstrapBase(bootstrapBase))
 			return new FirefoxBootstrapService(bootstrapBase);
+
+		if (ChromiumBootstrapService.canUseAsBootstrapBase(bootstrapBase))
+			return new ChromiumBootstrapService(bootstrapBase);
 
 		throw new UnsupportedOperationException(
 				"The given argument is no legal bootstrapping base directory or file: " +
