@@ -29,6 +29,7 @@ final public class URLBootstrapping {
 		double cur = 0, max = maxSize;
 
 		Map<String, List<TrustCertificate>> hostCertificates = new HashMap<>();
+		Map<String, String> failedHosts = new HashMap<>();
 		while (urls.hasNext())
 			try {
 				url = urls.next();
@@ -43,13 +44,15 @@ final public class URLBootstrapping {
 					catch (Exception e) {
 						e.printStackTrace();
 					}
-
-				System.out.println("Performing bootstrapping validation ...");
-				System.out.println("  URL: " + url);
-				System.out.println("  Host: " + host);
-
+				
+				//validation is only done for newly observed hosts 
 				List<TrustCertificate> certificates = hostCertificates.get(host);
-				if (certificates == null) {
+				if (certificates == null && !failedHosts.containsKey(host)) {
+					
+					System.out.println("Performing bootstrapping validation ...");
+					System.out.println("  URL: " + url);
+					System.out.println("  Host: " + host);
+					
 					Certificate[] path = Util.retrieveCertificateChain(host);
 
 					certificates = new ArrayList<>(
@@ -61,18 +64,20 @@ final public class URLBootstrapping {
 						certificates.set(i--, new TrustCertificate(cert));
 
 					hostCertificates.put(host, certificates);
+				
+
+					ValidationRequest request = new ValidationRequest(
+							url.toString(),
+							certificates,
+							CertificatePathValidity.VALID,
+							securityLevel,
+							false);
+					
+					Validator.validate(request);
 				}
-
-				ValidationRequest request = new ValidationRequest(
-						url.toString(),
-						certificates,
-						CertificatePathValidity.VALID,
-						securityLevel,
-						false);
-
-				Validator.validate(request);
 			}
 			catch (Exception e) {
+				failedHosts.put(host, e.toString());
 				System.out.println("Bootstrapping validation failed");
 				System.out.println("  URL: " + url);
 				System.out.println("  Host: " + host);
