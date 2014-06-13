@@ -21,6 +21,7 @@ public interface Configuration extends AutoCloseable {
 	static String SECURITY_LEVEL_MEDIUM = "security-level-medium";
 	static String SECURITY_LEVEL_HIGH = "security-level-high";
 	static String ASSESSMENT_EXPIRATION_MILLIS = "assessment-expiration-millis";
+	static String QUERY_SERVICES_FOR_CA_CERTS = "query-services-for-ca-certs";
 	static String SERVER_PORT = "server-port";
 	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
 	static String VALIDATION_TIMEOUT_MILLIS = "validation-timeout-millis";

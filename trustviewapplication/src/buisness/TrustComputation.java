@@ -147,17 +147,26 @@ public final class TrustComputation {
 		}
 
 		if (R == ValidationResult.UNTRUSTED) {
-			// determine h
-			// maximum i which is not a new assessment or
-			// which the validation service consensus is trusted for
+			final boolean queryServicesForCaCerts =
+					config.get(Configuration.QUERY_SERVICES_FOR_CA_CERTS, Boolean.class);
+
 			int h = 0;
-			for (int i = 0; i < p.size() - 1; i++)
-				if (!TL.contains(pAssessments.get(i)))
-					h = i;
-			for (int i = h; i < p.size() - 1; i++)
-				if (VS.query(p.get(i)) ==
-						ValidationResult.TRUSTED)
-					h = i;
+			if (queryServicesForCaCerts) {
+				// determine h
+				// maximum i which is not a new assessment or
+				// which the validation service consensus is trusted for
+				for (int i = 0; i < p.size() - 1; i++)
+					if (!TL.contains(pAssessments.get(i)))
+						h = i;
+				for (int i = h; i < p.size() - 1; i++)
+					if (VS.query(p.get(i)) == ValidationResult.TRUSTED)
+						h = i;
+			}
+			else
+				// make sure the end entity certificate is marked untrusted
+				// and the CA assessment is updated with a negative experience
+				// do not update any other assessments
+				h = p.size() - 2;
 
 			for (int i = 0; i < h; i++) {
 				boolean updateTrustView = false;
@@ -174,7 +183,8 @@ public final class TrustComputation {
 				// if the next assessment is in TL
 				// or the next C is not in the next S,
 				// update the current assessment with a positive experience
-				if (nextAssessment != null &&
+				if (queryServicesForCaCerts &&
+						nextAssessment != null &&
 						(TL.contains(nextAssessment) ||
 						 !nextAssessment.getS().contains(p.get(i + 1)))) {
 					assessment.getO_it_ca().addR(1);
@@ -186,24 +196,26 @@ public final class TrustComputation {
 					updateTrustView = true;
 
 				if (updateTrustView)
-					trustView.setAssessment(
+					trustView. setAssessment(
 							fixKeyLegitimacy(opinionN, fix_kl, assessment));
 			}
 
 			boolean updateTrustView = false;
 			TrustAssessment assessment = pAssessments.get(h);
 
-			// if C at position h is not in S at position h,
-			// add it to the set
-			if (!assessment.getS().contains(p.get(h))) {
-				assessment.getS().add(p.get(h));
-				updateTrustView = true;
-			}
+			if (queryServicesForCaCerts) {
+				// if C at position h is not in S at position h,
+				// add it to the set
+				if (!assessment.getS().contains(p.get(h))) {
+					assessment.getS().add(p.get(h));
+					updateTrustView = true;
+				}
 
-			// if assessment at position h is in TL,
-			// add the assessment to the view
-			if (TL.contains(assessment))
-				updateTrustView = true;
+				// if assessment at position h is in TL,
+				// add the assessment to the view
+				if (TL.contains(assessment))
+					updateTrustView = true;
+			}
 
 			// If C at position h+1 is not an untrusted certificate,
 			// update the assessment with a negative experience

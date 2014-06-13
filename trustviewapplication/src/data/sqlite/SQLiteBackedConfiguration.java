@@ -68,6 +68,7 @@ public class SQLiteBackedConfiguration implements Configuration {
 			if (value != null) {
 				T result = type.cast(
 					type == String.class ? value :
+					type == Boolean.class || type == boolean.class ? Boolean.valueOf(value) :
 					type == Integer.class || type == int.class ? Integer.valueOf(value) :
 					type == Long.class || type == long.class ? Long.valueOf(value) :
 					type == Double.class || type == double.class ? Double.valueOf(value) :
