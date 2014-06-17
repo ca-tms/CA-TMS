@@ -68,6 +68,8 @@ public class PresentationLogic {
 				"", 0, 1000);
 
 		final SwingWorker<Void, Object> task = new SwingWorker<Void, Object>() {
+			private boolean exceptionOccurred = false;
+
 			@Override
 			protected Void doInBackground() throws Exception {
 				try {
@@ -86,7 +88,6 @@ public class PresentationLogic {
 							});
 				}
 				catch (ModelAccessException | UnsupportedOperationException e) {
-					cancel(false);
 					publish(e);
 				}
 				return null;
@@ -96,7 +97,7 @@ public class PresentationLogic {
 			public void done() {
 				if (isCancelled())
 					msg("Bootstrapping was aborted before it has been finished.", "Aborted");
-				else
+				else if (!exceptionOccurred)
 					msg("Bootstrapping was completed successfully.", "Success");
 				Toolkit.getDefaultToolkit().beep();
 				progressMonitor.close();
@@ -109,10 +110,14 @@ public class PresentationLogic {
 						progressMonitor.setProgress((int) chunk);
 					else if (chunk instanceof String)
 						progressMonitor.setNote((String) chunk);
-					else if (chunk instanceof ModelAccessException)
+					else if (chunk instanceof ModelAccessException) {
 						msg("Error reading or concurrent modifying the database!");
-					else if (chunk instanceof UnsupportedOperationException)
+						exceptionOccurred = true;
+					}
+					else if (chunk instanceof UnsupportedOperationException) {
 						msg("The selected file cannot be used to bootstrap the trust view!");
+						exceptionOccurred = true;
+					}
 
 				if (progressMonitor.isCanceled())
 					cancel(false);
