@@ -1539,8 +1539,7 @@ public class GUI {
 		btnMiniminze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// frame.setVisible(false);
-				frame.dispose();
+				frame.setVisible(false);
 				miniTray(trayImg_on, trayImg_off);
 			}
 		});
@@ -1581,8 +1580,7 @@ public class GUI {
 			@Override
 			public void windowIconified(WindowEvent e) {
 
-				// frame.setVisible(false);
-				frame.dispose();
+				frame.setVisible(false);
 				miniTray(trayImg_on, trayImg_off);
 
 			}
