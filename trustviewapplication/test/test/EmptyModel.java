@@ -49,6 +49,11 @@ public final class EmptyModel implements AutoCloseable {
 
 		return new Configuration() {
 			@Override
+			public boolean exists(String key) {
+				return configuration.exists(key) || defaultConfiguration.exists(key);
+			}
+
+			@Override
 			public <T> T get(String key, Class<T> type) {
 				try {
 					return configuration.get(key, type);

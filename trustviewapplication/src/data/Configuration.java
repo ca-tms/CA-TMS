@@ -22,10 +22,18 @@ public interface Configuration extends AutoCloseable {
 	static String SECURITY_LEVEL_HIGH = "security-level-high";
 	static String ASSESSMENT_EXPIRATION_MILLIS = "assessment-expiration-millis";
 	static String QUERY_SERVICES_FOR_CA_CERTS = "query-services-for-ca-certs";
+	static String BOOTSTRAPPING_MODE = "bootstrapping-mode";
 	static String SERVER_PORT = "server-port";
 	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
 	static String VALIDATION_TIMEOUT_MILLIS = "validation-timeout-millis";
 	static String OVERRIDE_VALIDATION_SERVICE_RESULT = "override-validation-service-result";
+
+	/**
+	 * @return Determines whether the given key exists
+	 *
+	 * @param key
+	 */
+	boolean exists(String key);
 
 	/**
 	 * @return the value associated with the given key as the specified type.
@@ -39,18 +47,6 @@ public interface Configuration extends AutoCloseable {
 	 */
 	<T> T get(String key, Class<T> type)
 			throws ConfigurationValueAccessException;
-
-	/**
-	 * @return the value associated with the given key as the specified type.
-	 * Supported types are the primitive Java data types and the
-	 * @throws UnsupportedOperationException if the underlying implementation
-	 * is read-only and does not permit changing values} type.
-	 *
-	 * @param key
-	 * @param type
-	 * @throws ConfigurationValueAccessException if the key does not exist, the
-	 * value cannot be interpreted as the given type or storage access failed
-	 */
 
 	/**
 	 * Sets the given key to the given value.

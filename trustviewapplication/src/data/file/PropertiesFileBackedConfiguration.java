@@ -19,6 +19,11 @@ public class PropertiesFileBackedConfiguration implements Configuration {
 	}
 
 	@Override
+	public boolean exists(String key) {
+		return properties.getProperty(key) != null;
+	}
+
+	@Override
 	public <T> T get(String key, Class<T> type) {
 		String value = properties.getProperty(key);
 

@@ -535,6 +535,37 @@ public class PresentationLogic {
 	}
 
 	/**
+	 * retrieval a k/v vaule pair for configuration
+	 * @param key
+	 * @param type
+	 * @param defaultValue
+	 * @return
+	 */
+	public static <T> T get_Configuration(String key, Class<T> type, T defaultValue) {
+		Configuration conf;
+		T type_temp = defaultValue;
+		try {
+			conf = data.Model.openConfiguration();
+
+			if (conf.exists(key))
+				type_temp = conf.get(key, type);
+
+			conf.close();
+
+		} catch (ModelAccessException e) {
+			JOptionPane
+					.showConfirmDialog(
+							null,
+							"Error reading or concurrent modifying the database! Please restart the application ",
+							"Error", JOptionPane.DEFAULT_OPTION);
+			e.printStackTrace();
+
+		}
+		return type_temp;
+
+	}
+
+	/**
 	 * pop up a error message box
 	 * @param msg
 	 */

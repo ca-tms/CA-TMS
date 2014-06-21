@@ -31,6 +31,7 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -84,6 +85,7 @@ import javax.swing.JComboBox;
  */
 public class GUI {
 
+	public static String GUICONFIG_AUTO_START_WEBSERVER = "guiconfig-auto-start-webserver";
 	private static JFrame frame;
 	private JTabbedPane tabbedPane;
 	private JTable table_TC;
@@ -115,6 +117,9 @@ public class GUI {
 
 	private int Port;
 	private String Vali_Notary;
+
+	private boolean Bootsrapping_Mode;
+	private boolean AutoStart_Webserver;
 
 	private JTextField textField_Expiration;
 	private JTextField textField_Port;
@@ -153,6 +158,9 @@ public class GUI {
 	public GUI() {
 		Configurate();
 		initialize();
+
+		if (AutoStart_Webserver)
+			tglbtnStartService.doClick();
 	}
 
 
@@ -178,6 +186,11 @@ public class GUI {
 		Vali_Notary= PresentationLogic.get_Configuration(
 				Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
 
+		Bootsrapping_Mode = PresentationLogic.get_Configuration(
+				Configuration.BOOTSTRAPPING_MODE, Boolean.class);
+
+		AutoStart_Webserver = PresentationLogic.get_Configuration(
+				GUICONFIG_AUTO_START_WEBSERVER, Boolean.class, false);
 	}
 
 	/**
@@ -1004,6 +1017,11 @@ public class GUI {
 		lblBootstrap_2.setBounds(42, 270, 343, 15);
 		Outer_General_Setting.add(lblBootstrap_2);
 
+		final JCheckBox BootstrappingMode = new JCheckBox("Enable bootstrapping mode");
+		BootstrappingMode.setSelected(Bootsrapping_Mode);
+		BootstrappingMode.setBounds(42, 293, 343, 15);
+		Outer_General_Setting.add(BootstrappingMode);
+
 		JButton btnBootstrap = new JButton("Bootstrap");
 
 		btnBootstrap.setBounds(422, 251, 93, 23);
@@ -1011,25 +1029,25 @@ public class GUI {
 
 		JSeparator separator_2 = new JSeparator();
 		separator_2.setForeground(Color.LIGHT_GRAY);
-		separator_2.setBounds(149, 309, 390, 2);
+		separator_2.setBounds(149, 329, 390, 2);
 		Outer_General_Setting.add(separator_2);
 
 		JLabel lblDefaultSetting = new JLabel("Default configuration");
-		lblDefaultSetting.setBounds(10, 300, 129, 15);
+		lblDefaultSetting.setBounds(10, 320, 129, 15);
 		Outer_General_Setting.add(lblDefaultSetting);
 
 		JLabel lblAllOfThe = new JLabel(
 				"All of the configurations will be set to default value.");
-		lblAllOfThe.setBounds(42, 321, 359, 15);
+		lblAllOfThe.setBounds(42, 346, 359, 15);
 		Outer_General_Setting.add(lblAllOfThe);
 
 		JButton btnDefault = new JButton("Default");
 
-		btnDefault.setBounds(422, 321, 93, 23);
+		btnDefault.setBounds(422, 346, 93, 23);
 		Outer_General_Setting.add(btnDefault);
 
-		JLabel lblValidationNortaries = new JLabel("Validation Nortary Results Override With :");
-		lblValidationNortaries.setBounds(160, 112, 276, 15);
+		JLabel lblValidationNortaries = new JLabel("Validation Nortary Results Override With:");
+		lblValidationNortaries.setBounds(160, 117, 276, 15);
 		Outer_General_Setting.add(lblValidationNortaries);
 
 		Vector<String> Choices = new Vector<String>();
@@ -1042,6 +1060,15 @@ public class GUI {
 
 		comboBox.setBounds(446, 109, 93, 21);
 		Outer_General_Setting.add(comboBox);
+
+		JLabel lblAutoStartWebserver = new JLabel("Start webserver when application starts");
+		lblAutoStartWebserver.setBounds(160, 144, 276, 15);
+		Outer_General_Setting.add(lblAutoStartWebserver);
+
+		final JCheckBox AutoStartWebserver = new JCheckBox();
+		AutoStartWebserver.setSelected(AutoStart_Webserver);
+		AutoStartWebserver.setBounds(444, 141, 89, 21);
+		Outer_General_Setting.add(AutoStartWebserver);
 
 		JPanel Outer_Data_Backup = new JPanel();
 		Outer_Data_Backup.setBorder(new TitledBorder(null, "Data Backup",
@@ -1270,6 +1297,22 @@ public class GUI {
 		// /////////////////////////////////////////////////////////////////////////////////General
 		// setting
 		// setting//////////////////////////////////////////////////////////////////////////////
+
+		AutoStartWebserver.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				PresentationLogic.set_Configuration(
+						GUICONFIG_AUTO_START_WEBSERVER, AutoStartWebserver.isSelected());
+			}
+		});
+
+		BootstrappingMode.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				PresentationLogic.set_Configuration(
+						Configuration.BOOTSTRAPPING_MODE, BootstrappingMode.isSelected());
+			}
+		});
 
 		comboBox.addActionListener(new ActionListener() {
 			@Override

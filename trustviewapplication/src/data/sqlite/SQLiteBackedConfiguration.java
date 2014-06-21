@@ -54,6 +54,26 @@ public class SQLiteBackedConfiguration implements Configuration {
 	}
 
 	@Override
+	public boolean exists(String key) {
+		try {
+			validateDatabaseConnection();
+
+			getValue.setString(1, key);
+			try (ResultSet result = getValue.executeQuery()) {
+				if (result.next())
+					return true;
+			}
+
+			return false;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		throw new ConfigurationValueAccessException(key);
+	}
+
+	@Override
 	public <T> T get(String key, Class<T> type) {
 		String value = null;
 		try {
