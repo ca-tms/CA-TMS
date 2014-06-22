@@ -36,12 +36,12 @@ TVE.SSLListener = {
                                 
                                 // this is called when CTMS successfully answered the request
                                 var requestSuccessCallback = function(evt) {
-                                    var ctmsResult = evt.target.responseText;
-                                    if(ctmsResult == "UNTRUSTED") {
+                                    var ctmsResult = JSON.parse(evt.target.responseText);
+                                    if(ctmsResult.result == "untrusted") {
                                         aRequest.resume();
                                         // display untrusted warning page
                                         TVE.State.untrusted(aBrowser, url);
-                                    } else if(ctmsResult == "UNKNOWN") {
+                                    } else if(ctmsResult.result == "unknown") {
                                         aRequest.resume();
                                         // display unknown warning page
                                         TVE.State.unknown(aBrowser, url);

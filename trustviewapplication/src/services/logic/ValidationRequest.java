@@ -1,5 +1,6 @@
 package services.logic;
 
+import java.util.Collections;
 import java.util.List;
 
 import util.CertificatePathValidity;
@@ -10,10 +11,10 @@ import data.TrustCertificate;
  */
 public class ValidationRequest {
 	private final String url;
-	private final List<TrustCertificate> certifiactePath;
+	private final List<TrustCertificate> certificatePath;
 	private final double securityLevel;
 	private final CertificatePathValidity certificatePathValidity;
-	private final boolean hostCertTrusted;
+	private final ValidationRequestSpec validationRequestSpec;
 
 	/**
 	 * Creates a new <code>ValidationRequest</code> instance
@@ -22,14 +23,14 @@ public class ValidationRequest {
 	 * @param certificatePathValidity
 	 * @param securityLevel
 	 */
-	public ValidationRequest(String url, List<TrustCertificate> certifiactePath,
+	public ValidationRequest(String url, List<TrustCertificate> certificatePath,
 			CertificatePathValidity certificatePathValidity, double securityLevel,
-			boolean hostCertTrusted) {
+			ValidationRequestSpec validationRequestSpec) {
 		this.url = url;
-		this.certifiactePath = certifiactePath;
+		this.certificatePath = Collections.unmodifiableList(certificatePath);
 		this.certificatePathValidity = certificatePathValidity;
 		this.securityLevel = securityLevel;
-		this.hostCertTrusted = hostCertTrusted;
+		this.validationRequestSpec = validationRequestSpec;
 
 		if (securityLevel < 0.0 || securityLevel > 1.0)
 			throw new IllegalArgumentException(
@@ -48,8 +49,8 @@ public class ValidationRequest {
 	 * the path starts with the self-signed root certificate and ends with the
 	 * certificate for the end entity which validation was requested for
 	 */
-	public List<TrustCertificate> getCertifiactePath() {
-		return certifiactePath;
+	public List<TrustCertificate> getCertificatePath() {
+		return certificatePath;
 	}
 
 	/**
@@ -62,14 +63,14 @@ public class ValidationRequest {
 	/**
 	 * @return the requested security level which is a value between 0 and 1
 	 */
-	public double getsecurityLevel() {
+	public double getSecurityLevel() {
 		return securityLevel;
 	}
 
 	/**
-	 * @return indicated whether the user trusts the host certificate directly
+	 * @return the validation request specification
 	 */
-	public boolean isHostCertTrusted() {
-		return hostCertTrusted;
+	public ValidationRequestSpec getValidationRequestSpec() {
+		return validationRequestSpec;
 	}
 }

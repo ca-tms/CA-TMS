@@ -26,7 +26,7 @@ import javax.json.JsonReader;
 import services.logic.JsonRequestDecoder;
 import services.logic.ValidationRequest;
 import services.logic.Validator;
-import util.ValidationResult;
+import services.logic.ValidatorResult;
 import data.Configuration;
 import data.Model;
 
@@ -150,15 +150,43 @@ public class WebServer {
 						ValidationRequest request = JsonRequestDecoder.decode(object);
 
 						// perform trust validation
-						ValidationResult result = Validator.validate(request);
+						ValidatorResult result = Validator.validate(request);
+
+						// create answer JSON string
+						StringBuilder jsonResult = new StringBuilder();
+
+						jsonResult.append("{\n  \"result\": ");
+						switch (result.getValidationResult()) {
+						case TRUSTED:
+							jsonResult.append("\"trusted\"");
+							break;
+						case UNTRUSTED:
+							jsonResult.append("\"untrusted\"");
+							break;
+						case UNKNOWN:
+							jsonResult.append("\"unknown\"");
+							break;
+						}
+
+						jsonResult.append(",\n  \"resultSpec\": ");
+						switch (result.getValidationResultSpec()) {
+						case VALIDATED:
+							jsonResult.append("\"validated\"");
+							break;
+						case RECOMMENDED:
+							jsonResult.append("\"recommended\"");
+							break;
+						}
+
+						jsonResult.append("\n}");
 
 						writer.write(
 								"HTTP/1.1 200 OK\r\n" +
-								"Content-Type: text/plain;charset=utf-8\r\n" +
+								"Content-Type: application/json;charset=utf-8\r\n" +
 								"Date: " + dateFormat.format(new Date()) + "\r\n" +
 								"Connection: close\r\n" +
 								"\r\n" +
-								result);
+								jsonResult.toString());
 					}
 					else {
 						System.err.println("403 Forbidden");

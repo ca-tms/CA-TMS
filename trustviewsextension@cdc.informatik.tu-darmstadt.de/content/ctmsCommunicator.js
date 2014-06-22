@@ -21,7 +21,7 @@ TVE.CTMSCommunicator = {
         data.certChain = certChain;
         data.validationResult = validationResult;
         data.secLevel = secLevel;
-        data.hostCertTrusted = hostCertTrusted;
+        data.validationSpec = hostCertTrusted ? "validate-trust-end-certificate" : "validate";
 
         // read ctms address from preferences
         let ctms = TVE.Prefs.getCharPref("ctmsURL") + ":" + TVE.Prefs.getCharPref("ctmsPort");

@@ -76,13 +76,31 @@ public final class JsonRequestDecoder {
 		// get host url
 		String host = object.getString("url");
 
-		// determine whether the host certificate is trusted directly
-		boolean hostCertTrusted = object.getBoolean("hostCertTrusted", false);
+		// determine the validation request specification
+		ValidationRequestSpec validationRequestSpec =
+				ValidationRequestSpec.VALIDATE;
+		switch (object.getString("validationSpec", "")) {
+		case "validate":
+			validationRequestSpec = ValidationRequestSpec.VALIDATE;
+			break;
+		case "validate-with-services":
+			validationRequestSpec = ValidationRequestSpec.VALIDATE_WITH_SERVICES;
+			break;
+		case "validate-without-services":
+			validationRequestSpec = ValidationRequestSpec.VALIDATE_WITHOUT_SERVICES;
+			break;
+		case "validate-trust-end-certificate":
+			validationRequestSpec = ValidationRequestSpec.VALIDATE_TRUST_END_CERTIFICATE;
+			break;
+		case "retrieve-recommendation":
+			validationRequestSpec = ValidationRequestSpec.RETRIEVE_RECOMMENDATION;
+			break;
+		}
 
 		// return the decoded the request object
 		try (Configuration config = Model.openConfiguration()) {
 			return new ValidationRequest(host, certifiactePath, certificatePathValidity,
-					config.get(securityLevel, Double.class), hostCertTrusted);
+					config.get(securityLevel, Double.class), validationRequestSpec);
 		}
 	}
 }
