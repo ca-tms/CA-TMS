@@ -35,12 +35,12 @@ public final class Validator {
 	 */
 	public static ValidatorResult validate(ValidationRequest request)
 			throws ModelAccessException {
-		ValidationResult result = ValidationResult.UNKNOWN;
-		ValidationResultSpec resultSpec =
+		ValidatorResult result = new ValidatorResult(
+				ValidationResult.UNKNOWN,
 				request.getValidationRequestSpec() ==
-					ValidationRequestSpec.RETRIEVE_RECOMMENDATION
-							? ValidationResultSpec.RECOMMENDED
-							: ValidationResultSpec.VALIDATED;
+				ValidationRequestSpec.RETRIEVE_RECOMMENDATION
+						? ValidationResultSpec.RECOMMENDED
+						: ValidationResultSpec.VALIDATED);
 
 		try {
 			if (request.getCertificatePathValidity() == CertificatePathValidity.VALID) {
@@ -107,7 +107,8 @@ public final class Validator {
 					System.out.println("Trust validation completed.");
 					System.out.println("  URL: " + request.getURL());
 					System.out.println("  Security Level: " + request.getSecurityLevel());
-					System.out.println("  Result was " + result);
+					System.out.println("  Result was " + result.getValidationResult() +
+							           "(" + result.getValidationResultSpec() + ")");
 					break;
 				}
 			}
@@ -117,7 +118,7 @@ public final class Validator {
 				lock.unlock();
 		}
 
-		return new ValidatorResult(result, resultSpec);
+		return result;
 	}
 
 	/**
@@ -132,7 +133,7 @@ public final class Validator {
 	 * @param securityLevel
 	 * @param spec
 	 */
-	private static ValidationResult validate(TrustView trustView,
+	private static ValidatorResult validate(TrustView trustView,
 			Configuration config, String hostURL,
 			List<TrustCertificate> certificatePath, double securityLevel,
 			ValidationRequestSpec spec) {
@@ -213,13 +214,17 @@ public final class Validator {
 
 			trustView.setTrustedCertificate(
 					certificatePath.get(certificatePath.size() - 1));
-			return ValidationResult.TRUSTED;
+			return new ValidatorResult(
+					ValidationResult.TRUSTED,
+					ValidationResultSpec.VALIDATED);
 
 		case RETRIEVE_RECOMMENDATION:
 			validationService =
 					Service.getValidationService(hostURL, validationTimeoutMillis);
-			return validationService.query(
-					certificatePath.get(certificatePath.size() - 1));
+			return new ValidatorResult(
+					validationService.query(
+							certificatePath.get(certificatePath.size() - 1)),
+					ValidationResultSpec.RECOMMENDED);
 		}
 
 		assert
@@ -228,10 +233,18 @@ public final class Validator {
 		assert
 			validationService != null;
 
-		return TrustComputation.validate(
-				trustView, config,
-				certificatePath,
-				securityLevel,
-				validationService);
+		ValidationResultSpec resultSpec = ValidationResultSpec.VALIDATED;
+
+		if (spec == ValidationRequestSpec.VALIDATE_WITHOUT_SERVICES) {
+			// TODO determine special cases for regular mode
+		}
+
+		return new ValidatorResult(
+				TrustComputation.validate(
+						trustView, config,
+						certificatePath,
+						securityLevel,
+						validationService),
+				resultSpec);
 	}
 }
