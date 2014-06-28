@@ -11,7 +11,7 @@
         Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
     </script>
     
-    <vbox class="trustviewsextension-errorBox">
+    <vbox class="trustviewsextension-errorBox" align="start">
         <description class="trustviewsextension-errorTitle">&trustviewsextension.unreachable.heading;</description>
         <description class="trustviewsextension-errorDescription">&trustviewsextension.unreachable.description;</description>
         <description class="trustviewsextension-solutionPreface">&trustviewsextension.unreachable.solutionpreface;</description>
@@ -19,9 +19,7 @@
             <li>&trustviewsextension.unreachable.startctms;</li>
             <li>&trustviewsextension.unreachable.disableextension;</li>
         </ul>
-        <hbox>
-            <button id="trustviewsextension-error-unreachable-tryagain" label="&trustviewsextension.unreachable.tryagain;" />
-        </hbox>
+        <button id="trustviewsextension-error-unreachable-tryagain" label="&trustviewsextension.unreachable.tryagain;" />
     </vbox>
     
 </page>

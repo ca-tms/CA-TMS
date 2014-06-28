@@ -73,7 +73,11 @@ TVE.State = {
                 var cmd = "TVE.State.tryAgain('" + url + "');";
                 button.setAttribute("oncommand", cmd);
                 
-                button = doc.getElementById("trustviewsextension-error-unknown-settrusted");
+                button = doc.getElementById("trustviewsextension-error-unknown-forcevisiting");
+                cmd = "TVE.State.forceVisit('" + url + "');";
+                button.setAttribute("oncommand", cmd);
+
+                button = doc.getElementById("trustviewsextension-error-unknown-forcetrusting");
                 cmd = "TVE.State.trustAndVisit('" + url + "');";
                 button.setAttribute("oncommand", cmd);
                 

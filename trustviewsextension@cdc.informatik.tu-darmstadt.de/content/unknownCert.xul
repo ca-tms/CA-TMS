@@ -11,7 +11,7 @@
         Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
     </script>
     
-    <vbox class="trustviewsextension-errorBox">
+    <vbox class="trustviewsextension-errorBox" align="start">
         <description class="trustviewsextension-errorTitle">&trustviewsextension.unknown.heading;</description>
         <description class="trustviewsextension-errorDescription">&trustviewsextension.unknown.description;</description>
         <description class="trustviewsextension-solutionPreface">&trustviewsextension.unknown.solutionpreface;</description>
@@ -20,10 +20,9 @@
             <li>&trustviewsextension.unknown.retry;</li>
             <li>&trustviewsextension.unknown.settrusted;</li>
         </ul>
-        <hbox>
-            <button id="trustviewsextension-error-unknown-tryagain" label="&trustviewsextension.unknown.tryagain;" />
-            <button id="trustviewsextension-error-unknown-settrusted" label="&trustviewsextension.unknown.forcevisiting;" />
-        </hbox>
+        <button id="trustviewsextension-error-unknown-tryagain" label="&trustviewsextension.unknown.tryagain;" />
+        <button id="trustviewsextension-error-unknown-forcevisiting" label="&trustviewsextension.unknown.forcevisiting;" />
+        <button id="trustviewsextension-error-unknown-forcetrusting" label="&trustviewsextension.unknown.forcetrusting;" />
     </vbox>
     
 </page>

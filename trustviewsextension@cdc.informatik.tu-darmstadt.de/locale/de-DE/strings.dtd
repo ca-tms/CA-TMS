@@ -26,7 +26,7 @@
 <!ENTITY trustviewsextension.untrusted.changelevel         "Das Sicherheitslevel niedriger setzen und es erneut versuchen.">
 <!ENTITY trustviewsextension.untrusted.visit               "Die Website trotzdem besuchen. Das würde die Warnung für diese Website deaktivieren, solange diese Sitzung aktiv ist.">
 <!ENTITY trustviewsextension.untrusted.tryagain            "Nochmal versuchen">
-<!ENTITY trustviewsextension.untrusted.forcevisiting       "Website trotzdem besuchen!">
+<!ENTITY trustviewsextension.untrusted.forcevisiting       "I möchte diese Warnung vorübergehend ignorieren und die Seite besuchen">
 
 <!ENTITY trustviewsextension.unknown.heading               "Unbekanntes Zertifikat">
 <!ENTITY trustviewsextension.unknown.description           "Das von der Website ausgelieferte Zertifikat ist unbekannt. Das Trust Views System kann nicht entscheiden, ob der Verbindung vertraut werden sollte.">
@@ -34,5 +34,5 @@
 <!ENTITY trustviewsextension.unknown.mistrust              "Der Website nicht vertrauen und sie besser nicht besuchen.">
 <!ENTITY trustviewsextension.unknown.retry                 "Es einfach nochmal versuchen.">
 <!ENTITY trustviewsextension.unknown.settrusted            "Die Website trotzdem besuchen und dem Zertifikat zukünftig vertrauen.">
-<!ENTITY trustviewsextension.unknown.tryagain              "Nochmal versuchen">
-<!ENTITY trustviewsextension.unknown.forcevisiting         "Trotzdem besuchen und Zertifikat vertrauen">
+<!ENTITY trustviewsextension.unknown.forcevisiting         "I möchte diese Warnung vorübergehend ignorieren und die Seite besuchen">
+<!ENTITY trustviewsextension.unknown.forcetrusting         "Ich habe die Vertrauenswürdigkeit des Zertifikats verifiziert">

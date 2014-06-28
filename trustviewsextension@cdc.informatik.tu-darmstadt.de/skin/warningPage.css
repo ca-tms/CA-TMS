@@ -51,11 +51,10 @@ li {
     margin-bottom: .5em;
 }
 
-.trustviewsextension-errorUntrusted {
-    background-image: url("chrome://global/skin/icons/sslWarning.png");
+button {
+    -moz-margin-start: 80px;
 }
 
-hbox {
-    display: block;
-    text-align: center; 
+.trustviewsextension-errorUntrusted {
+    background-image: url("chrome://global/skin/icons/sslWarning.png");
 }
