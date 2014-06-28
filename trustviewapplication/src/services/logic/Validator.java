@@ -224,7 +224,7 @@ public final class Validator {
 
 		assert
 			spec == ValidationRequestSpec.VALIDATE_WITH_SERVICES ||
-			spec == ValidationRequestSpec.VALIDATE_WITH_SERVICES;
+			spec == ValidationRequestSpec.VALIDATE_WITHOUT_SERVICES;
 		assert
 			validationService != null;
 

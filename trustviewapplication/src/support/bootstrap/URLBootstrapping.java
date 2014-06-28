@@ -5,12 +5,13 @@ import java.security.cert.Certificate;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import services.logic.ValidationRequest;
+import services.logic.ValidationRequestSpec;
 import services.logic.Validator;
 import util.CertificatePathValidity;
 import util.Util;
@@ -28,8 +29,7 @@ final public class URLBootstrapping {
 		String host = null;
 		double cur = 0, max = maxSize;
 
-		Map<String, List<TrustCertificate>> hostCertificates = new HashMap<>();
-		Map<String, String> failedHosts = new HashMap<>();
+		Set<String> hosts = new HashSet<>();
 		while (urls.hasNext())
 			try {
 				url = urls.next();
@@ -44,18 +44,18 @@ final public class URLBootstrapping {
 					catch (Exception e) {
 						e.printStackTrace();
 					}
-				
-				//validation is only done for newly observed hosts 
-				List<TrustCertificate> certificates = hostCertificates.get(host);
-				if (certificates == null && !failedHosts.containsKey(host)) {
-					
+
+				//validation is only done for newly observed hosts
+				if (!hosts.contains(host)) {
 					System.out.println("Performing bootstrapping validation ...");
 					System.out.println("  URL: " + url);
 					System.out.println("  Host: " + host);
-					
+
+					hosts.add(host);
+
 					Certificate[] path = Util.retrieveCertificateChain(host);
 
-					certificates = new ArrayList<>(
+					List<TrustCertificate> certificates = new ArrayList<>(
 							Collections.<TrustCertificate>nCopies(
 									path.length, null));
 
@@ -63,21 +63,17 @@ final public class URLBootstrapping {
 					for (Certificate cert : path)
 						certificates.set(i--, new TrustCertificate(cert));
 
-					hostCertificates.put(host, certificates);
-				
-
 					ValidationRequest request = new ValidationRequest(
 							url.toString(),
 							certificates,
 							CertificatePathValidity.VALID,
 							securityLevel,
-							false);
-					
+							ValidationRequestSpec.VALIDATE_WITH_SERVICES);
+
 					Validator.validate(request);
 				}
 			}
 			catch (Exception e) {
-				failedHosts.put(host, e.toString());
 				System.out.println("Bootstrapping validation failed");
 				System.out.println("  URL: " + url);
 				System.out.println("  Host: " + host);
