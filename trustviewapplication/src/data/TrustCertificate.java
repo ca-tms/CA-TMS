@@ -1,8 +1,14 @@
 package data;
 
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.DatatypeConverter;
@@ -19,7 +25,8 @@ public class TrustCertificate {
 	private final String publicKey;
 	private final Date notBefore;
 	private final Date notAfter;
-	private final Certificate certificate;
+	private final X509Certificate certificate;
+	private List<String> subjectHosts;
 
 	/**
 	 * Creates a new <code>Certificate</code> initializing it with all data that
@@ -113,6 +120,48 @@ public class TrustCertificate {
 	 */
 	public Certificate getCertificate() {
 		return certificate;
+	}
+
+	/**
+	 * @return the subject common names of the underlying {@link Certificate}
+	 * implementation; will return <code>null</code> if the
+	 * <code>TrustCertificate</code> instance was not created using the
+	 * {@link #TrustCertificate(Certificate)} constructor
+	 */
+	public List<String> getSubjectHosts() {
+		if (certificate == null)
+			return null;
+
+		if (subjectHosts != null)
+			return subjectHosts;
+
+		subjectHosts = new ArrayList<>();
+		try {
+			Collection<List<?>> names = certificate.getSubjectAlternativeNames();
+			if (names != null) {
+				// extract "DNS Name" values from subject alternative names
+				for (List<?> name : names)
+					if ((Integer) name.get(0) == 2)
+						subjectHosts.add((String) name.get(1));
+			}
+			else {
+				// extract host name from subject distinguished name
+				Map<String, String> oid = new HashMap<>();
+				certificate.getSubjectX500Principal().getName(
+						X500Principal.RFC1779, oid);
+				String cn = oid.get("CN");
+				if (cn.matches(
+						"^(\\*\\.)?" +
+						"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)+" +
+						"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.?)$"))
+					subjectHosts.add(cn);
+			}
+		}
+		catch (CertificateParsingException e) {
+			e.printStackTrace();
+		}
+
+		return subjectHosts;
 	}
 
 	@Override
