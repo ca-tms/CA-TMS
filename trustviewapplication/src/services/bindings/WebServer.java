@@ -176,17 +176,17 @@ public class WebServer {
 						case VALIDATED_FIRST_SEEN:
 							jsonResult.append("\"validated-first-seen\"");
 							break;
-						case VALIDATED_EXISTING_EXPIRED:
-							jsonResult.append("\"validated-existing-expired\"");
+						case VALIDATED_EXISTING_EXPIRED_SAME_CA:
+							jsonResult.append("\"validated-existing-expired-same-ca\"");
 							break;
-						case VALIDATED_EXISTING_SAME_CA_KEY:
-							jsonResult.append("\"validated-existing-same-ca-key\"");
+						case VALIDATED_EXISTING_EXPIRED_SAME_CA_KEY:
+							jsonResult.append("\"validated-existing-expired-same-ca-key\"");
 							break;
-						case VALIDATED_EXISTING_SAME_CA:
-							jsonResult.append("\"validated-existing-same-ca\"");
+						case VALIDATED_EXISTING_VALID_SAME_CA:
+							jsonResult.append("\"validated-existing-valid-same-ca\"");
 							break;
-						case VALIDATED_EXISTING_SAME_KEY:
-							jsonResult.append("\"validated-existing-same-key\"");
+						case VALIDATED_EXISTING_VALID_SAME_KEY:
+							jsonResult.append("\"validated-existing-valid-same-key\"");
 							break;
 						case VALIDATED_EXISTING:
 							jsonResult.append("\"validated-existing\"");
