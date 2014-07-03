@@ -414,7 +414,7 @@ public class SQLiteBackedTrustView implements TrustView {
 			// remove expired certificates
 			try (ResultSet result = getCertificates.executeQuery()) {
 				while (result.next())
-					if (result.getTimestamp(6).getTime() > nowMillis) {
+					if (result.getTimestamp(6).getTime() < nowMillis) {
 						removeCertificate.setString(1, result.getString(1));
 						removeCertificate.setString(2, result.getString(2));
 						removeCertificate.executeUpdate();
