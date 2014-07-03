@@ -44,6 +44,8 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement getCertificates;
 	private final PreparedStatement getCertificateTrust;
 	private final PreparedStatement setCertificateTrust;
+	private final PreparedStatement getCertificatesForHost;
+	private final PreparedStatement addCertificateToHost;
 	private final PreparedStatement removeAssessment;
 	private final PreparedStatement removeCertificate;
 	private final PreparedStatement cleanCertificates;
@@ -96,6 +98,16 @@ public class SQLiteBackedTrustView implements TrustView {
 				setCertificateTrust = connection.prepareStatement(
 						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, " +
 						"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
+
+				// accessing certificate hosts
+				getCertificatesForHost = connection.prepareStatement(
+						"SELECT * FROM certificates JOIN certhosts" +
+						"  ON certificates.serial = certhosts.serial" +
+						"  AND certificates.issuer = certhosts.issuer" +
+						"  WHERE certhosts.host=?");
+
+				addCertificateToHost = connection.prepareStatement(
+						"INSERT OR IGNORE INTO certhosts VALUES (?, ?, ?)");
 
 				// cleaning the trust view
 				removeAssessment = connection.prepareStatement(
@@ -323,6 +335,40 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public Collection<TrustCertificate> getCertificatesForHost(String host) {
+		Set<TrustCertificate> certificates = new HashSet<>();
+		try {
+			validateDatabaseConnection();
+			getCertificatesForHost.setString(1, host);
+			try (ResultSet result = getCertificatesForHost.executeQuery()) {
+				while (result.next()) {
+					certificates.add(constructCertificate(result));
+					System.out.println(result.getString(11));
+				}
+			}
+			return certificates;
+		}
+		catch (SQLException | CertificateException e) {
+			e.printStackTrace();
+		}
+		return certificates;
+	}
+
+	@Override
+	public void addHostForCertificate(TrustCertificate certificate, String host) {
+		try {
+			validateDatabaseConnection();
+			addCertificateToHost.setString(1, certificate.getSerial());
+			addCertificateToHost.setString(2, certificate.getIssuer());
+			addCertificateToHost.setString(3, host);
+			addCertificateToHost.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public void clean() {
 		try {
 			validateDatabaseConnection();
@@ -425,8 +471,10 @@ public class SQLiteBackedTrustView implements TrustView {
 				getCertificates.close();
 				getCertificateTrust.close();
 				setCertificateTrust.close();
-				removeCertificate.close();
+				getCertificatesForHost.close();
+				addCertificateToHost.close();
 				removeAssessment.close();
+				removeCertificate.close();
 				cleanCertificates.close();
 				eraseAssessments.close();
 				eraseCertificates.close();
@@ -476,7 +524,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				!cert.getNotAfter().equals(result.getTimestamp(6))))
 			cert = null;
 
-		if (cert == null) 
+		if (cert == null)
 			cert = new TrustCertificate(
 					result.getString(1), result.getString(2),
 					result.getString(3), result.getString(4),

@@ -111,6 +111,24 @@ public interface TrustView extends AutoCloseable {
 	void removeCertificate(TrustCertificate S);
 
 	/**
+	 * @return a collection of all {@link TrustCertificate}s
+	 * for the given host that were previously stored using
+	 * {@link #addHostForCertificate(TrustCertificate, String)}
+	 */
+	Collection<TrustCertificate> getCertificatesForHost(String host);
+
+	/**
+	 * Adds a host for the given {@link TrustCertificate}
+	 * that can later be retrieved using
+	 * {@link #addCertificateToHost(TrustCertificate, String)};
+	 * the method may fail if the <code>TrustView</code> does not contain
+	 * the given certificate
+	 * @param certificate
+	 * @param host
+	 */
+	void addHostForCertificate(TrustCertificate certificate, String host);
+
+	/**
 	 * Cleans the trust view.
 	 *
 	 * This means all expired assessments will be removed

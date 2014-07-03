@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConnectionPoolDataSource;
 
 import data.Model;
@@ -40,8 +41,12 @@ public class SQLiteBackedModel implements AutoCloseable {
 	public void setup() throws SQLException {
 		databaseFile.getParentFile().mkdirs();
 
+		SQLiteConfig config = new SQLiteConfig();
+		config.enforceForeignKeys(true);
+
 		SQLiteConnectionPoolDataSource dataSource = new SQLiteConnectionPoolDataSource();
 		dataSource.setUrl("jdbc:sqlite:" + databaseFile.getPath());
+		dataSource.setConfig(config);
 		poolManager = new MiniConnectionPoolManager(dataSource, MAX_CONNECTIONS);
 
 		try (Connection connection = poolManager.getConnection();
@@ -106,6 +111,17 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"CHECK (NOT (trusted = 1 AND untrusted = 1))," +
 						"" +
 						"PRIMARY KEY (serial, issuer))");
+
+			statement.execute(
+					"CREATE TABLE IF NOT EXISTS certhosts (" +
+						"serial VARCHAR NOT NULL," +     // serial
+						"issuer VARCHAR NOT NULL," +     // issuer
+						"host VARCHAR NOT NULL," +       // host
+						"" +
+						"FOREIGN KEY (serial, issuer)" +
+						"  REFERENCES certificates(serial, issuer)" +
+						"  ON DELETE CASCADE," +
+						"PRIMARY KEY (serial, issuer, host))");
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS configuration (" +
