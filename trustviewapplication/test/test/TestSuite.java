@@ -8,9 +8,9 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import support.Service;
 import support.ValidationService;
 import util.Option;
-import util.ValidationResult;
 
 import CertainTrust.CertainTrust;
 import buisness.TrustComputation;
@@ -44,16 +44,11 @@ public class TestSuite {
 
 	TrustCertificate SCA4_EE6 = new TrustCertificate("62", "SCA4", "EE6", "EE6-Key", notBefore, notAfter);
 
-	ValidationService validation = new ValidationService() {
-		@Override
-		public ValidationResult query(TrustCertificate certificate) {
-			return
-				certificate == SCA4_EE6
-					? ValidationResult.UNKNOWN :
-				certificate == SCA2_EE3 || certificate == SCA3_EE4
-					? ValidationResult.UNTRUSTED : ValidationResult.TRUSTED;
-		}
-	};
+	ValidationService validation = Service.getValidationService(
+			Arrays.asList(RCA1_RCA1, RCA1_SCA1, RCA1_SCA2, RCA1_SCA4,
+					RCA2_RCA2, RCA2_SCA3, SCA1_EE1, SCA2_SCA3, SCA2_EE2, SCA3_EE5),
+			Arrays.asList(SCA2_EE3, SCA3_EE4),
+			null);
 
 	public static void assertEqualsCert(TrustCertificate expected, TrustCertificate actual) {
 		assertEquals(expected.getSerial(), actual.getSerial());

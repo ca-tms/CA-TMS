@@ -3,6 +3,7 @@ package support;
 import java.io.File;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -40,7 +41,6 @@ public final class Service {
 			@Override
 			public ValidationResult query(final TrustCertificate certificate) {
 				try {
-
 					NotaryManager nm = new NotaryManager();
 
 					// Install the all-trusting trust manager
@@ -49,14 +49,14 @@ public final class Service {
 							new TrustManager[] { nm.getTrustManager() },
 							new java.security.SecureRandom());
 
-					// Install as default TLS Socket Factory, so it is also used by
-					// notaries!
-					// https://stackoverflow.com/questions/6047996/ignore-self-signed-ssl-cert-using-jersey-client
+					// Install as default TLS Socket Factory,
+					// so it is also used by notaries
+					// https://stackoverflow.com/questions/6047996/
 					HttpsURLConnection.setDefaultSSLSocketFactory(sslContext
 							.getSocketFactory());
 
 					TLSConnectionInfo info = new TLSConnectionInfo(
-							host,443, new Certificate[] { certificate.getCertificate() });
+							host, 443, new Certificate[] { certificate.getCertificate() });
 					info.validateCertificates(nm);
 					return info.isTrusted() ?
 							ValidationResult.TRUSTED : ValidationResult.UNTRUSTED;
@@ -105,6 +105,59 @@ public final class Service {
 					resultFuture.cancel(true);
 					return ValidationResult.UNKNOWN;
 				}
+			}
+		};
+	}
+
+	/**
+	 * @return a {@link ValidationService} instance that can be used in
+	 * conjunction with other {@link ValidationService}s to predefine
+	 * certificates to be always trusted or untrusted.
+	 * @param trustedCertificates a collection of certificates that will
+	 * always validated to be trusted; can be <code>null</code>
+	 * @param untrustedCertificates a collection of certificates that will
+	 * always validated to be untrusted; can be <code>null</code>
+	 * @param unknownCertificatesService another validation service that
+	 * will be used to to query a validation result for certificates that
+	 * are neither defined to be trusted nor defined to be untrusted;
+	 * can be <code>null</code>, in which case certificates will be validated
+	 * to be of unknown trust
+	 */
+	public static ValidationService getValidationService(
+			final Collection<TrustCertificate> trustedCertificates,
+			final Collection<TrustCertificate> untrustedCertificates,
+			final ValidationService unknownCertificatesService) {
+		return new ValidationService() {
+			@Override
+			public ValidationResult query(final TrustCertificate certificate) {
+				if (trustedCertificates != null &&
+						trustedCertificates.contains(certificate))
+					return ValidationResult.TRUSTED;
+
+				if (untrustedCertificates != null &&
+						untrustedCertificates.contains(certificate))
+					return ValidationResult.UNTRUSTED;
+
+				if (unknownCertificatesService != null)
+					return unknownCertificatesService.query(certificate);
+
+				return ValidationResult.UNKNOWN;
+			}
+		};
+	}
+
+	/**
+	 * @returna {@link ValidationService} instance that will always return the
+	 * given result
+	 * @param result the validation result that is to be returned from the
+	 * {@link ValidationService}
+	 */
+	public static ValidationService getValidationService(
+			final ValidationResult result) {
+		return new ValidationService() {
+			@Override
+			public ValidationResult query(final TrustCertificate certificate) {
+				return result;
 			}
 		};
 	}

@@ -108,7 +108,7 @@ public final class Validator {
 					System.out.println("  URL: " + request.getURL());
 					System.out.println("  Security Level: " + request.getSecurityLevel());
 					System.out.println("  Result was " + result.getValidationResult() +
-							           "(" + result.getValidationResultSpec() + ")");
+							           " (" + result.getValidationResultSpec() + ")");
 					break;
 				}
 			}
@@ -164,31 +164,24 @@ public final class Validator {
 			// normally external notaries are queried but the validation
 			// service result can be forced to be a given outcome for
 			// testing purposes
-			final ValidationResult validationServiceResult;
 			switch (overrideValidationServiceResult.toLowerCase()) {
 			case "trusted":
-				validationServiceResult = ValidationResult.TRUSTED;
+				validationService =
+					Service.getValidationService(ValidationResult.TRUSTED);
 				break;
 			case "untrusted":
-				validationServiceResult = ValidationResult.UNTRUSTED;
+				validationService =
+					Service.getValidationService(ValidationResult.UNTRUSTED);
 				break;
 			case "unknown":
-				validationServiceResult = ValidationResult.UNKNOWN;
+				validationService =
+					Service.getValidationService(ValidationResult.UNKNOWN);
 				break;
 			default:
-				validationServiceResult = null;
+				validationService =
+					Service.getValidationService(hostURL, validationTimeoutMillis);
 				break;
 			}
-
-			validationService =
-					validationServiceResult == null ?
-						Service.getValidationService(hostURL, validationTimeoutMillis) :
-						new ValidationService() {
-							@Override
-							public ValidationResult query(TrustCertificate certificate) {
-								return validationServiceResult;
-							}
-						};
 			break;
 
 		case VALIDATE_WITHOUT_SERVICES:
@@ -197,12 +190,8 @@ public final class Validator {
 			// In case the existent information does neither provide a
 			// trusted nor an untrusted validation result, the overall
 			// result will be "unknown" and no experiences will be collected
-			validationService = new ValidationService() {
-				@Override
-				public ValidationResult query(TrustCertificate certificate) {
-					return ValidationResult.UNKNOWN;
-				}
-			};
+			validationService =
+				Service.getValidationService(ValidationResult.UNKNOWN);
 			break;
 
 		case VALIDATE_TRUST_END_CERTIFICATE:
@@ -210,7 +199,7 @@ public final class Validator {
 			// we will not run whole trust validation algorithm,
 			// but just add the certificate to the watch list
 
-			//TODO add certificate to the watch list instead of trusting it directly
+			// TODO: add certificate to the watch list instead of trusting it directly
 
 			trustView.setTrustedCertificate(
 					certificatePath.get(certificatePath.size() - 1));
