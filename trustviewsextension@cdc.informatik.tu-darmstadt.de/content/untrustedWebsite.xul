@@ -6,11 +6,15 @@
 <!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
 
 <page id="trustviewsextension-error-untrusted" class="trustviewsextension-errorPage" title="&trustviewsextension.untrusted.heading;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    
+
+    <script type="application/javascript" src="util.js" />
     <script type="application/javascript">
-        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
+        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm")
+
+        window.parameters = extractPageParameters()
+        setAdressBarURL(parameters.url)
     </script>
-    
+
     <vbox class="trustviewsextension-errorBox trustviewsextension-errorUntrusted" align="start">
         <description class="trustviewsextension-errorTitle">&trustviewsextension.untrusted.heading;</description>
         <description class="trustviewsextension-errorDescription">&trustviewsextension.untrusted.description;</description>
@@ -20,8 +24,8 @@
             <li>&trustviewsextension.untrusted.changelevel;</li>
             <li>&trustviewsextension.untrusted.visit;</li>
         </ul>
-        <button id="trustviewsextension-error-untrusted-tryagain" label="&trustviewsextension.untrusted.tryagain;" />
-        <button id="trustviewsextension-error-untrusted-forcevisiting" label="&trustviewsextension.untrusted.forcevisiting;" />
+        <button id="trustviewsextension-error-untrusted-tryagain" label="&trustviewsextension.untrusted.tryagain;" oncommand="location.reload()" />
+        <button id="trustviewsextension-error-untrusted-forcevisiting" label="&trustviewsextension.untrusted.forcevisiting;" oncommand="TVE.State.forceVisit(parameters.url)" />
     </vbox>
     
 </page>

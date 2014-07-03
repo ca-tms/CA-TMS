@@ -6,11 +6,15 @@
 <!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
 
 <page id="trustviewsextension-error-unknown" class="trustviewsextension-errorPage" title="&trustviewsextension.unknown.heading;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    
+
+    <script type="application/javascript" src="util.js" />
     <script type="application/javascript">
-        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
+        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm")
+
+        window.parameters = extractPageParameters()
+        setAdressBarURL(parameters.url)
     </script>
-    
+
     <vbox class="trustviewsextension-errorBox" align="start">
         <description class="trustviewsextension-errorTitle">&trustviewsextension.unknown.heading;</description>
         <description class="trustviewsextension-errorDescription">&trustviewsextension.unknown.description;</description>
@@ -20,9 +24,9 @@
             <li>&trustviewsextension.unknown.retry;</li>
             <li>&trustviewsextension.unknown.settrusted;</li>
         </ul>
-        <button id="trustviewsextension-error-unknown-tryagain" label="&trustviewsextension.unknown.tryagain;" />
-        <button id="trustviewsextension-error-unknown-forcevisiting" label="&trustviewsextension.unknown.forcevisiting;" />
-        <button id="trustviewsextension-error-unknown-forcetrusting" label="&trustviewsextension.unknown.forcetrusting;" />
+        <button id="trustviewsextension-error-unknown-tryagain" label="&trustviewsextension.unknown.tryagain;" oncommand="location.reload()" />
+        <button id="trustviewsextension-error-unknown-forcevisiting" label="&trustviewsextension.unknown.forcevisiting;" oncommand="TVE.State.forceVisit(parameters.url)" />
+        <button id="trustviewsextension-error-unknown-forcetrusting" label="&trustviewsextension.unknown.forcetrusting;" oncommand="TVE.State.trustAndVisit(parameters.url)" />
     </vbox>
     
 </page>

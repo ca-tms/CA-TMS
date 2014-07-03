@@ -17,84 +17,30 @@ TVE.State = {
      * Loads the proper warning page when CTMS server is not reachable.
      */
     unreachable: function(browser, url) {
-        
-        // callback function for assigning a command to the button
-        function setCommand(event) {
-            var doc = event.originalTarget.defaultView.document;
-            if(doc.location == "chrome://trustviewsextension/content/ctmsUnreachable.xul") {
-                var button = doc.getElementById("trustviewsextension-error-unreachable-tryagain");
-                var cmd = "TVE.State.tryAgain('" + url + "');";
-                button.setAttribute("oncommand", cmd);
-                browser.removeEventListener("DOMContentLoaded", setCommand, false);
-            }
-        }
-        
-        // register callback function and load warning page
-        browser.addEventListener("DOMContentLoaded", setCommand, false);
-        browser.loadURI("chrome://trustviewsextension/content/ctmsUnreachable.xul");
+        browser.loadURIWithFlags(
+            "chrome://trustviewsextension/content/ctmsUnreachable.xul?" +
+            "url=" + encodeURIComponent(url),
+            Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
     },
     
     /**
      * Loads the proper warning page when validation result is untrusted.
      */
     untrusted: function(browser, url) {
-        
-        // callback function for assigning commands to the buttons
-        function setCommand(event) {
-            var doc = event.originalTarget.defaultView.document;
-            if(doc.location == "chrome://trustviewsextension/content/untrustedWebsite.xul") {
-                var button = doc.getElementById("trustviewsextension-error-untrusted-tryagain");
-                var cmd = "TVE.State.tryAgain('" + url + "');";
-                button.setAttribute("oncommand", cmd);
-                
-                button = doc.getElementById("trustviewsextension-error-untrusted-forcevisiting");
-                cmd = "TVE.State.forceVisit('" + url + "');";
-                button.setAttribute("oncommand", cmd);
-                
-                browser.removeEventListener("DOMContentLoaded", setCommand, false);
-            }
-        }
-        
-        // register callback function and load warning page
-        browser.addEventListener("DOMContentLoaded", setCommand, false);
-        browser.loadURI("chrome://trustviewsextension/content/untrustedWebsite.xul");
+        browser.loadURIWithFlags(
+            "chrome://trustviewsextension/content/untrustedWebsite.xul?" +
+            "url=" + encodeURIComponent(url),
+            Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
     },
     
     /**
      * Loads the proper warning page when validation result is unknown.
      */
     unknown: function(browser, url) {
-        
-        // callback function for assigning commands to the buttons
-        function setCommand(event) {
-            var doc = event.originalTarget.defaultView.document;
-            if(doc.location == "chrome://trustviewsextension/content/unknownCert.xul") {
-                var button = doc.getElementById("trustviewsextension-error-unknown-tryagain");
-                var cmd = "TVE.State.tryAgain('" + url + "');";
-                button.setAttribute("oncommand", cmd);
-                
-                button = doc.getElementById("trustviewsextension-error-unknown-forcevisiting");
-                cmd = "TVE.State.forceVisit('" + url + "');";
-                button.setAttribute("oncommand", cmd);
-
-                button = doc.getElementById("trustviewsextension-error-unknown-forcetrusting");
-                cmd = "TVE.State.trustAndVisit('" + url + "');";
-                button.setAttribute("oncommand", cmd);
-                
-                browser.removeEventListener("DOMContentLoaded", setCommand, false);
-            }
-        }
-        
-        // register callback function and load warning page
-        browser.addEventListener("DOMContentLoaded", setCommand, false);
-        browser.loadURI("chrome://trustviewsextension/content/unknownCert.xul");
-    },
-    
-    /**
-     * Triggered from warning pages, tries to load url again.
-     */
-    tryAgain : function(url) {
-        gBrowser.loadURI(url);
+        browser.loadURIWithFlags(
+            "chrome://trustviewsextension/content/unknownCert.xul?" +
+            "url=" + encodeURIComponent(url),
+            Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
     },
     
     /**
@@ -103,7 +49,7 @@ TVE.State = {
     forceVisit : function(url) {
         var host = this.getHostname(url);
         this.allowedPages[host] = true;
-        this.tryAgain(url);
+        gBrowser.loadURI(url);
     },
     
     /**
@@ -112,11 +58,11 @@ TVE.State = {
     trustAndVisit : function(url) {
         var host = this.getHostname(url);
         this.wantToTrust[host] = true;
-        this.tryAgain(url);
+        gBrowser.loadURI(url);
     },
     
     /**
-     * Checks wheter url is excluded from CTMS validation or not.
+     * Checks whether url is excluded from CTMS validation or not.
      */
     isAllowedPage : function(url) {
         var host = this.getHostname(url);
@@ -127,7 +73,7 @@ TVE.State = {
     },
     
     /**
-     * Checks wheter url should be trusted if unknown or not.
+     * Checks whether url should be trusted if unknown or not.
      */
     doWeWantToTrust : function(url) {
         var host = this.getHostname(url);
