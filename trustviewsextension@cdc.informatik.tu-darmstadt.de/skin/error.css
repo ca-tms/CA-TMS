@@ -1,0 +1,48 @@
+/* general styling for error page */
+h2 {
+  font-size: 130%;
+}
+
+br {
+  display: block;
+  margin-top: 0.5em;
+}
+
+#actions {
+  margin-top: 2em;
+}
+
+ul#actions, ul#actions li {
+  -moz-margin-start: 0;
+  list-style: none;
+}
+
+
+/* custom styling for 'unreachable' error class */
+#unreachable :not(.unreachable).unknown, #unreachable :not(.unreachable).untrusted {
+  display: none;
+}
+
+
+/* custom styling for 'unknown' error class */
+#unknown :not(.unknown).unreachable, #unknown :not(.unknown).untrusted {
+  display: none;
+}
+
+
+/* custom styling for 'untrusted' error class */
+#untrusted :not(.untrusted).unreachable, #untrusted :not(.untrusted).unknown {
+  display: none;
+}
+
+
+/* custom styling for additional special error classes */
+p.firstseen, p.samecaexpired,
+p.samecavalid, p.differentca {
+  display: none;
+}
+
+.firstseen p.firstseen, .samecaexpired p.samecaexpired,
+.samecavalid p.samecavalid, .differentca p.differentca {
+  display: block;
+}

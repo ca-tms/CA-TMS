@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html [
+  <!ENTITY % htmlDTD
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+  %htmlDTD;
+  <!ENTITY % stringsDTD
+    SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
+  %stringsDTD;
+]>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title/>
+    <link rel="stylesheet" href="chrome://trustviewsextension/skin/error-internal-style.css" type="text/css" />
+    <link rel="icon" type="image/png" href="chrome://global/skin/icons/warning-16.png" />
+  </head>
+
+  <body>
+    <h1 class="unreachable">&trustviewsextension.error.heading.unreachable;</h1>
+    <h1 class="unknown">&trustviewsextension.error.heading.unknown;</h1>
+    <h1 class="untrusted">&trustviewsextension.error.heading.untrusted;</h1>
+
+    <div id="shortDesc">
+      <p class="unreachable">&trustviewsextension.error.description.unreachable;</p>
+      <p class="unknown">&trustviewsextension.error.description.unknown;</p>
+      <p class="untrusted">&trustviewsextension.error.description.untrusted;</p>
+
+      <p class="firstseen">&trustviewsextension.error.description.firstseen;</p>
+      <p class="samecaexpired">&trustviewsextension.error.description.samecaexpired;</p>
+      <p class="samecavalid">&trustviewsextension.error.description.samecavalid;</p>
+      <p class="differentca">&trustviewsextension.error.description.differentca;</p>
+    </div>
+
+    <div id="longDesc">
+      <p class="unreachable unknown untrusted">&trustviewsextension.error.solutionpreface;</p>
+      <ul>
+        <li class="unreachable unknown untrusted">&trustviewsextension.error.reload;</li>
+        <li class="unreachable">&trustviewsextension.error.startctms;</li>
+        <li class="unreachable">&trustviewsextension.error.configureextension;</li>
+        <li class="unreachable">&trustviewsextension.error.disableextension;</li>
+        <li class="unknown untrusted">&trustviewsextension.error.mistrust;</li>
+        <li class="unknown untrusted">&trustviewsextension.error.visit;</li>
+        <li class="unknown">&trustviewsextension.error.trust;</li>
+        <li class="unknown">&trustviewsextension.error.changelevel;</li>
+      </ul>
+    </div>
+
+    <ul id="actions">
+      <li class="unreachable unknown untrusted">
+        <button autocomplete="off" onclick="location.reload()">
+          &trustviewsextension.error.tryagain;
+        </button>
+      </li>
+      <li class="unknown untrusted">
+        <button autocomplete="off" onclick="TVE.State.forceVisit(parameters.url)">
+          &trustviewsextension.error.forcevisiting;
+        </button>
+      </li>
+      <li class="unknown">
+        <button autocomplete="off" onclick="TVE.State.trustAndVisit(parameters.url)">
+          &trustviewsextension.error.forcetrusting;
+        </button>
+      </li>
+    </ul>
+
+    <script type="application/javascript;version=1.7"><![CDATA[
+      "use strict"
+      
+      Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm")
+
+      let ioService = Components.classes["@mozilla.org/network/io-service;1"].
+        getService(Components.interfaces.nsIIOService)
+
+      let docShell = getInterface(Components.interfaces.nsIDocShell)
+
+      function extractPageParameters() {
+        let parameters = {}
+        for each (let arg in location.search.substring(1).split(";")) {
+          let [, key, value] = /^([^=]+)=(.*)|.*$/.exec(arg)
+          if (key)
+            parameters[key] = decodeURIComponent(value)
+        }
+        return parameters
+      }
+  
+      function setAdressBarURL(url) {
+        docShell.setCurrentURI(ioService.newURI(url, null, null))
+      }
+
+      for each (let link in document.querySelectorAll("a[href=':preferences']"))
+        link.onclick = function(event) {
+          window.openDialog("chrome://trustviewsextension/content/options.xul", "", "centerscreen")
+          event.preventDefault()
+        }
+
+      window.parameters = extractPageParameters()
+
+      window.onload = function() {
+        // should run in the onload handler not to remove the tab icon
+        setAdressBarURL(parameters["url"])
+      }
+
+      document.documentElement.id = parameters["id"]
+      document.documentElement.className = parameters["class"]
+      document.title = document.querySelector("h1." + parameters["id"]).textContent
+    ]]></script>
+  </body>
+</html>

@@ -18,7 +18,8 @@ TVE.State = {
      */
     unreachable: function(browser, url) {
         browser.loadURIWithFlags(
-            "chrome://trustviewsextension/content/ctmsUnreachable.xul?" +
+            "chrome://trustviewsextension/content/error.xhtml?" +
+            "id=unreachable;" +
             "url=" + encodeURIComponent(url),
             Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
     },
@@ -28,7 +29,8 @@ TVE.State = {
      */
     untrusted: function(browser, url) {
         browser.loadURIWithFlags(
-            "chrome://trustviewsextension/content/untrustedWebsite.xul?" +
+            "chrome://trustviewsextension/content/error.xhtml?" +
+            "id=untrusted;" +
             "url=" + encodeURIComponent(url),
             Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
     },
@@ -38,7 +40,8 @@ TVE.State = {
      */
     unknown: function(browser, url) {
         browser.loadURIWithFlags(
-            "chrome://trustviewsextension/content/unknownCert.xul?" +
+            "chrome://trustviewsextension/content/error.xhtml?" +
+            "id=unknown;" +
             "url=" + encodeURIComponent(url),
             Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
     },

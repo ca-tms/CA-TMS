@@ -1,39 +1,40 @@
-<!ENTITY trustviewsextension.toolbarbutton.label           "Trust Views">
+<!ENTITY trustviewsextension.toolbarbutton.label              "Trust Views">
 
-<!ENTITY trustviewsextension.menu.secLevel.description     "Set Security Level:">
-<!ENTITY trustviewsextension.menu.secLevel.high            "high">
-<!ENTITY trustviewsextension.menu.secLevel.medium          "medium">
-<!ENTITY trustviewsextension.menu.secLevel.low             "low">
-<!ENTITY trustviewsextension.menu.openpreferences          "Preferences">
+<!ENTITY trustviewsextension.menu.secLevel.description        "Set Security Level:">
+<!ENTITY trustviewsextension.menu.secLevel.high               "high">
+<!ENTITY trustviewsextension.menu.secLevel.medium             "medium">
+<!ENTITY trustviewsextension.menu.secLevel.low                "low">
+<!ENTITY trustviewsextension.menu.openpreferences             "Preferences">
 
-<!ENTITY trustviewsextension.prefs.windowtitle             "Trust Views Settings">
-<!ENTITY trustviewsextension.prefs.resetbutton             "Reset Defaults">
-<!ENTITY trustviewsextension.prefs.networkpanelabel        "Connection">
-<!ENTITY trustviewsextension.prefs.urllabel                "CTMS URL">
-<!ENTITY trustviewsextension.prefs.portlabel               "CTMS Port">
+<!ENTITY trustviewsextension.prefs.windowtitle                "Trust Views Settings">
+<!ENTITY trustviewsextension.prefs.resetbutton                "Reset Defaults">
+<!ENTITY trustviewsextension.prefs.networkpanelabel           "Connection">
+<!ENTITY trustviewsextension.prefs.urllabel                   "CTMS URL">
+<!ENTITY trustviewsextension.prefs.portlabel                  "CTMS Port">
 
-<!ENTITY trustviewsextension.unreachable.heading           "Trust Views System Unreachable">
-<!ENTITY trustviewsextension.unreachable.description       "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
-<!ENTITY trustviewsextension.unreachable.solutionpreface   "You can try:">
-<!ENTITY trustviewsextension.unreachable.startctms         "Starting the Trust Views Webserver and try again.">
-<!ENTITY trustviewsextension.unreachable.disableextension  "Disabling the Trust Views Extension if you don't want to use this.<br />Warning: This means, you will go without the additional security of the Trust Views System.">
-<!ENTITY trustviewsextension.unreachable.tryagain          "Try Again">
+<!ENTITY trustviewsextension.error.heading.unreachable        "Trust Views System Unreachable">
+<!ENTITY trustviewsextension.error.description.unreachable    "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
 
-<!ENTITY trustviewsextension.untrusted.heading             "Untrusted Website">
-<!ENTITY trustviewsextension.untrusted.description         "The Trust Views System does not trust the requested website. It seems there is something wrong with the certificate, the website provided. This might be due to an untrusted certificate chain or the Trust Views System acts too paranoid.">
-<!ENTITY trustviewsextension.untrusted.solutionpreface     "You can try:">
-<!ENTITY trustviewsextension.untrusted.mistrust            "Mistrusting the website and decide to better not visit it.">
-<!ENTITY trustviewsextension.untrusted.changelevel         "Setting the security level to a lower value and try again.">
-<!ENTITY trustviewsextension.untrusted.visit               "Visiting the website anyway. This would disable the warning for this particular page during this session.">
-<!ENTITY trustviewsextension.untrusted.tryagain            "Try Again">
-<!ENTITY trustviewsextension.untrusted.forcevisiting       "I want to ignore this warning temporarily and visit the page">
+<!ENTITY trustviewsextension.error.heading.unknown            "Unknown Certificate">
+<!ENTITY trustviewsextension.error.description.unknown        "The certificate provided by the website is unknown. The Trust Views System can’t decide if the connection is trustworthy.">
+<!ENTITY trustviewsextension.error.description.firstseen      "This is the first known certificate for the website.">
+<!ENTITY trustviewsextension.error.description.samecaexpired  "An already known certificate for the website is no longer valid. The current certificate is issued by the same CA, but for a different key. This is probably caused by a regular certificate change.">
+<!ENTITY trustviewsextension.error.description.samecavalid    "An already known certificate for the website is still valid. The current certificate is issued by the same CA. This means that the CA has issued multiple certificates in parallel for the website.">
+<!ENTITY trustviewsextension.error.description.differentca    "An certificate for the website is already known, but the current certificate is issued by another CA for a different key."> 
 
-<!ENTITY trustviewsextension.unknown.heading               "Unknown Certificate">
-<!ENTITY trustviewsextension.unknown.description           "The certificate provided by the website is unknown. The Trust Views System can't decide if the connection is trustworthy.">
-<!ENTITY trustviewsextension.unknown.solutionpreface       "You can try:">
-<!ENTITY trustviewsextension.unknown.mistrust              "Mistrusting the website and decide to better not visit it.">
-<!ENTITY trustviewsextension.unknown.retry                 "Simply try it again.">
-<!ENTITY trustviewsextension.unknown.settrusted            "Visit the page anyway and trust the certificate in the future.">
-<!ENTITY trustviewsextension.unknown.tryagain              "Try Again">
-<!ENTITY trustviewsextension.unknown.forcevisiting         "I want to ignore this warning temporarily and visit the page">
-<!ENTITY trustviewsextension.unknown.forcetrusting         "I have verified the trustworthiness of the certificate">
+<!ENTITY trustviewsextension.error.heading.untrusted          "Untrusted Website">
+<!ENTITY trustviewsextension.error.description.untrusted      "You are about to securely connect to a website, but the Trust Views System decided that your connection is not trustworthy.">
+
+<!ENTITY trustviewsextension.error.solutionpreface            "You can try:">
+<!ENTITY trustviewsextension.error.reload                     "Reloading the page.">
+<!ENTITY trustviewsextension.error.startctms                  "Starting the Trust Views Webserver and try again.">
+<!ENTITY trustviewsextension.error.configureextension         "Configuring the Trust Views Extension <a href=':preferences'>preferences</a>.">
+<!ENTITY trustviewsextension.error.disableextension           "Disabling the Trust Views Extension if you don’t want to use it.<br/><strong>Warning:</strong>&nbsp;This means, you will go without the additional security of the Trust Views System.">
+<!ENTITY trustviewsextension.error.mistrust                   "Mistrusting the website and decide to better not visit it.">
+<!ENTITY trustviewsextension.error.visit                      "Visiting the website anyway. This would disable the warning for this particular page during this session.">
+<!ENTITY trustviewsextension.error.trust                      "Visit the page anyway and trust the certificate in the future.">
+<!ENTITY trustviewsextension.error.changelevel                "Setting the security level to a lower value and try again.">
+
+<!ENTITY trustviewsextension.error.tryagain                   "Try Again">
+<!ENTITY trustviewsextension.error.forcevisiting              "I want to ignore this warning temporarily and visit the page">
+<!ENTITY trustviewsextension.error.forcetrusting              "I have verified the trustworthiness of the certificate">

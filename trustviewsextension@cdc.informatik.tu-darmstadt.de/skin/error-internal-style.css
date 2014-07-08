@@ -1,0 +1,119 @@
+/* general styling for error page */
+html {
+  margin: 0;
+  padding: 0 1em;
+  color: -moz-FieldText;
+  background: -moz-Dialog;
+  font: message-box;
+}
+
+body {
+  position: relative;
+  min-width: 13em;
+  max-width: 52em;
+  margin: 4em auto;
+  border: 1px solid ThreeDShadow;
+  border-radius: 10px;
+  padding: 3em;
+  -moz-padding-start: 30px;
+  background: url("chrome://global/skin/icons/warning-large.png") left 0 no-repeat -moz-Field;
+  background-origin: content-box;
+}
+
+h1 {
+  margin: 0 0 .6em 0;
+  border-bottom: 1px solid ThreeDLightShadow;
+  -moz-margin-start: 80px;
+  font-size: 160%;
+}
+
+h2 {
+  font-size: 130%;
+}
+
+ul, ol {
+  margin: 0;
+  -moz-margin-start: 1.5em;
+  padding: 0;
+}
+
+ul > li, ol > li {
+  margin-bottom: .5em;
+}
+
+ul {
+  list-style: square;
+}
+
+br {
+  display: block;
+  margin-top: 0.5em;
+}
+
+#shortDesc {
+  border-bottom: 1px solid ThreeDLightShadow;
+  margin-bottom: 1em;
+  font-size: 130%;
+  -moz-margin-start: 80px;
+}
+
+#longDesc {
+  -moz-padding-end: 3em;
+  font-size: 110%;
+  -moz-margin-start: 80px;
+}
+
+#actions {
+  margin-top: 2em;
+  -moz-margin-start: 80px;
+}
+
+#actions ul, #actions li {
+  -moz-margin-start: 0;
+  list-style: none;
+}
+
+
+/* custom styling for 'unreachable' error class */
+#unreachable :not(.unreachable).unknown, #unreachable :not(.unreachable).untrusted {
+  display: none;
+}
+
+
+/* custom styling for 'unknown' error class */
+#unknown :not(.unknown).unreachable, #unknown :not(.unknown).untrusted {
+  display: none;
+}
+
+#unknown body {
+  background-image: url("chrome://global/skin/icons/sslWarning.png");
+  border-color: #FFBD09;
+}
+
+
+/* custom styling for 'untrusted' error class */
+#untrusted :not(.untrusted).unreachable, #untrusted :not(.untrusted).unknown {
+  display: none;
+}
+
+#untrusted {
+  background: #333;
+}
+
+#untrusted body {
+  background-color: #722;
+  background-image: url("chrome://global/skin/icons/blacklist_large.png");
+  color: white;
+}
+
+
+/* custom styling for additional special error classes */
+p.firstseen, p.samecaexpired,
+p.samecavalid, p.differentca {
+  display: none;
+}
+
+.firstseen p.firstseen, .samecaexpired p.samecaexpired,
+.samecavalid p.samecavalid, .differentca p.differentca {
+  display: block;
+}
