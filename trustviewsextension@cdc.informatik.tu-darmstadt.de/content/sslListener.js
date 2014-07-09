@@ -35,30 +35,25 @@ TVE.SSLListener = {
                                 let hostCertTrusted = TVE.State.doWeWantToTrust(url);
                                 
                                 // this is called when CTMS successfully answered the request
-                                var requestSuccessCallback = function(evt) {
-                                    var ctmsResult = JSON.parse(evt.target.responseText);
-                                    if(ctmsResult.result == "untrusted") {
-                                        aRequest.resume();
-                                        // display untrusted warning page
-                                        TVE.State.untrusted(aBrowser, url);
-                                    } else if(ctmsResult.result == "unknown") {
-                                        aRequest.resume();
-                                        // display unknown warning page
-                                        TVE.State.unknown(aBrowser, url);
-                                    } else {
-                                        aRequest.resume();
-                                    }
-                                }
-                                
-                                // this is called when connecting to the CTMS failed
-                                var requestErrorCallback = function(evt) {
-                                    // happens when CTMS server is unreachable
+                                var callback = function(ctmsResult) {
+                                    let warningType = null;
+                                    if (ctmsResult == null)
+                                        warningType = "unreachable";
+                                    else if (ctmsResult.result == "untrusted")
+                                        warningType = "untrusted";
+                                    else if (ctmsResult.result == "unknown")
+                                        warningType = "unknown";
+                                    
                                     aRequest.resume();
-                                    TVE.State.unreachable(aBrowser, url);
+                                    if (!!warningType)
+                                        TVE.State.warnUser(
+                                            aBrowser, url,
+                                            warningType,
+                                            ctmsResult ? ctmsResult.resultSpec : null);
                                 }
                                 
                                 // query CTMS!
-                                TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, hostCertTrusted, requestSuccessCallback, requestErrorCallback);
+                                TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, hostCertTrusted, callback);
                             
                             } else {
                                 // when standard validation result is not valid

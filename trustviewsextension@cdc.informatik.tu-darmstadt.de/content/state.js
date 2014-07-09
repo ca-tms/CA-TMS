@@ -14,36 +14,33 @@ TVE.State = {
     wantToTrust : {},
     
     /**
-     * Loads the proper warning page when CTMS server is not reachable.
+     * Loads the warning page
+     * browser - the browser that should display the error page
+     * url - the URL the user tried to visit
+     * type - the error page type ("unreachable", "untrusted" or "unknown")
+     * info - additional information (like "validated-first-seen", "validated-existing-expired-same-ca",
+     *                                  "validated-existing-valid-same-ca", "validated-existing")
      */
-    unreachable: function(browser, url) {
-        browser.loadURIWithFlags(
-            "chrome://trustviewsextension/content/error.xhtml?" +
-            "id=unreachable;" +
-            "url=" + encodeURIComponent(url),
-            Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
-    },
-    
-    /**
-     * Loads the proper warning page when validation result is untrusted.
-     */
-    untrusted: function(browser, url) {
-        browser.loadURIWithFlags(
-            "chrome://trustviewsextension/content/error.xhtml?" +
-            "id=untrusted;" +
-            "url=" + encodeURIComponent(url),
-            Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
-    },
-    
-    /**
-     * Loads the proper warning page when validation result is unknown.
-     */
-    unknown: function(browser, url) {
-        browser.loadURIWithFlags(
-            "chrome://trustviewsextension/content/error.xhtml?" +
-            "id=unknown;" +
-            "url=" + encodeURIComponent(url),
-            Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
+    warnUser : function(browser, url, type, info) {
+        if (type == "unreachable" || type == "untrusted" || type == "unknown") {
+            if (info == "validated-first-seen")
+                info = "firstseen";
+            else if (info == "validated-existing-expired-same-ca")
+                info = "samecaexpired";
+            else if (info == "validated-existing-valid-same-ca")
+                info = "samecavalid";
+            else if (info == "validated-existing")
+                info = "differentca";
+            else
+                info = "";
+
+            browser.loadURIWithFlags(
+                "chrome://trustviewsextension/content/error.xhtml?" +
+                "id=" + type + ";" +
+                "class=" + encodeURIComponent(info) + ";" +
+                "url=" + encodeURIComponent(url),
+                Components.interfaces.nsIWebNavigation.LOAD_FLAGS_BYPASS_HISTORY);
+        }
     },
     
     /**
