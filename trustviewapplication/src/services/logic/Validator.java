@@ -1,5 +1,6 @@
 package services.logic;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,6 +11,7 @@ import util.CertificatePathValidity;
 import util.ValidationResult;
 import util.ValidationResultSpec;
 import buisness.TrustComputation;
+import buisness.TrustViewControl;
 import data.Configuration;
 import data.Model;
 import data.ModelAccessException;
@@ -222,18 +224,46 @@ public final class Validator {
 		assert
 			validationService != null;
 
-		ValidationResultSpec resultSpec = ValidationResultSpec.VALIDATED;
+		// determine result specification
+		ValidationResultSpec resultSpec = TrustViewControl.deriveValidationSpec(
+				trustView,
+				certificatePath.get(certificatePath.size() - 1),
+				hostURL);
 
-		if (spec == ValidationRequestSpec.VALIDATE_WITHOUT_SERVICES) {
-			// TODO determine special cases for regular mode
+		if (resultSpec == ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA_KEY) {
+			// trust certificate directly if it is issued for the same key
+			// by the same CA as a previously trusted certificate
+			validationService = Service.getValidationService(
+					Collections.singletonList(
+							certificatePath.get(certificatePath.size() - 1)),
+					null, validationService);
 		}
 
-		return new ValidatorResult(
-				TrustComputation.validate(
-						trustView, config,
-						certificatePath,
-						securityLevel,
-						validationService),
-				resultSpec);
+		if (resultSpec == ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY) {
+			trustView.setTrustedCertificate(
+					certificatePath.get(certificatePath.size() - 1));
+
+			// TODO: trust directly (but contact notaries or add to watchlist)
+		}
+
+		// validate certificate path
+		ValidationResult result = TrustComputation.validate(
+				trustView, config,
+				certificatePath,
+				securityLevel,
+				validationService);
+
+		// update trust view host information
+		if (result != ValidationResult.UNKNOWN)
+			TrustViewControl.insertHostsForCertificate(
+					trustView,
+					certificatePath.get(certificatePath.size() - 1),
+					hostURL);
+
+		// TODO: depending on how it will be implemented, the watchlist must be checked
+		// result = ValidationResult.TRUSTED;
+		// resultSpec = ValidationResultSpec.VALIDATED;
+
+		return new ValidatorResult(result, resultSpec);
 	}
 }
