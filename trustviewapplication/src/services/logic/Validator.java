@@ -40,12 +40,15 @@ public final class Validator {
 		ValidatorResult result = new ValidatorResult(
 				ValidationResult.UNKNOWN,
 				request.getValidationRequestSpec() ==
-				ValidationRequestSpec.RETRIEVE_RECOMMENDATION
+					ValidationRequestSpec.RETRIEVE_RECOMMENDATION
 						? ValidationResultSpec.RECOMMENDED
 						: ValidationResultSpec.VALIDATED);
 
 		try {
-			if (request.getCertificatePathValidity() == CertificatePathValidity.VALID) {
+			if (request.getCertificatePathValidity() == CertificatePathValidity.VALID ||
+					request.getValidationRequestSpec() ==
+						ValidationRequestSpec.RETRIEVE_RECOMMENDATION) {
+
 				System.out.println("Performing trust validation ...");
 				System.out.println("  URL: " + request.getURL());
 				System.out.println("  Security Level: " + request.getSecurityLevel());
