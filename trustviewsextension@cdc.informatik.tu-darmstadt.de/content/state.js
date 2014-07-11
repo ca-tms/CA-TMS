@@ -18,21 +18,23 @@ TVE.State = {
      * browser - the browser that should display the error page
      * url - the URL the user tried to visit
      * type - the error page type ("unreachable", "untrusted" or "unknown")
-     * info - additional information (like "validated-first-seen", "validated-existing-expired-same-ca",
-     *                                  "validated-existing-valid-same-ca", "validated-existing")
+     * info - additional information ("firstseen", "samecaexpired", "samecavalid" or "differentca")
+     * rawCertChain - the raw certificate chain object
      */
-    warnUser : function(browser, url, type, info) {
+    warnUser : function(browser, url, type, info, rawCertChain) {
         if (type == "unreachable" || type == "untrusted" || type == "unknown") {
-            if (info == "validated-first-seen")
-                info = "firstseen";
-            else if (info == "validated-existing-expired-same-ca")
-                info = "samecaexpired";
-            else if (info == "validated-existing-valid-same-ca")
-                info = "samecavalid";
-            else if (info == "validated-existing")
-                info = "differentca";
-            else
+            if (info != "firstseen" && info != "samecaexpired" &&
+                info != "samecavalid" && info != "differentca")
                 info = "";
+            
+            function contentLoaded(event) {
+                let window = event.originalTarget.defaultView
+                if (window.location.origin == "chrome://trustviewsextension") {
+                    window.rawCertChain = rawCertChain
+                    browser.removeEventListener("DOMContentLoaded", contentLoaded, false);
+                }
+            }
+            browser.addEventListener("DOMContentLoaded", contentLoaded, false);
 
             browser.loadURIWithFlags(
                 "chrome://trustviewsextension/content/error.xhtml?" +

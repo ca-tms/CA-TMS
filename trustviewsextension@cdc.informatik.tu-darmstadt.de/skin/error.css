@@ -8,7 +8,7 @@ br {
   margin-top: 0.5em;
 }
 
-#actions {
+#additionalDesc, #actions {
   margin-top: 2em;
 }
 
@@ -44,5 +44,39 @@ p.samecavalid, p.differentca {
 
 .firstseen p.firstseen, .samecaexpired p.samecaexpired,
 .samecavalid p.samecavalid, .differentca p.differentca {
+  display: block;
+}
+
+#additionalDesc p {
+  display: none;
+}
+
+#additionalDesc:not([class*="query"]) p:nth-of-type(1) {
+  display: block;
+}
+
+#additionalDesc p:nth-of-type(n+2) {
+  background: left 1px no-repeat;
+  min-height: 18px;
+  padding-left: 20px;
+}
+
+#additionalDesc.querying p:nth-of-type(2) {
+  background-image: url(chrome://global/skin/icons/loading_16.png);
+  display: block;
+}
+
+#additionalDesc.query-trusted p:nth-of-type(3) {
+  background-image: url(chrome://global/skin/icons/information-16.png);
+  display: block;
+}
+
+#additionalDesc.query-untrusted p:nth-of-type(4) {
+  background-image: url(chrome://global/skin/icons/error-16.png);
+  display: block;
+}
+
+#additionalDesc.query-unknown p:nth-of-type(5) {
+  background-image: url(chrome://global/skin/icons/warning-16.png);
   display: block;
 }

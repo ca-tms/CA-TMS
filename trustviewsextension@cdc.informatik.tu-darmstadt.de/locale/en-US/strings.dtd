@@ -38,3 +38,10 @@
 <!ENTITY trustviewsextension.error.tryagain                   "Try Again">
 <!ENTITY trustviewsextension.error.forcevisiting              "I want to ignore this warning temporarily and visit the page">
 <!ENTITY trustviewsextension.error.forcetrusting              "I have verified the trustworthiness of the certificate">
+
+<!ENTITY trustviewsextension.error.notaryquery.heading        "Notaries recommendation">
+<!ENTITY trustviewsextension.error.notaryquery.description    "You can <a href=':query-notaries'>query external validation services (notaries)</a> to get an additional opinion.">
+<!ENTITY trustviewsextension.error.notaryquery.querying       "Querying external validation services (notaries) to get an additional opinion&nbsp;…">
+<!ENTITY trustviewsextension.error.notaryquery.trusted        "External validation services (notaries) consider the certificate to be <strong>trusted</strong>.">
+<!ENTITY trustviewsextension.error.notaryquery.untrusted      "External validation services (notaries) consider the certificate to be <strong>untrusted</strong>.">
+<!ENTITY trustviewsextension.error.notaryquery.unknown        "External validation services (notaries) consider the certificate’s trustworthiness to be <strong>unknown</strong>.">

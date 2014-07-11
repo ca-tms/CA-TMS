@@ -44,12 +44,21 @@ TVE.SSLListener = {
                                     else if (ctmsResult.result == "unknown")
                                         warningType = "unknown";
                                     
+                                    let warningInfo = ""
+                                    if (ctmsResult != null) {
+                                        if (ctmsResult.resultSpec == "validated-first-seen")
+                                            warningInfo = "firstseen";
+                                        else if (ctmsResult.resultSpec == "validated-existing-expired-same-ca")
+                                            warningInfo = "samecaexpired";
+                                        else if (ctmsResult.resultSpec == "validated-existing-valid-same-ca")
+                                            warningInfo = "samecavalid";
+                                        else if (ctmsResult.resultSpec == "validated-existing")
+                                            warningInfo = "differentca";
+                                    }
+                                    
                                     aRequest.resume();
                                     if (!!warningType)
-                                        TVE.State.warnUser(
-                                            aBrowser, url,
-                                            warningType,
-                                            ctmsResult ? ctmsResult.resultSpec : null);
+                                        TVE.State.warnUser(aBrowser, url, warningType, warningInfo, rawChain);
                                 }
                                 
                                 // query CTMS!

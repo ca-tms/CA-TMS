@@ -69,13 +69,22 @@
               </button>
             </li>
           </ul>
+
+          <div id="additionalDesc" class="unknown">
+            <h2>&trustviewsextension.error.notaryquery.heading;</h2>
+            <p>&trustviewsextension.error.notaryquery.description;</p>
+            <p>&trustviewsextension.error.notaryquery.querying;</p>
+            <p>&trustviewsextension.error.notaryquery.trusted;</p>
+            <p>&trustviewsextension.error.notaryquery.untrusted;</p>
+            <p>&trustviewsextension.error.notaryquery.unknown;</p>
+          </div>
         </div>
       </div>
     </div>
 
     <script type="application/javascript;version=1.7"><![CDATA[
       "use strict"
-      
+
       Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm")
 
       let ioService = Components.classes["@mozilla.org/network/io-service;1"].
@@ -101,6 +110,20 @@
         link.onclick = function(event) {
           window.openDialog("chrome://trustviewsextension/content/options.xul", "", "centerscreen")
           event.preventDefault()
+        }
+
+      for each (let link in document.querySelectorAll("a[href=':query-notaries']"))
+        link.onclick = function(event) {
+          let statusElement = document.querySelector("#additionalDesc")
+          statusElement.className += " querying"
+
+          TVE.CTMSCommunicator.requestRecommendation(
+            parameters["url"],
+            rawCertChain,
+            function(ctmsResult) {
+              let state = ctmsResult == null ? "" : "query-" + ctmsResult.result
+              statusElement.className = statusElement.className.replace("querying", state)
+            })
         }
 
       window.parameters = extractPageParameters()

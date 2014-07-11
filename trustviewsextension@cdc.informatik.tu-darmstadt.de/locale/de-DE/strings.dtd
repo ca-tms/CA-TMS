@@ -38,3 +38,10 @@
 <!ENTITY trustviewsextension.error.tryagain                   "Nochmal versuchen">
 <!ENTITY trustviewsextension.error.forcevisiting              "Ich möchte diese Warnung vorübergehend ignorieren und die Seite besuchen">
 <!ENTITY trustviewsextension.error.forcetrusting              "Ich habe die Vertrauenswürdigkeit des Zertifikats verifiziert">
+
+<!ENTITY trustviewsextension.error.notaryquery.heading        "Empfehlung durch Notare">
+<!ENTITY trustviewsextension.error.notaryquery.description    "Es können <a href=':query-notaries'>externe Validierungsdienste (Notare) angefragt werden</a>, um eine zusätzliche Einschätzung zu erhalten.">
+<!ENTITY trustviewsextension.error.notaryquery.querying       "Externe Validierungsdienste (Notare) werden angefragt, um eine zusätzliche Einschätzung zu erhalten&nbsp;…">
+<!ENTITY trustviewsextension.error.notaryquery.trusted        "Externe Validierungsdienste (Notare) betrachten das Zertifikat als <strong>vertrauenswürdig</strong>.">
+<!ENTITY trustviewsextension.error.notaryquery.untrusted      "Externe Validierungsdienste (Notare) betrachten das Zertifikat als <strong>nicht vertrauenswürdig</strong>.">
+<!ENTITY trustviewsextension.error.notaryquery.unknown        "Externe Validierungsdienste (Notare) betrachten die Vertrauenswürdigkeit des Zertifikat als <strong>unbekannt</strong>.">
