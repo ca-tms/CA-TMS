@@ -142,27 +142,27 @@ public final class TrustViewControl {
 	 */
 	public static ValidationResultSpec deriveValidationSpec(
 			TrustView trustView, TrustCertificate hostCertificate, String hostURL) {
-		Collection<TrustCertificate> trustecCertificates =
+		Collection<TrustCertificate> trustedCertificates =
 				trustView.getTrustedCertificates();
-		Collection<TrustCertificate> untrustecCertificates =
+		Collection<TrustCertificate> untrustedCertificates =
 				trustView.getUntrustedCertificates();
 
-		if (trustecCertificates.contains(hostCertificate) ||
-				untrustecCertificates.contains(hostCertificate))
+		if (trustedCertificates.contains(hostCertificate) ||
+				untrustedCertificates.contains(hostCertificate))
 			return ValidationResultSpec.VALIDATED;
 
 		Collection<TrustCertificate> existingCertificates =
 				TrustViewControl.retrieveCertificatesForHost(trustView, hostURL);
-		existingCertificates.retainAll(trustecCertificates);
+		existingCertificates.retainAll(trustedCertificates);
 
 		for (TrustCertificate cert : existingCertificates)
-			if (!isCertificateValid(cert) &&
+			if (isCertificateExpired(cert) && !isCertificateRevoked(cert) &&
 					cert.getIssuer().equals(hostCertificate.getIssuer()) &&
 					cert.getPublicKey().equals(hostCertificate.getPublicKey()))
 				return ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA_KEY;
 
 		for (TrustCertificate cert : existingCertificates)
-			if (!isCertificateRevoked(cert) &&
+			if (isCertificateValid(cert) &&
 					!cert.getIssuer().equals(hostCertificate.getIssuer()) &&
 					cert.getPublicKey().equals(hostCertificate.getPublicKey()))
 				return ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY;
