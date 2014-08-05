@@ -165,6 +165,7 @@ public final class Validator {
 			assert false;
 			break;
 
+		case RETRIEVE_RECOMMENDATION:
 		case VALIDATE_WITH_SERVICES:
 			// normally external notaries are queried but the validation
 			// service result can be forced to be a given outcome for
@@ -205,21 +206,20 @@ public final class Validator {
 			// but just add the certificate to the watch list
 
 			// TODO: add certificate to the watch list instead of trusting it directly
+			//       only add it to watch list if not already trusted
 
 			trustView.setTrustedCertificate(
 					certificatePath.get(certificatePath.size() - 1));
 			return new ValidatorResult(
 					ValidationResult.TRUSTED,
 					ValidationResultSpec.VALIDATED);
+		}
 
-		case RETRIEVE_RECOMMENDATION:
-			validationService =
-					Service.getValidationService(hostURL, validationTimeoutMillis);
+		if (spec == ValidationRequestSpec.RETRIEVE_RECOMMENDATION)
 			return new ValidatorResult(
 					validationService.query(
 							certificatePath.get(certificatePath.size() - 1)),
 					ValidationResultSpec.RECOMMENDED);
-		}
 
 		assert
 			spec == ValidationRequestSpec.VALIDATE_WITH_SERVICES ||
@@ -242,11 +242,17 @@ public final class Validator {
 					null, validationService);
 		}
 
-		if (resultSpec == ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY) {
+		if (resultSpec == ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY ||
+				resultSpec == ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA) {
+
+			// TODO: add certificate to the watch list instead of trusting it directly
+			//       only add it to watch list if not already trusted
+
 			trustView.setTrustedCertificate(
 					certificatePath.get(certificatePath.size() - 1));
-
-			// TODO: trust directly (but contact notaries or add to watchlist)
+			return new ValidatorResult(
+					ValidationResult.TRUSTED,
+					ValidationResultSpec.VALIDATED);
 		}
 
 		// validate certificate path
