@@ -144,6 +144,8 @@ public final class Validator {
 			ValidationRequestSpec spec) {
 		ValidationService validationService = null;
 
+		final TrustCertificate hostCertificate =
+				certificatePath.get(certificatePath.size() - 1);
 		final String overrideValidationServiceResult =
 				config.get(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
 		final long validationTimeoutMillis =
@@ -203,22 +205,16 @@ public final class Validator {
 		case VALIDATE_TRUST_END_CERTIFICATE:
 			// if the user trusts the host certificate directly,
 			// we will not run whole trust validation algorithm,
-			// but just add the certificate to the watch list
-
-			// TODO: add certificate to the watch list instead of trusting it directly
-			//       only add it to watch list if not already trusted
-
-			trustView.setTrustedCertificate(
-					certificatePath.get(certificatePath.size() - 1));
+			// but just add the certificate to the watchlist
+			trustView.addCertificateToWatchlist(hostCertificate);
 			return new ValidatorResult(
 					ValidationResult.TRUSTED,
-					ValidationResultSpec.VALIDATED);
+					ValidationResultSpec.VALIDATED_ON_WATCHLIST);
 		}
 
 		if (spec == ValidationRequestSpec.RETRIEVE_RECOMMENDATION)
 			return new ValidatorResult(
-					validationService.query(
-							certificatePath.get(certificatePath.size() - 1)),
+					validationService.query(hostCertificate),
 					ValidationResultSpec.RECOMMENDED);
 
 		assert
@@ -227,32 +223,24 @@ public final class Validator {
 		assert
 			validationService != null;
 
+		// check if certificate is on the watchlist
+		if (trustView.isCertificateOnWatchlist(hostCertificate))
+			return new ValidatorResult(
+					ValidationResult.TRUSTED,
+					ValidationResultSpec.VALIDATED_ON_WATCHLIST);
+
 		// determine result specification
 		ValidationResultSpec resultSpec = TrustViewControl.deriveValidationSpec(
 				trustView,
 				certificatePath.get(certificatePath.size() - 1),
 				hostURL);
 
+		// trust certificate directly if it is issued for the same key
+		// by the same CA as a previously trusted certificate
 		if (resultSpec == ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA_KEY) {
-			// trust certificate directly if it is issued for the same key
-			// by the same CA as a previously trusted certificate
 			validationService = Service.getValidationService(
-					Collections.singletonList(
-							certificatePath.get(certificatePath.size() - 1)),
-					null, validationService);
-		}
-
-		if (resultSpec == ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY ||
-				resultSpec == ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA) {
-
-			// TODO: add certificate to the watch list instead of trusting it directly
-			//       only add it to watch list if not already trusted
-
-			trustView.setTrustedCertificate(
-					certificatePath.get(certificatePath.size() - 1));
-			return new ValidatorResult(
-					ValidationResult.TRUSTED,
-					ValidationResultSpec.VALIDATED);
+					Collections.singletonList(hostCertificate), null,
+					validationService);
 		}
 
 		// validate certificate path
@@ -265,13 +253,18 @@ public final class Validator {
 		// update trust view host information
 		if (result != ValidationResult.UNKNOWN)
 			TrustViewControl.insertHostsForCertificate(
-					trustView,
-					certificatePath.get(certificatePath.size() - 1),
-					hostURL);
+					trustView, hostCertificate, hostURL);
 
-		// TODO: depending on how it will be implemented, the watchlist must be checked
-		// result = ValidationResult.TRUSTED;
-		// resultSpec = ValidationResultSpec.VALIDATED;
+		// put certificate on watchlist if it was not validated trusted,
+		// but is probably a normal certificate or CA change
+		if (result == ValidationResult.UNKNOWN &&
+				(resultSpec == ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY ||
+					resultSpec == ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA)) {
+			trustView.addCertificateToWatchlist(hostCertificate);
+			return new ValidatorResult(
+					ValidationResult.TRUSTED,
+					ValidationResultSpec.VALIDATED_ON_WATCHLIST);
+		}
 
 		return new ValidatorResult(result, resultSpec);
 	}
