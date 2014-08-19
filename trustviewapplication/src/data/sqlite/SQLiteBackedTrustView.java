@@ -13,8 +13,10 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import CertainTrust.CertainTrust;
@@ -46,6 +48,11 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement setCertificateTrust;
 	private final PreparedStatement getCertificatesForHost;
 	private final PreparedStatement addCertificateToHost;
+	private final PreparedStatement addCertificateToWatchlist;
+	private final PreparedStatement setWatchlistCertificate;
+	private final PreparedStatement removeCertificateFromWatchlist;
+	private final PreparedStatement getWatchlistCertificate;
+	private final PreparedStatement getWatchlistCertificates;
 	private final PreparedStatement removeAssessment;
 	private final PreparedStatement removeCertificate;
 	private final PreparedStatement cleanCertificates;
@@ -108,6 +115,30 @@ public class SQLiteBackedTrustView implements TrustView {
 
 				addCertificateToHost = connection.prepareStatement(
 						"INSERT OR IGNORE INTO certhosts VALUES (?, ?, ?)");
+
+				// watchlist
+				addCertificateToWatchlist = connection.prepareStatement(
+						"INSERT OR IGNORE INTO watchlist VALUES (?, ?, ?)");
+
+				setWatchlistCertificate = connection.prepareStatement(
+						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, " +
+						"  COALESCE((SELECT trusted FROM certificates WHERE serial=? AND issuer=?), 0)," +
+						"  COALESCE((SELECT untrusted FROM certificates WHERE serial=? AND issuer=?), 0)," +
+						"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
+
+				removeCertificateFromWatchlist = connection.prepareStatement(
+						"DELETE FROM watchlist WHERE serial=? AND issuer=?");
+
+				getWatchlistCertificate = connection.prepareStatement(
+						"SELECT * FROM certificates JOIN watchlist" +
+						"  ON certificates.serial = watchlist.serial" +
+						"  AND certificates.issuer = watchlist.issuer" +
+						"  WHERE certificates.serial=? AND certificates.issuer=?");
+
+				getWatchlistCertificates = connection.prepareStatement(
+						"SELECT * FROM certificates JOIN watchlist" +
+						"  ON certificates.serial = watchlist.serial" +
+						"  AND certificates.issuer = watchlist.issuer");
 
 				// cleaning the trust view
 				removeAssessment = connection.prepareStatement(
@@ -341,10 +372,8 @@ public class SQLiteBackedTrustView implements TrustView {
 			validateDatabaseConnection();
 			getCertificatesForHost.setString(1, host);
 			try (ResultSet result = getCertificatesForHost.executeQuery()) {
-				while (result.next()) {
+				while (result.next())
 					certificates.add(constructCertificate(result));
-					System.out.println(result.getString(11));
-				}
 			}
 			return certificates;
 		}
@@ -366,6 +395,79 @@ public class SQLiteBackedTrustView implements TrustView {
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void addCertificateToWatchlist(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+
+			setWatchlistCertificate.setString(1, certificate.getSerial());
+			setWatchlistCertificate.setString(2, certificate.getIssuer());
+			setWatchlistCertificate.setString(3, certificate.getSubject());
+			setWatchlistCertificate.setString(4, certificate.getPublicKey());
+			setWatchlistCertificate.setTimestamp(5, new Timestamp(certificate.getNotBefore().getTime()));
+			setWatchlistCertificate.setTimestamp(6, new Timestamp(certificate.getNotAfter().getTime()));
+			if (certificate.getCertificate() != null)
+				setWatchlistCertificate.setBytes(7, certificate.getCertificate().getEncoded());
+			else
+				setWatchlistCertificate.setNull(7, Types.BLOB);
+			setWatchlistCertificate.executeUpdate();
+
+			addCertificateToWatchlist.setString(1, certificate.getSerial());
+			addCertificateToWatchlist.setString(2, certificate.getIssuer());
+			addCertificateToWatchlist.setTimestamp(3, new Timestamp(new Date().getTime()));
+			addCertificateToWatchlist.executeUpdate();
+		}
+		catch (SQLException | CertificateException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void removeCertificateFromWatchlist(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+			removeCertificateFromWatchlist.setString(1, certificate.getSerial());
+			removeCertificateFromWatchlist.setString(2, certificate.getIssuer());
+			removeCertificateFromWatchlist.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public boolean isCertificateOnWatchlist(TrustCertificate certificate) {
+		try {
+			getWatchlistCertificate.setString(1, certificate.getSerial());
+			getWatchlistCertificate.setString(2, certificate.getIssuer());
+			try (ResultSet result = getWatchlistCertificate.executeQuery()) {
+				if (result.next())
+					return true;
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public Map<TrustCertificate, Date> getWatchlist() {
+		Map<TrustCertificate, Date> watchlist = new HashMap<>();
+		try {
+			try (ResultSet result = getWatchlistCertificates.executeQuery()) {
+				while (result.next())
+					watchlist.put(
+						constructCertificate(result),
+						result.getTimestamp(11));
+			}
+		}
+		catch (SQLException | CertificateException e) {
+			e.printStackTrace();
+		}
+		return watchlist;
 	}
 
 	@Override
@@ -473,6 +575,11 @@ public class SQLiteBackedTrustView implements TrustView {
 				setCertificateTrust.close();
 				getCertificatesForHost.close();
 				addCertificateToHost.close();
+				addCertificateToWatchlist.close();
+				setWatchlistCertificate.close();
+				removeCertificateFromWatchlist.close();
+				getWatchlistCertificate.close();
+				getWatchlistCertificates.close();
 				removeAssessment.close();
 				removeCertificate.close();
 				cleanCertificates.close();

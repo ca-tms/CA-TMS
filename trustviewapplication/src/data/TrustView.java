@@ -1,6 +1,8 @@
 package data;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * <p>Provides access to the Trust View.
@@ -127,6 +129,31 @@ public interface TrustView extends AutoCloseable {
 	 * @param host
 	 */
 	void addHostForCertificate(TrustCertificate certificate, String host);
+
+	/**
+	 * Adds a host for the given {@link TrustCertificate} to the watchlist
+	 * @param certificate
+	 */
+	void addCertificateToWatchlist(TrustCertificate certificate);
+
+	/**
+	 * Removes the given {@link TrustCertificate} from the watchlist
+	 * @param certificate
+	 */
+	void removeCertificateFromWatchlist(TrustCertificate certificate);
+
+	/**
+	 * @return whether the given certificate is currently on the watchlist
+	 * @param certificate
+	 */
+	boolean isCertificateOnWatchlist(TrustCertificate certificate);
+
+	/**
+	 * Returns the current watchlist as a mapping from each
+	 * {@link TrustCertificate} on the watchlist to the time the certificate was
+	 * added to the watchlist
+	 */
+	Map<TrustCertificate, Date> getWatchlist();
 
 	/**
 	 * Cleans the trust view.
