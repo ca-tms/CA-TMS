@@ -6,9 +6,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.DatatypeConverter;
@@ -145,16 +143,19 @@ public class TrustCertificate {
 						subjectHosts.add((String) name.get(1));
 			}
 			else {
-				// extract host name from subject distinguished name
-				Map<String, String> oid = new HashMap<>();
-				certificate.getSubjectX500Principal().getName(
-						X500Principal.RFC1779, oid);
-				String cn = oid.get("CN");
-				if (cn.matches(
-						"^(\\*\\.)?" +
-						"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)+" +
-						"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.?)$"))
-					subjectHosts.add(cn);
+				String name = certificate.getSubjectX500Principal().getName();
+				for (String component : name.split(",")) {
+					component = component.trim();
+					if (component.substring(0, 3).toLowerCase().equals("cn=")) {
+						String cn = component.substring(3);
+						if (cn.matches(
+								"^(\\*\\.)?" +
+								"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)+" +
+								"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.?)$"))
+							subjectHosts.add(cn);
+						break;
+					}
+				}
 			}
 		}
 		catch (CertificateParsingException e) {
