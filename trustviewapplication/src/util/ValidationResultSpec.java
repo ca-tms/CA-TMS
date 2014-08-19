@@ -27,6 +27,8 @@ public enum ValidationResultSpec {
 	 *  the new certificate was issued by a different CA for a different key as the previous one;
 	 *  the validation result should be "valid" */
 	VALIDATED_EXISTING,
+	/** the certificate is preliminarily trusted because it is on the watchlist */
+	VALIDATED_ON_WATCHLIST,
 	/** recommendation result from external validation services, no validation */
 	RECOMMENDED
 }
