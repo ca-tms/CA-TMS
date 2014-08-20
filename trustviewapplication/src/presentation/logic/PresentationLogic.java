@@ -422,18 +422,21 @@ public class PresentationLogic {
 			return null;
 		}
 
-		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
-		TrustCertificate Certificate = null;
+		Iterator<TrustCertificate> it = Certs_temp.iterator();
+		while (it.hasNext()) {
+			TrustCertificate it_cert = it.next();
+			String it_serial = it_cert.getSerial();
+			String it_issuer = it_cert.getIssuer();
 
-		while (it_cert.hasNext()) {
-			Certificate = it_cert.next();
+			if (it_cert.getCertificate() instanceof X509Certificate)
+				it_issuer = ((X509Certificate) it_cert.getCertificate())
+						.getIssuerX500Principal().toString();
 
-			if (Certificate.getSerial().equals(Serial)
-					&& Certificate.getIssuer().equals(Issuer))
-				return Certificate;
+			if (it_serial.equals(Serial) && it_issuer.equals(Issuer))
+				return it_cert;
 		}
 
-		return Certificate;
+		return null;
 	}
 
 	// /////////////////////////////////////////////////////////getuTCert_by_Click/////////////////////////////////////////////////////////////////////////////////////
@@ -467,18 +470,21 @@ public class PresentationLogic {
 			return null;
 		}
 
-		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
-		TrustCertificate Certificate = null;
+		Iterator<TrustCertificate> it = Certs_temp.iterator();
+		while (it.hasNext()) {
+			TrustCertificate it_cert = it.next();
+			String it_serial = it_cert.getSerial();
+			String it_issuer = it_cert.getIssuer();
 
-		while (it_cert.hasNext()) {
-			Certificate = it_cert.next();
+			if (it_cert.getCertificate() instanceof X509Certificate)
+				it_issuer = ((X509Certificate) it_cert.getCertificate())
+						.getIssuerX500Principal().toString();
 
-			if (Certificate.getSerial().equals(Serial)
-					&& Certificate.getIssuer().equals(Issuer))
-				return Certificate;
+			if (it_serial.equals(Serial) && it_issuer.equals(Issuer))
+				return it_cert;
 		}
 
-		return Certificate;
+		return null;
 	}
 
 	// /////////////////////////////////////////////////////////getAss_by_Click/////////////////////////////////////////////////////////////////////////////////////
