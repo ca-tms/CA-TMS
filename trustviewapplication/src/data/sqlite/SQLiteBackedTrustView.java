@@ -486,9 +486,22 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void clean() {
 		try {
 			validateDatabaseConnection();
+			final long watchlistExpirationMillis =
+					config.get(Configuration.WATCHLIST_EXPIRATION_MILLIS, Long.class);
 			final long assessmentExpirationMillis =
 					config.get(Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
 			final long nowMillis = new Date().getTime();
+
+			// remove expired watchlist certificates
+			try (ResultSet result = getWatchlistCertificates.executeQuery()) {
+				while (result.next())
+					if (nowMillis - result.getTimestamp(13).getTime()
+							> watchlistExpirationMillis) {
+						removeCertificateFromWatchlist.setString(1, result.getString(1));
+						removeCertificateFromWatchlist.setString(2, result.getString(2));
+						removeCertificateFromWatchlist.executeUpdate();
+					}
+			}
 
 			// remove expired assessments
 			try (ResultSet result = getAssessments.executeQuery()) {
