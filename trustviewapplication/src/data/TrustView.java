@@ -2,7 +2,6 @@ package data;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 /**
  * <p>Provides access to the Trust View.
@@ -149,11 +148,15 @@ public interface TrustView extends AutoCloseable {
 	boolean isCertificateOnWatchlist(TrustCertificate certificate);
 
 	/**
-	 * Returns the current watchlist as a mapping from each
-	 * {@link TrustCertificate} on the watchlist to the time the certificate was
-	 * added to the watchlist
+	 * Returns the {@link TrustCertificate}s currenty on the watchlist
 	 */
-	Map<TrustCertificate, Date> getWatchlist();
+	Collection<TrustCertificate> getWatchlist();
+
+	/**
+	 * Returns the time the given {@link TrustCertificate} was added to the
+	 * watchlist or <code>null</code> if the certificate is not on the watchlist
+	 */
+	Date getWatchlistCerrtificateTimestamp(TrustCertificate certificate);
 
 	/**
 	 * Cleans the trust view.

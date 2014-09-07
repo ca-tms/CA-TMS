@@ -13,10 +13,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import CertainTrust.CertainTrust;
@@ -454,20 +452,34 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public Map<TrustCertificate, Date> getWatchlist() {
-		Map<TrustCertificate, Date> watchlist = new HashMap<>();
+	public Collection<TrustCertificate> getWatchlist() {
+		List<TrustCertificate> watchlist = new ArrayList<>();
 		try {
 			try (ResultSet result = getWatchlistCertificates.executeQuery()) {
 				while (result.next())
-					watchlist.put(
-						constructCertificate(result),
-						result.getTimestamp(11));
+					watchlist.add(constructCertificate(result));
 			}
 		}
 		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return watchlist;
+	}
+
+	@Override
+	public Date getWatchlistCerrtificateTimestamp(TrustCertificate certificate) {
+		try {
+			getWatchlistCertificate.setString(1, certificate.getSerial());
+			getWatchlistCertificate.setString(2, certificate.getIssuer());
+			try (ResultSet result = getWatchlistCertificate.executeQuery()) {
+				if (result.next())
+					return result.getTimestamp(13);
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
