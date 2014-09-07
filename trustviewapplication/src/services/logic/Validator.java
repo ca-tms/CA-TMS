@@ -1,6 +1,7 @@
 package services.logic;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,12 +65,43 @@ public final class Validator {
 						ValidationRequestSpec.RETRIEVE_RECOMMENDATION)
 					System.out.println("Only querying validation services for recommendation.");
 
+				ValidationService validationService = null;
+
 				int attempts = 0;
 				while (true) {
 					try (TrustView trustView = Model.openTrustView();
 					     Configuration config = Model.openConfiguration()) {
+						if (validationService == null) {
+							final String overrideValidationServiceResult =
+									config.get(
+										Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
+							final long validationTimeoutMillis =
+									config.get(
+										Configuration.VALIDATION_TIMEOUT_MILLIS, Long.class);
+
+							switch (overrideValidationServiceResult.toLowerCase()) {
+							case "trusted":
+								validationService =
+									Service.getValidationService(ValidationResult.TRUSTED);
+								break;
+							case "untrusted":
+								validationService =
+									Service.getValidationService(ValidationResult.UNTRUSTED);
+								break;
+							case "unknown":
+								validationService =
+									Service.getValidationService(ValidationResult.UNKNOWN);
+								break;
+							default:
+								validationService =
+									Service.getValidationService(
+											request.getURL(), validationTimeoutMillis);
+								break;
+							}
+						}
+
 						result = validate(
-								trustView, config,
+								trustView, config, validationService,
 								request.getURL(),
 								request.getCertificatePath(),
 								request.getSecurityLevel(),
@@ -139,17 +171,14 @@ public final class Validator {
 	 * @param spec
 	 */
 	private static ValidatorResult validate(TrustView trustView,
-			Configuration config, String hostURL,
-			List<TrustCertificate> certificatePath, double securityLevel,
-			ValidationRequestSpec spec) {
-		ValidationService validationService = null;
-
+			Configuration config, ValidationService validationService,
+			String hostURL, List<TrustCertificate> certificatePath,
+			double securityLevel, ValidationRequestSpec spec) {
+		final ValidationService defaultValidationService = validationService;
 		final TrustCertificate hostCertificate =
 				certificatePath.get(certificatePath.size() - 1);
-		final String overrideValidationServiceResult =
-				config.get(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
-		final long validationTimeoutMillis =
-				config.get(Configuration.VALIDATION_TIMEOUT_MILLIS, Long.class);
+		final long watchlistExpirationMillis =
+				config.get(Configuration.WATCHLIST_EXPIRATION_MILLIS, Long.class);
 
 		if (spec == ValidationRequestSpec.VALIDATE) {
 			boolean bootstrappingMode =
@@ -169,27 +198,7 @@ public final class Validator {
 
 		case RETRIEVE_RECOMMENDATION:
 		case VALIDATE_WITH_SERVICES:
-			// normally external notaries are queried but the validation
-			// service result can be forced to be a given outcome for
-			// testing purposes
-			switch (overrideValidationServiceResult.toLowerCase()) {
-			case "trusted":
-				validationService =
-					Service.getValidationService(ValidationResult.TRUSTED);
-				break;
-			case "untrusted":
-				validationService =
-					Service.getValidationService(ValidationResult.UNTRUSTED);
-				break;
-			case "unknown":
-				validationService =
-					Service.getValidationService(ValidationResult.UNKNOWN);
-				break;
-			default:
-				validationService =
-					Service.getValidationService(hostURL, validationTimeoutMillis);
-				break;
-			}
+			// just use the default external validation service
 			break;
 
 		case VALIDATE_WITHOUT_SERVICES:
@@ -220,14 +229,28 @@ public final class Validator {
 		assert
 			spec == ValidationRequestSpec.VALIDATE_WITH_SERVICES ||
 			spec == ValidationRequestSpec.VALIDATE_WITHOUT_SERVICES;
-		assert
-			validationService != null;
 
 		// check if certificate is on the watchlist
-		if (trustView.isCertificateOnWatchlist(hostCertificate))
-			return new ValidatorResult(
-					ValidationResult.TRUSTED,
-					ValidationResultSpec.VALIDATED_ON_WATCHLIST);
+		if (trustView.isCertificateOnWatchlist(hostCertificate)) {
+			Date now = new Date();
+			Date timestamp = trustView.getWatchlistCerrtificateTimestamp(
+					hostCertificate);
+			if (now.getTime() - timestamp.getTime() >
+					watchlistExpirationMillis) {
+				// certificate on watchlist has expired
+				// the certificate must be checked
+				// just proceed with the algorithm and use validation services
+				validationService = defaultValidationService;
+				trustView.removeCertificateFromWatchlist(hostCertificate);
+			}
+			else
+				// certificate on watchlist has not expired yet
+				// as long as the certificate is on the watchlist,
+				// assume it is trusted
+				return new ValidatorResult(
+						ValidationResult.TRUSTED,
+						ValidationResultSpec.VALIDATED_ON_WATCHLIST);
+		}
 
 		// determine result specification
 		ValidationResultSpec resultSpec = TrustViewControl.deriveValidationSpec(
