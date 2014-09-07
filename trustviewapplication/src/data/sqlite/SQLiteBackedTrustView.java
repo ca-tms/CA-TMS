@@ -516,9 +516,9 @@ public class SQLiteBackedTrustView implements TrustView {
 								setAssessmentS.setString(2, resultS.getString(2));
 								setAssessmentS.setString(3, resultS.getString(3));
 								setAssessmentS.setString(4, resultS.getString(4));
-								setAssessmentS.setString(5, resultS.getString(5));
-								setAssessmentS.setString(6, resultS.getString(6));
-								setAssessmentS.setString(7, resultS.getString(7));
+								setAssessmentS.setTimestamp(5, resultS.getTimestamp(5));
+								setAssessmentS.setTimestamp(6, resultS.getTimestamp(6));
+								setAssessmentS.setBytes(7, resultS.getBytes(7));
 								setAssessmentS.setString(8, resultS.getString(1));
 								setAssessmentS.setString(9, resultS.getString(2));
 								setAssessmentS.setString(10, resultS.getString(1));
