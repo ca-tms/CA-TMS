@@ -4,7 +4,9 @@ import java.io.File;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
@@ -70,16 +72,17 @@ public final class Service {
 	}
 
 	/**
-	 * @return a {@link ValidationService} instance that can be used to query
-	 * external validation services implemented as notaries
-	 * @param host the host which validation is requested for
+	 * @return a {@link ValidationService} instance that can be used in
+	 * conjunction with another {@link ValidationService} to force time
+	 * constraints on querying that service
 	 * @param timeoutMillis the number of milliseconds which the query should be
 	 * cancelled after
+	 * @param validationService the validation service that will be used to to
+	 * query a validation result
 	 * @throws CancellationException if the query was cancelled due to timeout
 	 */
-	public static ValidationService getValidationService(final String host,
-			final long timeoutMillis) {
-		final ValidationService validationService = getValidationService(host);
+	public static ValidationService getValidationService(
+			final long timeoutMillis, final ValidationService validationService) {
 		final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
 		return new ValidationService() {
@@ -105,6 +108,30 @@ public final class Service {
 					resultFuture.cancel(true);
 					return ValidationResult.UNKNOWN;
 				}
+			}
+		};
+	}
+
+	/**
+	 * @return a {@link ValidationService} instance that can be used in
+	 * conjunction with another {@link ValidationService} to cache the query
+	 * result of that service for further queries
+	 * @param validationService the validation service that will be used to
+	 * query a validation result
+	 */
+	public static ValidationService getValidationService(
+			final ValidationService validationService) {
+		final Map<TrustCertificate, ValidationResult> cache = new HashMap<>();
+		return new ValidationService() {
+			@Override
+			public ValidationResult query(final TrustCertificate certificate) {
+				ValidationResult result = cache.get(certificate);
+				if (result != null)
+					return result;
+
+				result = validationService.query(certificate);
+				cache.put(certificate, result);
+				return result;
 			}
 		};
 	}

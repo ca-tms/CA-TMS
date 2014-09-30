@@ -95,7 +95,9 @@ public final class Validator {
 							default:
 								validationService =
 									Service.getValidationService(
-											request.getURL(), validationTimeoutMillis);
+										Service.getValidationService(
+											validationTimeoutMillis,
+											Service.getValidationService(request.getURL())));
 								break;
 							}
 						}
