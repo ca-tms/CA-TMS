@@ -18,7 +18,7 @@
 		</fileset>
 	</path>
 	
-    <target name="clean">
+	<target name="clean">
 	   	<delete dir="${build}" />
 		<delete dir="${export}" />
 	</target>
@@ -28,30 +28,38 @@
 		<mkdir dir="${export}" />
 	</target>
 
-    <target name="compile" depends="init">
-    	<javac includeantruntime="false" srcdir="${src}" destdir="${build}">
-    		<classpath refid="library-classpath" />
-    	</javac>
-    	<copy todir="${build}">
-    		<fileset dir="${src}" includes="**/*.properties" />
-    	</copy>
-    	<copy todir="${build}/presentation/ui/resources">
-    	    <fileset dir="${src}/presentation/ui/resources" includes="**/*png" />
-    	</copy>
-    </target>
+	<target name="compile" depends="init">
+		<javac includeantruntime="false" srcdir="${src}" destdir="${build}">
+			<classpath refid="library-classpath" />
+		</javac>
+		<copy todir="${build}">
+			<fileset dir="${src}" includes="**/*.properties" />
+		</copy>
+		<copy todir="${build}/presentation/ui/resources">
+			<fileset dir="${src}/presentation/ui/resources" includes="**/*png" />
+		</copy>
+	</target>
 
-    <target name="jar" depends="compile">
-    	<jar destfile="${export}/${exportname}">
-    		<fileset dir="${build}" />
-    		<zipgroupfileset dir="${lib}" includes="*.jar" />
-    		<manifest>
-    		    <attribute name="Main-Class" value="${mainclass}" />
-    		</manifest>
-    	</jar>
-    </target>
+	<target name="jar" depends="compile">
+		<jar destfile="${export}/${exportname}-external-libs-temp">
+			<zipgroupfileset dir="${lib}" includes="*.jar" />
+		</jar>
+		<jar destfile="${export}/${exportname}">
+			<fileset dir="${build}" />
+			<zipfileset src="${export}/${exportname}-external-libs-temp">
+				<exclude name="META-INF/*.SF" />
+				<exclude name="META-INF/*.DSA" />
+				<exclude name="META-INF/*.RSA" />
+			</zipfileset>
+			<manifest>
+				<attribute name="Main-Class" value="${mainclass}" />
+			</manifest>
+		</jar>
+		<delete file="${export}/${exportname}-external-libs-temp"/>
+	</target>
 
-    <target name="run" depends="jar">
-        <java jar="${export}/${exportname}" fork="true" />
-    </target>
+	<target name="run" depends="jar">
+		<java jar="${export}/${exportname}" fork="true" />
+	</target>
 	
 </project>
