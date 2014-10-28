@@ -66,6 +66,7 @@ public class OCSP {
 	private URL ocsp;
 	private X509Certificate issuerCertificate;
 	private Date nextUpdate;
+	private int timeoutMillis;
 
 	/**
 	 * Creates a new <code>OCSP</code> instance for the OCSP service that can be
@@ -86,6 +87,7 @@ public class OCSP {
 	 * @param issuerCertificate
 	 */
 	public OCSP(URL ocsp, Certificate issuerCertificate) {
+		this.timeoutMillis = -1;
 		if (issuerCertificate instanceof X509Certificate) {
 			this.ocsp = ocsp;
 			this.issuerCertificate = (X509Certificate) issuerCertificate;
@@ -93,9 +95,43 @@ public class OCSP {
 		else
 			throw new IllegalArgumentException("given certificate is no X.509 certificate");
 	}
+
+	/**
+	 * Creates a new <code>OCSP</code> instance for the OCSP service that can be
+	 * reached under the given URL and is responsible for certificates issued by
+	 * the issuer which the given certificate is issued for;
+	 * uses the given timeout for OCSP requests triggered by
+	 * {@link #isRevoked(TrustCertificate)} or {@link #isRevoked(Certificate)}
+	 * @param ocsp
+	 * @param issuerCertificate
+	 * @param timeoutMillis
+	 */
+	public OCSP(URL ocsp, TrustCertificate issuerCertificate, int timeoutMillis) {
+		this(ocsp, issuerCertificate.getCertificate());
+		this.timeoutMillis = timeoutMillis;
+	}
+
+	/**
+	 * Creates a new <code>OCSP</code> instance for the OCSP service that can be
+	 * reached under the given URL and is responsible for certificates issued by
+	 * the issuer which the given certificate is issued for;
+	 * uses the given timeout for OCSP requests triggered by
+	 * {@link #isRevoked(TrustCertificate)} or {@link #isRevoked(Certificate)}
+	 * @param ocsp
+	 * @param issuerCertificate
+	 * @param timeoutMillis
+	 */
+	public OCSP(URL ocsp, Certificate issuerCertificate, int timeoutMillis) {
+		this(ocsp, issuerCertificate);
+		this.timeoutMillis = timeoutMillis;
+	}
+
 	/**
 	 * @return whether the given certificate has been revoked
 	 * @param certificate
+	 * @throws IOException if the OCSP response cannot be retrieved
+	 * @throws SocketTimeoutException if the connection times out
+	 * @throws GeneralSecurityException if the OCSP cannot be verified
 	 */
 	public boolean isRevoked(TrustCertificate certificate)
 			throws IOException, GeneralSecurityException {
@@ -107,6 +143,9 @@ public class OCSP {
 	/**
 	 * @return whether the given certificate has been revoked
 	 * @param certificate
+	 * @throws IOException if the OCSP response cannot be retrieved
+	 * @throws SocketTimeoutException if the connection times out
+	 * @throws GeneralSecurityException if the OCSP cannot be verified
 	 */
 	public boolean isRevoked(Certificate certificate)
 			throws IOException, GeneralSecurityException {
@@ -114,7 +153,7 @@ public class OCSP {
 			X509Certificate x509cert = (X509Certificate) certificate;
 
 			OCSPRequest ocspRequest = generateOCSPRequest(x509cert, issuerCertificate);
-			OCSPResponse ocspResponse = performOCSPRequest(ocsp, ocspRequest);
+			OCSPResponse ocspResponse = performOCSPRequest(ocsp, ocspRequest, timeoutMillis);
 			Response response = processOCSPResponse(ocspResponse, issuerCertificate);
 
 			nextUpdate = response.nextUpdate;
@@ -192,12 +231,17 @@ public class OCSP {
 	 * @param url
 	 * @param request
 	 * @throws IOException
+	 * @throws SocketTimeoutException
 	 */
-	private static OCSPResponse performOCSPRequest(URL url, OCSPRequest request)
-			throws IOException {
+	private static OCSPResponse performOCSPRequest(
+			URL url, OCSPRequest request, int timeoutMillis) throws IOException {
 		try {
 			// setup connection
 			URLConnection connection = url.openConnection();
+			if (timeoutMillis >= 0) {
+				connection.setConnectTimeout(timeoutMillis);
+				connection.setReadTimeout(timeoutMillis);
+			}
 			connection.setRequestProperty("Content-Type", "application/ocsp-request");
 			connection.setRequestProperty("Accept", "application/ocsp-response");
 			connection.setDoOutput(true);
@@ -215,7 +259,7 @@ public class OCSP {
 				throw new FileNotFoundException(url.toString());
 
 			// receive response
-			try (InputStream stream = (InputStream) connection.getContent();
+			try (InputStream stream = connection.getInputStream();
 				 BufferedInputStream bufferedStream = new BufferedInputStream(stream);
 				 ASN1InputStream asn1stream = new ASN1InputStream(bufferedStream)) {
 				return OCSPResponse.getInstance(asn1stream.readObject());

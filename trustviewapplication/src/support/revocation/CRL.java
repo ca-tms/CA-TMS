@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.Signature;
@@ -50,6 +51,44 @@ public class CRL {
 	public CRL(URL url, Certificate issuerCertificate)
 			throws IOException, GeneralSecurityException {
 		try (InputStream stream = url.openStream();
+			 BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
+			initialize(bufferedStream, issuerCertificate);
+		}
+	}
+
+	/**
+	 * Creates a new <code>CRL</code> instance based on the CRL that can be
+	 * retrieved from the given URL and is issued by the issuer which the given
+	 * certificate is issued for; uses the given timeout for the download
+	 * @param url
+	 * @param issuerCertificate
+	 * @param timeoutMillis
+	 * @throws IOException if the CRL cannot be read
+	 * @throws SocketTimeoutException if the connection times out
+	 * @throws GeneralSecurityException if the CRL cannot be verified
+	 */
+	public CRL(URL url, TrustCertificate issuerCertificate, int timeoutMillis)
+			throws IOException, GeneralSecurityException {
+		this(url, issuerCertificate.getCertificate(), timeoutMillis);
+	}
+
+	/**
+	 * Creates a new <code>CRL</code> instance based on the CRL that can be
+	 * retrieved from the given URL and is issued by the issuer which the given
+	 * certificate is issued for; uses the given timeout for the download
+	 * @param url
+	 * @param issuerCertificate
+	 * @param timeoutMillis
+	 * @throws IOException if the CRL cannot be read
+	 * @throws SocketTimeoutException if the connection times out
+	 * @throws GeneralSecurityException if the CRL cannot be verified
+	 */
+	public CRL(URL url, Certificate issuerCertificate, int timeoutMillis)
+			throws IOException, GeneralSecurityException {
+		URLConnection connection = url.openConnection();
+		connection.setConnectTimeout(timeoutMillis);
+		connection.setReadTimeout(timeoutMillis);
+		try (InputStream stream = connection.getInputStream();
 			 BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
 			initialize(bufferedStream, issuerCertificate);
 		}
