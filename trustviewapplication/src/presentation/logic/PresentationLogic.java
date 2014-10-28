@@ -187,36 +187,40 @@ public class PresentationLogic {
 			String serial = certificate.getSerial();
 			String issuer = certificate.getIssuer();
 			String subject = certificate.getSubject();
-			String publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+			String publicKey =
+					(cert != null
+						? "[" + cert.getPublicKey().getAlgorithm() + "] " : "") +
 					certificate.getPublicKey();
 			String notBefore = certificate.getNotBefore().toGMTString();
 			String notAfter = certificate.getNotAfter().toGMTString();
 
-			if (cert instanceof X509Certificate) {
-				X509Certificate x509cert = (X509Certificate) cert;
-				issuer = x509cert.getIssuerX500Principal().toString();
-				subject = x509cert.getSubjectX500Principal().toString();
-			}
+			if (cert != null) {
+				if (cert instanceof X509Certificate) {
+					X509Certificate x509cert = (X509Certificate) cert;
+					issuer = x509cert.getIssuerX500Principal().toString();
+					subject = x509cert.getSubjectX500Principal().toString();
+				}
 
-			if (cert.getPublicKey() instanceof RSAPublicKey) {
-				RSAPublicKey key = (RSAPublicKey) cert.getPublicKey();
-				publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-						key.getModulus().bitCount() + " bits, " +
-						"modulus: " + key.getModulus().toString(16) + ", " +
-						"public exponent: " + key.getPublicExponent().toString(16);
-			}
-			if (cert.getPublicKey() instanceof DSAPublicKey) {
-				DSAPublicKey key = (DSAPublicKey) cert.getPublicKey();
-				publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-						"parameters: " + key.getParams() + ", " +
-						"y: " + key.getY().toString(16);
-			}
-			if (cert.getPublicKey() instanceof ECPublicKey) {
-				ECPublicKey key = (ECPublicKey) cert.getPublicKey();
-				publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-						"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
-						"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
-						"parameters: " + key.getParams();
+				if (cert.getPublicKey() instanceof RSAPublicKey) {
+					RSAPublicKey key = (RSAPublicKey) cert.getPublicKey();
+					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+							key.getModulus().bitCount() + " bits, " +
+							"modulus: " + key.getModulus().toString(16) + ", " +
+							"public exponent: " + key.getPublicExponent().toString(16);
+				}
+				if (cert.getPublicKey() instanceof DSAPublicKey) {
+					DSAPublicKey key = (DSAPublicKey) cert.getPublicKey();
+					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+							"parameters: " + key.getParams() + ", " +
+							"y: " + key.getY().toString(16);
+				}
+				if (cert.getPublicKey() instanceof ECPublicKey) {
+					ECPublicKey key = (ECPublicKey) cert.getPublicKey();
+					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+							"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
+							"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
+							"parameters: " + key.getParams();
+				}
 			}
 
 			Model.addRow(new Object[] {
@@ -283,36 +287,40 @@ public class PresentationLogic {
 			String serial = certificate.getSerial();
 			String issuer = certificate.getIssuer();
 			String subject = certificate.getSubject();
-			String publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+			String publicKey =
+					(cert != null
+						? "[" + cert.getPublicKey().getAlgorithm() + "] " : "") +
 					certificate.getPublicKey();
 			String notBefore = certificate.getNotBefore().toGMTString();
 			String notAfter = certificate.getNotAfter().toGMTString();
 
-			if (cert instanceof X509Certificate) {
-				X509Certificate x509cert = (X509Certificate) cert;
-				issuer = x509cert.getIssuerX500Principal().toString();
-				subject = x509cert.getSubjectX500Principal().toString();
-			}
+			if (cert != null) {
+				if (cert instanceof X509Certificate) {
+					X509Certificate x509cert = (X509Certificate) cert;
+					issuer = x509cert.getIssuerX500Principal().toString();
+					subject = x509cert.getSubjectX500Principal().toString();
+				}
 
-			if (cert.getPublicKey() instanceof RSAPublicKey) {
-				RSAPublicKey key = (RSAPublicKey) cert.getPublicKey();
-				publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-						key.getModulus().bitCount() + " bits, " +
-						"modulus: " + key.getModulus().toString(16) + ", " +
-						"public exponent: " + key.getPublicExponent().toString(16);
-			}
-			if (cert.getPublicKey() instanceof DSAPublicKey) {
-				DSAPublicKey key = (DSAPublicKey) cert.getPublicKey();
-				publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-						"parameters: " + key.getParams() + ", " +
-						"y: " + key.getY().toString(16);
-			}
-			if (cert.getPublicKey() instanceof ECPublicKey) {
-				ECPublicKey key = (ECPublicKey) cert.getPublicKey();
-				publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-						"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
-						"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
-						"parameters: " + key.getParams();
+				if (cert.getPublicKey() instanceof RSAPublicKey) {
+					RSAPublicKey key = (RSAPublicKey) cert.getPublicKey();
+					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+							key.getModulus().bitCount() + " bits, " +
+							"modulus: " + key.getModulus().toString(16) + ", " +
+							"public exponent: " + key.getPublicExponent().toString(16);
+				}
+				if (cert.getPublicKey() instanceof DSAPublicKey) {
+					DSAPublicKey key = (DSAPublicKey) cert.getPublicKey();
+					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+							"parameters: " + key.getParams() + ", " +
+							"y: " + key.getY().toString(16);
+				}
+				if (cert.getPublicKey() instanceof ECPublicKey) {
+					ECPublicKey key = (ECPublicKey) cert.getPublicKey();
+					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
+							"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
+							"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
+							"parameters: " + key.getParams();
+				}
 			}
 
 			Model.addRow(new Object[] {

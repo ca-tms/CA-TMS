@@ -42,6 +42,9 @@ public final class Service {
 		return new ValidationService() {
 			@Override
 			public ValidationResult query(final TrustCertificate certificate) {
+				if (certificate.getCertificate() == null)
+					return ValidationResult.UNKNOWN;
+
 				try {
 					NotaryManager nm = new NotaryManager();
 

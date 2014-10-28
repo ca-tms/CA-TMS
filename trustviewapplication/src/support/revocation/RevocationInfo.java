@@ -22,6 +22,7 @@ import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.ReasonFlags;
 
 import data.TrustCertificate;
 
@@ -73,17 +74,24 @@ public class RevocationInfo {
 
 			if (points != null)
 				for (DistributionPoint point : points.getDistributionPoints()) {
-					ASN1Encodable names = point.getDistributionPoint().getName();
-					GeneralNames crlIssuer = point.getCRLIssuer();
-
 					// no support for CRLs issued from another CA
-					if (crlIssuer == null || crlIssuer.equals(DERNull.INSTANCE))
-						if (names instanceof GeneralNames)
-							for (GeneralName name : ((GeneralNames) names).getNames()) {
-								String url = urlFromGeneralName(name);
-								if (url != null)
-									crl.add(url);
-							}
+					GeneralNames crlIssuer = point.getCRLIssuer();
+					if (crlIssuer != null && !crlIssuer.equals(DERNull.INSTANCE))
+						continue;
+
+					// no support for partial CRLs
+					ReasonFlags reasons = point.getReasons();
+					if (reasons != null && !reasons.equals(DERNull.INSTANCE))
+						continue;
+
+					// use all distribution points
+					ASN1Encodable names = point.getDistributionPoint().getName();
+					if (names instanceof GeneralNames)
+						for (GeneralName name : ((GeneralNames) names).getNames()) {
+							String url = urlFromGeneralName(name);
+							if (url != null)
+								crl.add(url);
+						}
 				}
 
 			crl = Collections.unmodifiableList(crl);
