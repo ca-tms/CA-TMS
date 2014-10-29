@@ -16,6 +16,8 @@ import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Date;
 
+import util.Option;
+
 import data.TrustCertificate;
 
 /**
@@ -148,8 +150,8 @@ public class CRL {
 	/**
 	 * @return the next update date for the CRL
 	 */
-	public Date getNextUpdate() {
-		return crl.getNextUpdate();
+	public Option<Date> getNextUpdate() {
+		return new Option<>(crl.getNextUpdate());
 	}
 
 	/**
@@ -168,6 +170,13 @@ public class CRL {
 	 */
 	public boolean isRevoked(Certificate certificate) {
 		return crl.isRevoked(certificate);
+	}
+
+	/**
+	 * @return the underlying {@link X509CRL} object
+	 */
+	public X509CRL getCRL() {
+		return crl;
 	}
 
 	/**
