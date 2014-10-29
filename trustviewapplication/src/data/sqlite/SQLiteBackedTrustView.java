@@ -38,16 +38,16 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement getAssessment;
 	private final PreparedStatement getAssessments;
 	private final PreparedStatement getAssessmentsS;
-	private final PreparedStatement setAssessment;
-	private final PreparedStatement setAssessmentS;
+	private final InsertUpdateStmnt setAssessment;
+	private final InsertUpdateStmnt setAssessmentS;
 	private final PreparedStatement setAssessmentValid;
 	private final PreparedStatement getCertificates;
 	private final PreparedStatement getCertificateTrust;
-	private final PreparedStatement setCertificateTrust;
+	private final InsertUpdateStmnt setCertificateTrust;
+	private final InsertUpdateStmnt setCertificate;
 	private final PreparedStatement getCertificatesForHost;
 	private final PreparedStatement addCertificateToHost;
 	private final PreparedStatement addCertificateToWatchlist;
-	private final PreparedStatement setWatchlistCertificate;
 	private final PreparedStatement removeCertificateFromWatchlist;
 	private final PreparedStatement getWatchlistCertificate;
 	private final PreparedStatement getWatchlistCertificates;
@@ -76,18 +76,21 @@ public class SQLiteBackedTrustView implements TrustView {
 						"SELECT * FROM certificates WHERE publickey=? AND subject=? AND S=1");
 
 				// setting assessments
-				setAssessment = connection.prepareStatement(
-						"INSERT OR REPLACE INTO assessments VALUES (?, ?, ?, ?, ?, ?, " +
-						"                                           ?, ?, ?, ?, ?, ?, " +
-						"                                           ?, ?, ?, ?, ?, ?)");
+				setAssessment = new InsertUpdateStmnt(connection, "assessments",
+						new String [] { "k", "?" }, new String [] { "ca", "?",
+						"o_kl_t", "?", "o_kl_c", "?", "o_kl_f", "?",
+						"o_kl_r", "?", "o_kl_s", "?",
+						"o_it_ca_t", "?", "o_it_ca_c", "?", "o_it_ca_f", "?",
+						"o_it_ca_r", "?", "o_it_ca_s", "?",
+						"o_it_ee_t", "?", "o_it_ee_c", "?", "o_it_ee_f", "?",
+						"o_it_ee_r", "?", "o_it_ee_s", "?",
+						"timestamp", "?" });
 
-				setAssessmentS = connection.prepareStatement(
-						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, " +
-						"  COALESCE((SELECT trusted FROM certificates " +
-						"            WHERE serial=? AND issuer=?), 0)," +
-						"  COALESCE((SELECT untrusted FROM certificates " +
-						"            WHERE serial=? AND issuer=?), 0)," +
-						"  ?)");
+				setAssessmentS = new InsertUpdateStmnt(connection, "certificates",
+						new String [] { "serial", "?", "issuer", "?" }, new String [] {
+						"subject", "?", "publickey", "?",
+						"notbefore", "?", "notafter", "?", "certdata", "?",
+						"trusted", "!0", "untrusted", "!0", "S", "?" });
 
 				setAssessmentValid = connection.prepareStatement(
 						"UPDATE assessments SET timestamp=? WHERE k=? AND ca=?");
@@ -100,9 +103,17 @@ public class SQLiteBackedTrustView implements TrustView {
 						"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");
 
 				// setting certificates
-				setCertificateTrust = connection.prepareStatement(
-						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-						"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
+				setCertificateTrust = new InsertUpdateStmnt(connection, "certificates",
+						new String [] { "serial", "?", "issuer", "?" }, new String [] {
+						"subject", "?", "publickey", "?",
+						"notbefore", "?", "notafter", "?", "certdata", "?",
+						"trusted", "?", "untrusted", "?", "S", "!0" });
+
+				setCertificate = new InsertUpdateStmnt(connection, "certificates",
+						new String [] { "serial", "?", "issuer", "?" }, new String [] {
+						"subject", "?", "publickey", "?",
+						"notbefore", "?", "notafter", "?", "certdata", "?",
+						"trusted", "!0", "untrusted", "!0", "S", "!0" });
 
 				// accessing certificate hosts
 				getCertificatesForHost = connection.prepareStatement(
@@ -117,12 +128,6 @@ public class SQLiteBackedTrustView implements TrustView {
 				// watchlist
 				addCertificateToWatchlist = connection.prepareStatement(
 						"INSERT OR IGNORE INTO watchlist VALUES (?, ?, ?)");
-
-				setWatchlistCertificate = connection.prepareStatement(
-						"INSERT OR REPLACE INTO certificates VALUES (?, ?, ?, ?, ?, ?, ?, " +
-						"  COALESCE((SELECT trusted FROM certificates WHERE serial=? AND issuer=?), 0)," +
-						"  COALESCE((SELECT untrusted FROM certificates WHERE serial=? AND issuer=?), 0)," +
-						"  COALESCE((SELECT S FROM certificates WHERE serial=? AND issuer=?), 0))");
 
 				removeCertificateFromWatchlist = connection.prepareStatement(
 						"DELETE FROM watchlist WHERE serial=? AND issuer=?");
@@ -237,11 +242,7 @@ public class SQLiteBackedTrustView implements TrustView {
 					setAssessmentS.setBytes(7, cert.getCertificate().getEncoded());
 				else
 					setAssessmentS.setNull(7, Types.BLOB);
-				setAssessmentS.setString(8, cert.getSerial());
-				setAssessmentS.setString(9, cert.getIssuer());
-				setAssessmentS.setString(10, cert.getSerial());
-				setAssessmentS.setString(11, cert.getIssuer());
-				setAssessmentS.setBoolean(12, true);
+				setAssessmentS.setBoolean(8, true);
 				setAssessmentS.executeUpdate();
 			}
 		}
@@ -322,7 +323,6 @@ public class SQLiteBackedTrustView implements TrustView {
 				while (result.next())
 					certificates.add(constructCertificate(result));
 			}
-			return certificates;
 		}
 		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
@@ -400,17 +400,17 @@ public class SQLiteBackedTrustView implements TrustView {
 		try {
 			validateDatabaseConnection();
 
-			setWatchlistCertificate.setString(1, certificate.getSerial());
-			setWatchlistCertificate.setString(2, certificate.getIssuer());
-			setWatchlistCertificate.setString(3, certificate.getSubject());
-			setWatchlistCertificate.setString(4, certificate.getPublicKey());
-			setWatchlistCertificate.setTimestamp(5, new Timestamp(certificate.getNotBefore().getTime()));
-			setWatchlistCertificate.setTimestamp(6, new Timestamp(certificate.getNotAfter().getTime()));
+			setCertificate.setString(1, certificate.getSerial());
+			setCertificate.setString(2, certificate.getIssuer());
+			setCertificate.setString(3, certificate.getSubject());
+			setCertificate.setString(4, certificate.getPublicKey());
+			setCertificate.setTimestamp(5, new Timestamp(certificate.getNotBefore().getTime()));
+			setCertificate.setTimestamp(6, new Timestamp(certificate.getNotAfter().getTime()));
 			if (certificate.getCertificate() != null)
-				setWatchlistCertificate.setBytes(7, certificate.getCertificate().getEncoded());
+				setCertificate.setBytes(7, certificate.getCertificate().getEncoded());
 			else
-				setWatchlistCertificate.setNull(7, Types.BLOB);
-			setWatchlistCertificate.executeUpdate();
+				setCertificate.setNull(7, Types.BLOB);
+			setCertificate.executeUpdate();
 
 			addCertificateToWatchlist.setString(1, certificate.getSerial());
 			addCertificateToWatchlist.setString(2, certificate.getIssuer());
@@ -519,11 +519,7 @@ public class SQLiteBackedTrustView implements TrustView {
 								setAssessmentS.setTimestamp(5, resultS.getTimestamp(5));
 								setAssessmentS.setTimestamp(6, resultS.getTimestamp(6));
 								setAssessmentS.setBytes(7, resultS.getBytes(7));
-								setAssessmentS.setString(8, resultS.getString(1));
-								setAssessmentS.setString(9, resultS.getString(2));
-								setAssessmentS.setString(10, resultS.getString(1));
-								setAssessmentS.setString(11, resultS.getString(2));
-								setAssessmentS.setBoolean(12, false);
+								setAssessmentS.setBoolean(8, false);
 								setAssessmentS.executeUpdate();
 							}
 						}
@@ -598,10 +594,10 @@ public class SQLiteBackedTrustView implements TrustView {
 				getCertificates.close();
 				getCertificateTrust.close();
 				setCertificateTrust.close();
+				setCertificate.close();
 				getCertificatesForHost.close();
 				addCertificateToHost.close();
 				addCertificateToWatchlist.close();
-				setWatchlistCertificate.close();
 				removeCertificateFromWatchlist.close();
 				getWatchlistCertificate.close();
 				getWatchlistCertificates.close();
@@ -631,8 +627,6 @@ public class SQLiteBackedTrustView implements TrustView {
 			setCertificateTrust.setNull(7, Types.BLOB);
 		setCertificateTrust.setBoolean(8, trusted);
 		setCertificateTrust.setBoolean(9, untrusted);
-		setCertificateTrust.setString(10, S.getSerial());
-		setCertificateTrust.setString(11, S.getIssuer());
 		setCertificateTrust.executeUpdate();
 	}
 
