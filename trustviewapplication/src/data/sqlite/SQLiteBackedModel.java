@@ -135,6 +135,31 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"PRIMARY KEY (serial, issuer))");
 
 			statement.execute(
+					"CREATE TABLE IF NOT EXISTS crl (" +
+						"serial VARCHAR NOT NULL," +      // CRL issuer certificate serial
+						"issuer VARCHAR NOT NULL," +      // CRL issuer certificate issuer
+						"urls VARCHAR NOT NULL," +        // CRL URLs
+						"nextupdate DATETIME," +          // next update
+						"crldata BLOB," +                 // DER-encoded CRL
+						"" +
+						"FOREIGN KEY (serial, issuer)" +
+						"  REFERENCES certificates(serial, issuer)" +
+						"  ON DELETE CASCADE," +
+						"PRIMARY KEY (serial, issuer))");
+
+			statement.execute(
+					"CREATE TABLE IF NOT EXISTS ocsp (" +
+						"serial VARCHAR NOT NULL," +      // certificate serial of issuer certificate
+						"issuer VARCHAR NOT NULL," +      // certificate issuer of issuer certificate
+						"urls VARCHAR NOT NULL," +        // OCSP URLs
+						"nextupdate DATETIME," +          // next update
+						"" +
+						"FOREIGN KEY (serial, issuer)" +
+						"  REFERENCES certificates(serial, issuer)" +
+						"  ON DELETE CASCADE," +
+						"PRIMARY KEY (serial, issuer))");
+
+			statement.execute(
 					"CREATE TABLE IF NOT EXISTS configuration (" +
 						"key VARCHAR NOT NULL," +    // key
 						"value VARCHAR NOT NULL," +  // value of the related key

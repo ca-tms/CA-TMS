@@ -89,6 +89,15 @@ public interface TrustView extends AutoCloseable {
 	Collection<TrustCertificate> getUntrustedCertificates();
 
 	/**
+	 * @return a collection of all certificates that are
+	 * currently stored in the <code>TrustView</code>,
+	 * this includes trusted and untrusted certificates,
+	 * as well as certificates in the S set of any {@link TrustAssessment}
+	 * and certificates on the watchlist
+	 */
+	Collection<TrustCertificate> getAllCertificates();
+
+	/**
 	 * Sets the given certificate to be trusted
 	 * @param S
 	 */
@@ -148,15 +157,42 @@ public interface TrustView extends AutoCloseable {
 	boolean isCertificateOnWatchlist(TrustCertificate certificate);
 
 	/**
-	 * Returns the {@link TrustCertificate}s currenty on the watchlist
+	 * @return the {@link TrustCertificate}s currently on the watchlist
 	 */
 	Collection<TrustCertificate> getWatchlist();
 
 	/**
-	 * Returns the time the given {@link TrustCertificate} was added to the
+	 * @return the time the given {@link TrustCertificate} was added to the
 	 * watchlist or <code>null</code> if the certificate is not on the watchlist
 	 */
 	Date getWatchlistCerrtificateTimestamp(TrustCertificate certificate);
+
+	/**
+	 * Adds the given CRL information to the <code>TrustView</code>
+	 * @param crlInfo
+	 */
+	void addCRL(CRLInfo crlInfo);
+
+	/**
+	 * @return the CRL information for the given CRL issuer or <code>null</code>
+	 * if the <code>TrustView</code> does not contain such information
+	 * @param crlIssuer
+	 */
+	CRLInfo getCRL(TrustCertificate crlIssuer);
+
+	/**
+	 * Adds the given OCSP information to the <code>TrustView</code>
+	 * @param ocspInfo
+	 */
+	void addOCSP(OCSPInfo ocspInfo);
+
+	/**
+	 * @return the OCSP information for the given certificate issuer or
+	 * <code>null</code> if the <code>TrustView</code> does not contain such
+	 * information
+	 * @param certificateIssuer
+	 */
+	OCSPInfo getOCSP(TrustCertificate certificateIssuer);
 
 	/**
 	 * Cleans the trust view.

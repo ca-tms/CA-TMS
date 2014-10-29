@@ -1,9 +1,14 @@
 package data.sqlite;
 
 import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.cert.CRL;
+import java.security.cert.CRLException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509CRL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,9 +26,11 @@ import CertainTrust.CertainTrust;
 
 import util.Option;
 
+import data.CRLInfo;
 import data.Configuration;
 import data.Model;
 import data.ModelAccessException;
+import data.OCSPInfo;
 import data.TrustAssessment;
 import data.TrustCertificate;
 import data.TrustView;
@@ -51,6 +58,10 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement removeCertificateFromWatchlist;
 	private final PreparedStatement getWatchlistCertificate;
 	private final PreparedStatement getWatchlistCertificates;
+	private final InsertUpdateStmnt addCRL;
+	private final PreparedStatement getCRL;
+	private final InsertUpdateStmnt addOCSP;
+	private final PreparedStatement getOCSP;
 	private final PreparedStatement removeAssessment;
 	private final PreparedStatement removeCertificate;
 	private final PreparedStatement cleanCertificates;
@@ -142,6 +153,28 @@ public class SQLiteBackedTrustView implements TrustView {
 						"SELECT * FROM certificates JOIN watchlist" +
 						"  ON certificates.serial = watchlist.serial" +
 						"  AND certificates.issuer = watchlist.issuer");
+
+				// CRL
+				addCRL = new InsertUpdateStmnt(connection, "crl",
+							new String [] { "serial", "?", "issuer", "?" }, new String [] {
+							"urls", "?", "nextupdate", "?", "crldata", "?" });
+
+				getCRL = connection.prepareStatement(
+						"SELECT * FROM certificates JOIN crl " +
+						"  ON certificates.serial = crl.serial" +
+						"  AND certificates.issuer = crl.issuer" +
+						"  WHERE certificates.serial=? AND certificates.issuer=?");
+
+				// OCSP
+				addOCSP = new InsertUpdateStmnt(connection, "ocsp",
+						new String [] { "serial", "?", "issuer", "?" }, new String [] {
+						"urls", "?", "nextupdate", "?" });
+
+				getOCSP = connection.prepareStatement(
+						"SELECT * FROM certificates JOIN ocsp " +
+						"  ON certificates.serial = ocsp.serial" +
+						"  AND certificates.issuer = ocsp.issuer" +
+						"  WHERE certificates.serial=? AND certificates.issuer=?");
 
 				// cleaning the trust view
 				removeAssessment = connection.prepareStatement(
@@ -331,6 +364,22 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public Collection<TrustCertificate> getAllCertificates() {
+		Set<TrustCertificate> certificates = new HashSet<>();
+		try {
+			validateDatabaseConnection();
+			try (ResultSet result = getCertificates.executeQuery()) {
+				while (result.next())
+					certificates.add(constructCertificate(result));
+			}
+		}
+		catch (SQLException | CertificateException e) {
+			e.printStackTrace();
+		}
+		return certificates;
+	}
+
+	@Override
 	public void setTrustedCertificate(TrustCertificate S) {
 		try {
 			validateDatabaseConnection();
@@ -483,6 +532,148 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public void addCRL(CRLInfo crlInfo) {
+		try {
+			validateDatabaseConnection();
+
+			TrustCertificate certificate = crlInfo.getCRLIssuer();
+			List<String> urls = new ArrayList<>(crlInfo.getURLs().size());
+			for (URL url : crlInfo.getURLs())
+				urls.add(url.toString());
+
+			setCertificate.setString(1, certificate.getSerial());
+			setCertificate.setString(2, certificate.getIssuer());
+			setCertificate.setString(3, certificate.getSubject());
+			setCertificate.setString(4, certificate.getPublicKey());
+			setCertificate.setTimestamp(5, new Timestamp(certificate.getNotBefore().getTime()));
+			setCertificate.setTimestamp(6, new Timestamp(certificate.getNotAfter().getTime()));
+			if (certificate.getCertificate() != null)
+				setCertificate.setBytes(7, certificate.getCertificate().getEncoded());
+			else
+				setCertificate.setNull(7, Types.BLOB);
+			setCertificate.executeUpdate();
+
+			addCRL.setString(1, certificate.getSerial());
+			addCRL.setString(2, certificate.getIssuer());
+			addCRL.setString(3, serialize(urls));
+			if (crlInfo.getNextUpdate().isSet())
+				addCRL.setTimestamp(4, new Timestamp(crlInfo.getNextUpdate().get().getTime()));
+			else
+				addCRL.setNull(4, Types.TIMESTAMP);
+			if (crlInfo.getCRL().isSet() && crlInfo.getCRL().get() instanceof X509CRL)
+				addCRL.setBytes(5, ((X509CRL) crlInfo.getCRL().get()).getEncoded());
+			else
+				addCRL.setNull(5, Types.BLOB);
+			addCRL.executeUpdate();
+		}
+		catch (SQLException | CertificateException | CRLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public CRLInfo getCRL(TrustCertificate crlIssuer) {
+		try {
+			getCRL.setString(1, crlIssuer.getSerial());
+			getCRL.setString(2, crlIssuer.getIssuer());
+			try (ResultSet result = getCRL.executeQuery()) {
+				if (result.next()) {
+					crlIssuer = constructCertificate(result);
+
+					List<String> strings = deserialize(result.getString(13));
+					List<URL> urls = new ArrayList<>(strings.size());
+					for (String string : strings)
+						urls.add(new URL(string));
+
+					Timestamp timestamp = result.getTimestamp(14);
+					Option<Date> nextUpdate = !result.wasNull()
+							? new Option<Date>(new Date(timestamp.getTime()))
+							: new Option<Date>();
+
+					byte[] blob = result.getBytes(15);
+					Option<CRL> crl = !result.wasNull()
+							? new Option<CRL>(
+								CertificateFactory.getInstance("X.509").
+									generateCRL(new ByteArrayInputStream(blob)))
+							: new Option<CRL>();
+
+					return new CRLInfo(crlIssuer, urls, nextUpdate, crl);
+				}
+			}
+		}
+		catch (SQLException | CertificateException | CRLException |
+		       MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public void addOCSP(OCSPInfo ocspInfo) {
+		try {
+			validateDatabaseConnection();
+
+			TrustCertificate certificate = ocspInfo.getCertificateIssuer();
+			List<String> urls = new ArrayList<>(ocspInfo.getURLs().size());
+			for (URL url : ocspInfo.getURLs())
+				urls.add(url.toString());
+
+			setCertificate.setString(1, certificate.getSerial());
+			setCertificate.setString(2, certificate.getIssuer());
+			setCertificate.setString(3, certificate.getSubject());
+			setCertificate.setString(4, certificate.getPublicKey());
+			setCertificate.setTimestamp(5, new Timestamp(certificate.getNotBefore().getTime()));
+			setCertificate.setTimestamp(6, new Timestamp(certificate.getNotAfter().getTime()));
+			if (certificate.getCertificate() != null)
+				setCertificate.setBytes(7, certificate.getCertificate().getEncoded());
+			else
+				setCertificate.setNull(7, Types.BLOB);
+			setCertificate.executeUpdate();
+
+			addOCSP.setString(1, certificate.getSerial());
+			addOCSP.setString(2, certificate.getIssuer());
+			addOCSP.setString(3, serialize(urls));
+			if (ocspInfo.getNextUpdate().isSet())
+				addOCSP.setTimestamp(4, new Timestamp(ocspInfo.getNextUpdate().get().getTime()));
+			else
+				addOCSP.setNull(4, Types.TIMESTAMP);
+			addOCSP.executeUpdate();
+		}
+		catch (SQLException | CertificateException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public OCSPInfo getOCSP(TrustCertificate certificateIssuer) {
+		try {
+			getOCSP.setString(1, certificateIssuer.getSerial());
+			getOCSP.setString(2, certificateIssuer.getIssuer());
+			try (ResultSet result = getOCSP.executeQuery()) {
+				if (result.next()) {
+					certificateIssuer = constructCertificate(result);
+
+					List<String> strings = deserialize(result.getString(13));
+					List<URL> urls = new ArrayList<>(strings.size());
+					for (String string : strings)
+						urls.add(new URL(string));
+
+					Timestamp timestamp = result.getTimestamp(14);
+					Option<Date> nextUpdate = !result.wasNull()
+							? new Option<Date>(new Date(timestamp.getTime()))
+							: new Option<Date>();
+
+					return new OCSPInfo(certificateIssuer, urls, nextUpdate);
+				}
+			}
+		}
+		catch (SQLException | CertificateException | MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
 	public void clean() {
 		try {
 			validateDatabaseConnection();
@@ -601,6 +792,10 @@ public class SQLiteBackedTrustView implements TrustView {
 				removeCertificateFromWatchlist.close();
 				getWatchlistCertificate.close();
 				getWatchlistCertificates.close();
+				addCRL.close();
+				getCRL.close();
+				addOCSP.close();
+				getOCSP.close();
 				removeAssessment.close();
 				removeCertificate.close();
 				cleanCertificates.close();
@@ -611,6 +806,55 @@ public class SQLiteBackedTrustView implements TrustView {
 				connection.close();
 			}
 		}
+	}
+
+	private String serialize(List<String> strings) {
+		StringBuilder builder = new StringBuilder();
+		boolean first = true;
+
+		for (String string : strings) {
+			if (first)
+				first = false;
+			else
+				builder.append('|');
+
+			for (int i = 0, l = string.length(); i < l; i++) {
+				char ch = string.charAt(i);
+				if (ch == '|' || ch == '^')
+					builder.append('^');
+				builder.append(ch);
+			}
+		}
+
+		return builder.toString();
+	}
+
+	private List<String> deserialize(String string) {
+		StringBuilder builder = new StringBuilder();
+		List<String> strings = new ArrayList<>();
+		boolean escaped = false;
+
+		for (int i = 0, l = string.length(); i < l; i++) {
+			char ch = string.charAt(i);
+			if (ch == '|') {
+				if (!escaped) {
+					strings.add(builder.toString());
+					builder.delete(0, builder.length());
+				}
+				else
+					builder.append('|');
+			}
+			else if (ch == '^') {
+				if (escaped)
+					builder.append('^');
+				escaped = !escaped;
+			}
+			else
+				builder.append(ch);
+		}
+
+		strings.add(builder.toString());
+		return strings;
 	}
 
 	private void writeCertificateTrust(TrustCertificate S, boolean trusted, boolean untrusted)
