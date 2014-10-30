@@ -31,7 +31,7 @@ public final class JsonRequestDecoder {
 		JsonArray chain = object.getJsonArray("certChain");
 
 		CertificateFactory factory = CertificateFactory.getInstance("X.509");
-		List<TrustCertificate> certifiactePath = new ArrayList<>(chain.size());
+		List<TrustCertificate> certificatePath = new ArrayList<>(chain.size());
 
 		for (JsonArray jsonCert : chain.getValuesAs(JsonArray.class)) {
 			int i = 0;
@@ -39,7 +39,7 @@ public final class JsonRequestDecoder {
 			for (JsonNumber jsonByte : jsonCert.getValuesAs(JsonNumber.class))
 				certBytes[i++] = (byte) jsonByte.intValue();
 
-			certifiactePath.add(new TrustCertificate(
+			certificatePath.add(new TrustCertificate(
 					factory.generateCertificate(
 							new ByteArrayInputStream(certBytes))));
 		}
@@ -99,7 +99,7 @@ public final class JsonRequestDecoder {
 
 		// return the decoded the request object
 		try (Configuration config = Model.openConfiguration()) {
-			return new ValidationRequest(host, certifiactePath, certificatePathValidity,
+			return new ValidationRequest(host, certificatePath, certificatePathValidity,
 					config.get(securityLevel, Double.class), validationRequestSpec);
 		}
 	}

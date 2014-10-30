@@ -808,7 +808,7 @@ public class SQLiteBackedTrustView implements TrustView {
 		}
 	}
 
-	private String serialize(List<String> strings) {
+	static private String serialize(List<String> strings) {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 
@@ -829,7 +829,7 @@ public class SQLiteBackedTrustView implements TrustView {
 		return builder.toString();
 	}
 
-	private List<String> deserialize(String string) {
+	static private List<String> deserialize(String string) {
 		StringBuilder builder = new StringBuilder();
 		List<String> strings = new ArrayList<>();
 		boolean escaped = false;
@@ -841,8 +841,10 @@ public class SQLiteBackedTrustView implements TrustView {
 					strings.add(builder.toString());
 					builder.delete(0, builder.length());
 				}
-				else
+				else {
 					builder.append('|');
+					escaped = false;
+				}
 			}
 			else if (ch == '^') {
 				if (escaped)
