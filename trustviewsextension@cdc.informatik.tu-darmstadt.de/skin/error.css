@@ -8,6 +8,11 @@ br {
   margin-top: 0.5em;
 }
 
+button {
+  text-align: -moz-left;
+  margin: 0.1em 0;
+}
+
 #additionalDesc, #actions {
   margin-top: 2em;
 }
@@ -37,13 +42,13 @@ ul#actions, ul#actions li {
 
 
 /* custom styling for additional special error classes */
-p.firstseen, p.samecaexpired,
-p.samecavalid, p.differentca {
+p.firstseen, p.samecavalid,
+p.differentca, p.revoked {
   display: none;
 }
 
-.firstseen p.firstseen, .samecaexpired p.samecaexpired,
-.samecavalid p.samecavalid, .differentca p.differentca {
+.firstseen p.firstseen, .samecavalid p.samecavalid,
+.differentca p.differentca, .revoked p.revoked {
   display: block;
 }
 

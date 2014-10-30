@@ -48,12 +48,12 @@ TVE.SSLListener = {
                                     if (ctmsResult != null) {
                                         if (ctmsResult.resultSpec == "validated-first-seen")
                                             warningInfo = "firstseen";
-                                        else if (ctmsResult.resultSpec == "validated-existing-expired-same-ca")
-                                            warningInfo = "samecaexpired";
                                         else if (ctmsResult.resultSpec == "validated-existing-valid-same-ca")
                                             warningInfo = "samecavalid";
                                         else if (ctmsResult.resultSpec == "validated-existing")
                                             warningInfo = "differentca";
+                                        else if (ctmsResult.resultSpec == "validated-revoked")
+                                            warningInfo = "revoked";
                                     }
                                     
                                     aRequest.resume();

@@ -18,9 +18,9 @@
 <!ENTITY trustviewsextension.error.heading.unknown            "Unknown Certificate">
 <!ENTITY trustviewsextension.error.description.unknown        "The certificate provided by the website is unknown. The Trust Views System can’t decide if the connection is trustworthy.">
 <!ENTITY trustviewsextension.error.description.firstseen      "This is the first known certificate for the website.">
-<!ENTITY trustviewsextension.error.description.samecaexpired  "An already known certificate for the website is no longer valid. The current certificate is issued by the same CA, but for a different key. This is probably caused by a regular certificate change.">
 <!ENTITY trustviewsextension.error.description.samecavalid    "An already known certificate for the website is still valid. The current certificate is issued by the same CA. This means that the CA has issued multiple certificates in parallel for the website.">
 <!ENTITY trustviewsextension.error.description.differentca    "An certificate for the website is already known, but the current certificate is issued by another CA for a different key."> 
+<!ENTITY trustviewsextension.error.description.revoked        "The certificate for the website has been revoked and is no longer valid.">
 
 <!ENTITY trustviewsextension.error.heading.untrusted          "Untrusted Website">
 <!ENTITY trustviewsextension.error.description.untrusted      "You are about to securely connect to a website, but the Trust Views System decided that your connection is not trustworthy.">

@@ -23,8 +23,8 @@ TVE.State = {
      */
     warnUser : function(browser, url, type, info, rawCertChain) {
         if (type == "unreachable" || type == "untrusted" || type == "unknown") {
-            if (info != "firstseen" && info != "samecaexpired" &&
-                info != "samecavalid" && info != "differentca")
+            if (info != "firstseen" && info != "samecavalid" &&
+                info != "differentca" && info != "revoked")
                 info = "";
             
             function contentLoaded(event) {

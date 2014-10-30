@@ -18,9 +18,9 @@
 <!ENTITY trustviewsextension.error.heading.unknown            "Unbekanntes Zertifikat">
 <!ENTITY trustviewsextension.error.description.unknown        "Das von der Website ausgelieferte Zertifikat ist unbekannt. Das Trust Views System kann nicht entscheiden, ob der Verbindung vertraut werden sollte.">
 <!ENTITY trustviewsextension.error.description.firstseen      "Dies ist das erste bekannte Zertifikat für die Webseite.">
-<!ENTITY trustviewsextension.error.description.samecaexpired  "Ein bereits bekanntes Zertifikat für die Webseite ist nicht mehr gültig. Das aktuelle Zertifikat wurde von derselben CA ausgestellt, aber für einen anderen Schlüssel. Es handelt sich wahrscheinlich um eine reguläre Zertifikatsänderung.">
 <!ENTITY trustviewsextension.error.description.samecavalid    "Ein bereits bekanntes Zertifikat für die Webseite ist noch gültig. Das aktuelle Zertifikat wurde von derselben CA ausgestellt. Das bedeutet, dass die CA parallel mehrere Zertifikate für die Webseite ausgestellt hat.">
 <!ENTITY trustviewsextension.error.description.differentca    "Ein Zertifikat für die Webseite ist bereits bekannt, aber das aktuelle Zertifikat wurde von einer anderen CA für einen anderen Schlüssel ausgestellt."> 
+<!ENTITY trustviewsextension.error.description.revoked        "Das Zertifikat für die Webseite wurde gesperrt und ist nicht mehr gültig.">
 
 <!ENTITY trustviewsextension.error.heading.untrusted          "Unvertrauenswürdige Website">
 <!ENTITY trustviewsextension.error.description.untrusted      "Sie sind im Begriff, eine sichere Verbindung zu einer Webseite aufzubauen, aber das Trust Views System vertraut der angefragten Website nicht.">
