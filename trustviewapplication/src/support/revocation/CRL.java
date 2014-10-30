@@ -53,7 +53,7 @@ public class CRL {
 	public CRL(URL url, Certificate issuerCertificate)
 			throws IOException, GeneralSecurityException {
 		try (InputStream stream = url.openStream();
-			 BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
+		     BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
 			initialize(bufferedStream, issuerCertificate);
 		}
 	}
@@ -91,7 +91,7 @@ public class CRL {
 		connection.setConnectTimeout(timeoutMillis);
 		connection.setReadTimeout(timeoutMillis);
 		try (InputStream stream = connection.getInputStream();
-			 BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
+		     BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
 			initialize(bufferedStream, issuerCertificate);
 		}
 	}
@@ -173,9 +173,9 @@ public class CRL {
 	}
 
 	/**
-	 * @return the underlying {@link X509CRL} object
+	 * @return the underlying {@link java.security.cert.CRL} object
 	 */
-	public X509CRL getCRL() {
+	public java.security.cert.CRL getCRL() {
 		return crl;
 	}
 

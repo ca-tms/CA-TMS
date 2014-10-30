@@ -49,53 +49,57 @@ public class RevocationInfo {
 	 * @param certificate
 	 */
 	public RevocationInfo(Certificate certificate) {
-	    if (certificate instanceof X509Certificate) {
-			X509Certificate x509cert = (X509Certificate) certificate;
+	    if (certificate instanceof X509Certificate)
+	    	try {
+				X509Certificate x509cert = (X509Certificate) certificate;
 
-			// process Authority Information Access extension
-			// to determine OCSP services
-			AuthorityInformationAccess info = AuthorityInformationAccess.getInstance(
-					certificateExtension(x509cert, Extension.authorityInfoAccess.getId()));
+				// process Authority Information Access extension
+				// to determine OCSP services
+				AuthorityInformationAccess info = AuthorityInformationAccess.getInstance(
+						certificateExtension(x509cert, Extension.authorityInfoAccess.getId()));
 
-			if (info != null)
-				for (AccessDescription desc : info.getAccessDescriptions())
-					if (desc.getAccessMethod().equals(AccessDescription.id_ad_ocsp)) {
-						String url = urlFromGeneralName(desc.getAccessLocation());
-						if (url != null)
-							ocsp.add(url);
+				if (info != null)
+					for (AccessDescription desc : info.getAccessDescriptions())
+						if (desc.getAccessMethod().equals(AccessDescription.id_ad_ocsp)) {
+							String url = urlFromGeneralName(desc.getAccessLocation());
+							if (url != null)
+								ocsp.add(url);
+						}
+
+				ocsp = Collections.unmodifiableList(ocsp);
+
+				// process CRL Distribution Points extension
+				// to determine CRL services
+				CRLDistPoint points = CRLDistPoint.getInstance(
+						certificateExtension(x509cert, Extension.cRLDistributionPoints.getId()));
+
+				if (points != null)
+					for (DistributionPoint point : points.getDistributionPoints()) {
+						// no support for CRLs issued from another CA
+						GeneralNames crlIssuer = point.getCRLIssuer();
+						if (crlIssuer != null && !crlIssuer.equals(DERNull.INSTANCE))
+							continue;
+
+						// no support for partial CRLs
+						ReasonFlags reasons = point.getReasons();
+						if (reasons != null && !reasons.equals(DERNull.INSTANCE))
+							continue;
+
+						// use all distribution points
+						ASN1Encodable names = point.getDistributionPoint().getName();
+						if (names instanceof GeneralNames)
+							for (GeneralName name : ((GeneralNames) names).getNames()) {
+								String url = urlFromGeneralName(name);
+								if (url != null)
+									crl.add(url);
+							}
 					}
 
-			ocsp = Collections.unmodifiableList(ocsp);
-
-			// process CRL Distribution Points extension
-			// to determine CRL services
-			CRLDistPoint points = CRLDistPoint.getInstance(
-					certificateExtension(x509cert, Extension.cRLDistributionPoints.getId()));
-
-			if (points != null)
-				for (DistributionPoint point : points.getDistributionPoints()) {
-					// no support for CRLs issued from another CA
-					GeneralNames crlIssuer = point.getCRLIssuer();
-					if (crlIssuer != null && !crlIssuer.equals(DERNull.INSTANCE))
-						continue;
-
-					// no support for partial CRLs
-					ReasonFlags reasons = point.getReasons();
-					if (reasons != null && !reasons.equals(DERNull.INSTANCE))
-						continue;
-
-					// use all distribution points
-					ASN1Encodable names = point.getDistributionPoint().getName();
-					if (names instanceof GeneralNames)
-						for (GeneralName name : ((GeneralNames) names).getNames()) {
-							String url = urlFromGeneralName(name);
-							if (url != null)
-								crl.add(url);
-						}
-				}
-
-			crl = Collections.unmodifiableList(crl);
-		}
+				crl = Collections.unmodifiableList(crl);
+			}
+			catch (ClassCastException | IllegalArgumentException e) {
+				e.printStackTrace();
+			}
 	}
 
 	/**

@@ -248,8 +248,8 @@ public class OCSP {
 
 			// send request
 			try (OutputStream stream = connection.getOutputStream();
-				 BufferedOutputStream bufferedStream = new BufferedOutputStream(stream);
-				 DataOutputStream dataStream = new DataOutputStream(bufferedStream)) {
+			     BufferedOutputStream bufferedStream = new BufferedOutputStream(stream);
+			     DataOutputStream dataStream = new DataOutputStream(bufferedStream)) {
 				dataStream.write(request.getEncoded());
 			}
 
@@ -260,12 +260,12 @@ public class OCSP {
 
 			// receive response
 			try (InputStream stream = connection.getInputStream();
-				 BufferedInputStream bufferedStream = new BufferedInputStream(stream);
-				 ASN1InputStream asn1stream = new ASN1InputStream(bufferedStream)) {
+			     BufferedInputStream bufferedStream = new BufferedInputStream(stream);
+			     ASN1InputStream asn1stream = new ASN1InputStream(bufferedStream)) {
 				return OCSPResponse.getInstance(asn1stream.readObject());
 			}
 		}
-		catch(ClassCastException e) {
+		catch (ClassCastException | IllegalArgumentException e) {
 			throw new IOException(e);
 		}
 	}
@@ -367,7 +367,7 @@ public class OCSP {
 					singleResponse.getCertStatus().getTagNo() == 1,
 					singleResponse.getNextUpdate().getDate());
 		}
-		catch(ClassCastException | ParseException e) {
+		catch (ClassCastException | IllegalArgumentException | ParseException e) {
 			throw new IOException(e);
 		}
 	}
@@ -379,7 +379,7 @@ public class OCSP {
 	 */
 	private static ASN1Primitive parseASN1(byte[] octets) throws IOException {
 		try (ByteArrayInputStream octetStream = new ByteArrayInputStream(octets);
-			 ASN1InputStream asn1stream = new ASN1InputStream(octetStream)) {
+		     ASN1InputStream asn1stream = new ASN1InputStream(octetStream)) {
 			return asn1stream.readObject();
 		}
 	}
@@ -391,7 +391,7 @@ public class OCSP {
 	 */
 	private static ASN1Primitive parseASN1(ASN1OctetString octets) throws IOException {
 		try (InputStream octetStream = octets.getOctetStream();
-			 ASN1InputStream asn1stream = new ASN1InputStream(octetStream)) {
+		     ASN1InputStream asn1stream = new ASN1InputStream(octetStream)) {
 			return asn1stream.readObject();
 		}
 	}
