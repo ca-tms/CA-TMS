@@ -1,21 +1,18 @@
-package services.logic;
-
-import util.ValidationResult;
-import util.ValidationResultSpec;
+package services;
 
 /**
  * Represents the result of a validation query
  */
-final public class ValidatorResult {
+final public class ValidationInformation {
 	private final ValidationResult validationResult;
 	private final ValidationResultSpec validationResultSpec;
 
 	/**
-	 * Creates a new <code>ValidatorResult</code> instance
+	 * Creates a new <code>ValidationInformation</code> instance
 	 * @param validationResult
 	 * @param validationResultSpec
 	 */
-	public ValidatorResult(ValidationResult validationResult,
+	public ValidationInformation(ValidationResult validationResult,
 			ValidationResultSpec validationResultSpec) {
 		this.validationResult = validationResult;
 		this.validationResultSpec = validationResultSpec;

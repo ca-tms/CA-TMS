@@ -5,6 +5,7 @@
 	</description>
 	
 	<property name="src" value="src" />
+	<property name="res" value="res" />
 	<property name="lib" value="lib" />
 	<property name="build" value="bin" />
 	<property name="export" value="jar" />
@@ -35,8 +36,8 @@
 		<copy todir="${build}">
 			<fileset dir="${src}" includes="**/*.properties" />
 		</copy>
-		<copy todir="${build}/presentation/ui/resources">
-			<fileset dir="${src}/presentation/ui/resources" includes="**/*png" />
+		<copy todir="${build}">
+			<fileset dir="${res}" />
 		</copy>
 	</target>
 

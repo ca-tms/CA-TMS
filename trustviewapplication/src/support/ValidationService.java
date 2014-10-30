@@ -1,8 +1,7 @@
 package support;
 
+import services.ValidationResult;
 import data.TrustCertificate;
-
-import util.ValidationResult;
 
 /**
  * Represents an external validation service

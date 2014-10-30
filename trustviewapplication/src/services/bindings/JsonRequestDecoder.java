@@ -1,4 +1,4 @@
-package services.logic;
+package services.bindings;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
@@ -10,6 +10,8 @@ import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 
+import services.ValidationRequest;
+import services.ValidationRequestSpec;
 import util.CertificatePathValidity;
 import data.Configuration;
 import data.Model;
@@ -19,7 +21,7 @@ import data.TrustCertificate;
 /**
  * Decoder for JSON requests
  */
-public final class JsonRequestDecoder {
+final class JsonRequestDecoder {
 	private JsonRequestDecoder() { }
 
 	/**

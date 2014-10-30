@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import util.ValidationResultSpec;
+import services.ValidationResultSpec;
 
 import data.TrustCertificate;
 import data.TrustView;

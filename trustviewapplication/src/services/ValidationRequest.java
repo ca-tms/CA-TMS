@@ -1,4 +1,4 @@
-package services.logic;
+package services;
 
 import java.util.Collections;
 import java.util.List;

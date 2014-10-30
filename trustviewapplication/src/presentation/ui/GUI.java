@@ -58,7 +58,6 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-import presentation.logic.PresentationLogic;
 import services.bindings.WebServer;
 import support.Service;
 import CertainTrust.CertainTrust;
@@ -170,26 +169,26 @@ public class GUI {
 	 */
 	public void Configurate() {
 
-		assessment_expiration_millis = PresentationLogic.get_Configuration(
+		assessment_expiration_millis = GUILogic.get_Configuration(
 				Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
 
-		Port = PresentationLogic.get_Configuration(Configuration.SERVER_PORT,
+		Port = GUILogic.get_Configuration(Configuration.SERVER_PORT,
 				Integer.class);
 
-		security_level_low = PresentationLogic.get_Configuration(
+		security_level_low = GUILogic.get_Configuration(
 				Configuration.SECURITY_LEVEL_LOW, Float.class);
-		security_level_med = PresentationLogic.get_Configuration(
+		security_level_med = GUILogic.get_Configuration(
 				Configuration.SECURITY_LEVEL_MEDIUM, Float.class);
-		security_level_high = PresentationLogic.get_Configuration(
+		security_level_high = GUILogic.get_Configuration(
 				Configuration.SECURITY_LEVEL_HIGH, Float.class);
 
-		Vali_Notary= PresentationLogic.get_Configuration(
+		Vali_Notary= GUILogic.get_Configuration(
 				Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, String.class);
 
-		Bootsrapping_Mode = PresentationLogic.get_Configuration(
+		Bootsrapping_Mode = GUILogic.get_Configuration(
 				Configuration.BOOTSTRAPPING_MODE, Boolean.class);
 
-		AutoStart_Webserver = PresentationLogic.get_Configuration(
+		AutoStart_Webserver = GUILogic.get_Configuration(
 				GUICONFIG_AUTO_START_WEBSERVER, Boolean.class, false);
 	}
 
@@ -326,16 +325,16 @@ public class GUI {
 		scrollPane_TC.setBounds(10, 10, 549, 497);
 		panel_TC.add(scrollPane_TC);
 
-		trayImg_on = new ImageIcon(this.getClass().getResource(
-				"resources/on.png"));
-		trayImg_off = new ImageIcon(this.getClass().getResource(
-				"resources/off.png"));
+		trayImg_on = new ImageIcon(
+				getClass().getClassLoader().getResource("images/on.png"));
+		trayImg_off = new ImageIcon(
+				getClass().getClassLoader().getResource("images/off.png"));
 
 
 
 		// ///////////////////////////////////////////////////////////////////TrustCertificate_Table////////////////////////////////////////////////////////////
 
-		table_TC = new JTable(PresentationLogic.refresh_TC_Table());
+		table_TC = new JTable(GUILogic.refresh_TC_Table());
 
 		table_TC.setFont(new Font("Arial", Font.PLAIN, 14));
 		table_TC.setRowHeight(25);
@@ -409,37 +408,34 @@ public class GUI {
 								.getAbsolutePath();
 					}
 					if (!new File(Cert_Path).exists()) {
-						PresentationLogic.msg("File not found!");
+						GUILogic.msg("File not found!");
 						return;
 					}
 
 					try {
-						X509Certificate cert = PresentationLogic
+						X509Certificate cert = GUILogic
 								.LoadCert(Cert_Path);
 						TrustView view = data.Model.openTrustView();
 						view.setTrustedCertificate(new TrustCertificate(cert));
 						view.close();
 
-						table_TC.setModel(PresentationLogic.refresh_TC_Table());
-						table_uTC.setModel(PresentationLogic
+						table_TC.setModel(GUILogic.refresh_TC_Table());
+						table_uTC.setModel(GUILogic
 								.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (CertificateException e) {
-						PresentationLogic
-								.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
+						GUILogic.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
 						e.printStackTrace();
 					} catch (IOException e) {
 						if (Cert_Path.equals(""))
 							return;
 						else
-							PresentationLogic
-									.msg("Error reading Certificate File ");
+							GUILogic.msg("Error reading Certificate File ");
 
 						e.printStackTrace();
 					} catch (ModelAccessException e) {
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -453,8 +449,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					TrustCertificate Cert = PresentationLogic
-							.getTCert_by_Click(table_TC);
+					TrustCertificate Cert = GUILogic.getTCert_by_Click(table_TC);
 					if (Cert == null)
 						return;
 
@@ -463,13 +458,12 @@ public class GUI {
 						view.removeCertificate(Cert);
 						view.close();
 
-						table_TC.setModel(PresentationLogic.refresh_TC_Table());
+						table_TC.setModel(GUILogic.refresh_TC_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -484,7 +478,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					TrustCertificate uTCertificate = PresentationLogic
+					TrustCertificate uTCertificate = GUILogic
 							.getTCert_by_Click(table_TC);
 					if (uTCertificate == null)
 						return;
@@ -494,15 +488,13 @@ public class GUI {
 						view.setUntrustedCertificate(uTCertificate);
 						view.close();
 
-						table_TC.setModel(PresentationLogic.refresh_TC_Table());
-						table_uTC.setModel(PresentationLogic
-								.refresh_uTC_Table());
+						table_TC.setModel(GUILogic.refresh_TC_Table());
+						table_uTC.setModel(GUILogic.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database !");
+						GUILogic.msg("Error reading or concurrent modifying the database !");
 
 						e.printStackTrace();
 					}
@@ -522,7 +514,7 @@ public class GUI {
 		panel_uTC.add(scrollPane_uTC);
 		// ///////////////////////////////////////////////////////////////////unTrustCertificate_Table////////////////////////////////////
 
-		table_uTC = new JTable(PresentationLogic.refresh_uTC_Table());
+		table_uTC = new JTable(GUILogic.refresh_uTC_Table());
 		table_uTC.setFont(new Font("Arial", Font.PLAIN, 14));
 		table_uTC.setRowHeight(25);
 		table_uTC.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -595,38 +587,35 @@ public class GUI {
 					}
 
 					if (!new File(Cert_Path).exists()) {
-						PresentationLogic.msg("File not found!");
+						GUILogic.msg("File not found!");
 						return;
 					}
 
 					try {
-						X509Certificate cert = PresentationLogic
+						X509Certificate cert = GUILogic
 								.LoadCert(Cert_Path);
 						TrustView view = data.Model.openTrustView();
 						view.setUntrustedCertificate(new TrustCertificate(cert));
 						view.close();
 
-						table_uTC.setModel(PresentationLogic
+						table_uTC.setModel(GUILogic
 								.refresh_uTC_Table());
-						table_TC.setModel(PresentationLogic.refresh_TC_Table());
+						table_TC.setModel(GUILogic.refresh_TC_Table());
 						refresh_ColWidth();
 
 					} catch (CertificateException e) {
-						PresentationLogic
-								.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
+						GUILogic.msg("Cannot create a TrustCertificate from not X.509 Certificate ");
 
 						e.printStackTrace();
 					} catch (IOException e) {
 						if (Cert_Path.equals(""))
 							return;
 						else
-							PresentationLogic
-									.msg("Error reading Certificate File ");
+							GUILogic.msg("Error reading Certificate File ");
 
 						e.printStackTrace();
 					} catch (ModelAccessException e) {
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -640,7 +629,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					TrustCertificate Cert = PresentationLogic
+					TrustCertificate Cert = GUILogic
 							.getuTCert_by_Click(table_uTC);
 					if (Cert == null) {
 						return;
@@ -651,14 +640,13 @@ public class GUI {
 						view.removeCertificate(Cert);
 						view.close();
 
-						table_uTC.setModel(PresentationLogic
+						table_uTC.setModel(GUILogic
 								.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -673,7 +661,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					TrustCertificate TCertificate = PresentationLogic
+					TrustCertificate TCertificate = GUILogic
 							.getuTCert_by_Click(table_uTC);
 
 					if (TCertificate == null)
@@ -684,13 +672,13 @@ public class GUI {
 						view.setTrustedCertificate(TCertificate);
 						view.close();
 
-						table_TC.setModel(PresentationLogic.refresh_TC_Table());
-						table_uTC.setModel(PresentationLogic
+						table_TC.setModel(GUILogic.refresh_TC_Table());
+						table_uTC.setModel(GUILogic
 								.refresh_uTC_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
-						PresentationLogic
+						GUILogic
 								.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
@@ -711,7 +699,7 @@ public class GUI {
 		panel_Ass.add(scrollPane_Ass);
 		// ///////////////////////////////////////////////////////////////////Assessment_Table///////////////////////////////////
 
-		table_Ass = new JTable(PresentationLogic.refresh_Ass_Table());
+		table_Ass = new JTable(GUILogic.refresh_Ass_Table());
 		table_Ass.setFont(new Font("Arial", Font.PLAIN, 14));
 		table_Ass.setRowHeight(25);
 		table_Ass.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -769,7 +757,7 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					TrustAssessment Ass = PresentationLogic
+					TrustAssessment Ass = GUILogic
 							.getAss_by_Click(table_Ass);
 					if (Ass == null)
 						return;
@@ -779,14 +767,13 @@ public class GUI {
 						view.removeAssessment(Ass.getK(), Ass.getCa());
 						view.close();
 
-						table_Ass.setModel(PresentationLogic
+						table_Ass.setModel(GUILogic
 								.refresh_Ass_Table());
 						refresh_ColWidth();
 
 					} catch (ModelAccessException e) {
 
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
@@ -825,8 +812,7 @@ public class GUI {
 						view.setAssessmentValid(k, ca);
 						view.close();
 					} catch (ModelAccessException e) {
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 					}
 
@@ -844,13 +830,12 @@ public class GUI {
 						view.clean();
 						view.close();
 					} catch (ModelAccessException e) {
-						PresentationLogic
-								.msg("Error reading or concurrent modifying the database! ");
+						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 						e.printStackTrace();
 					}
 
-					table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+					table_Ass.setModel(GUILogic.refresh_Ass_Table());
 					refresh_ColWidth();
 				}
 			}
@@ -1099,8 +1084,7 @@ public class GUI {
 
 					if (!slider_high.getValueIsAdjusting()) {
 						if (slider_high.getValue() <= slider_med.getValue()) {
-							PresentationLogic
-									.msg("Please select a correct value(not smaller than medium level)! ");
+							GUILogic.msg("Please select a correct value(not smaller than medium level)! ");
 
 							slider_high
 									.setValue((int) (security_level_high * 100));
@@ -1109,7 +1093,7 @@ public class GUI {
 
 							security_level_high = (float) slider_high
 									.getValue() / 100;
-							PresentationLogic.set_Configuration(
+							GUILogic.set_Configuration(
 									Configuration.SECURITY_LEVEL_HIGH,
 									security_level_high);
 
@@ -1131,8 +1115,7 @@ public class GUI {
 						if (slider_med.getValue() >= slider_high.getValue()
 								|| slider_med.getValue() <= slider_low
 										.getValue()) {
-							PresentationLogic
-									.msg("Please select a correct value(not bigger than high level and not smaller than low level)! ");
+							GUILogic.msg("Please select a correct value(not bigger than high level and not smaller than low level)! ");
 
 							slider_med
 									.setValue((int) (security_level_med * 100));
@@ -1140,7 +1123,7 @@ public class GUI {
 						} else {
 
 							security_level_med = (float) slider_med.getValue() / 100;
-							PresentationLogic.set_Configuration(
+							GUILogic.set_Configuration(
 									Configuration.SECURITY_LEVEL_MEDIUM,
 									security_level_med);
 
@@ -1161,8 +1144,7 @@ public class GUI {
 
 					if (!slider_low.getValueIsAdjusting()) {
 						if (slider_med.getValue() <= slider_low.getValue()) {
-							PresentationLogic
-									.msg("Please select a correct value(not bigger medium level)! ");
+							GUILogic.msg("Please select a correct value(not bigger medium level)! ");
 
 							slider_low
 									.setValue((int) (security_level_low * 100));
@@ -1170,7 +1152,7 @@ public class GUI {
 						} else {
 
 							security_level_low = (float) slider_low.getValue() / 100;
-							PresentationLogic.set_Configuration(
+							GUILogic.set_Configuration(
 									Configuration.SECURITY_LEVEL_LOW,
 									security_level_low);
 
@@ -1206,7 +1188,7 @@ public class GUI {
 				}
 
 				if (!new File(Import_Path).exists()) {
-					PresentationLogic.msg("Import Backup File not exist !");
+					GUILogic.msg("Import Backup File not exist !");
 					return;
 				}
 
@@ -1215,19 +1197,18 @@ public class GUI {
 					Model.restore(new File(Import_Path));
 
 				} catch (ModelAccessException e) {
-					PresentationLogic.msg("Importing Backup File Error !");
+					GUILogic.msg("Importing Backup File Error !");
 					e.printStackTrace();
 					return;
 				}
 
-				table_TC.setModel(PresentationLogic.refresh_TC_Table());
-				table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
-				table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+				table_TC.setModel(GUILogic.refresh_TC_Table());
+				table_uTC.setModel(GUILogic.refresh_uTC_Table());
+				table_Ass.setModel(GUILogic.refresh_Ass_Table());
 
 				refresh_ColWidth();
 
-				PresentationLogic.msg("Success Importing Backup File !",
-						"Success");
+				GUILogic.msg("Success Importing Backup File !", "Success");
 			}
 		});
 		btnExport.addMouseListener(new MouseAdapter() {
@@ -1277,14 +1258,12 @@ public class GUI {
 							Model.backup(Export_File);
 
 						} catch (ModelAccessException e) {
-							PresentationLogic
-									.msg("Exporting Backup File Error !");
+							GUILogic.msg("Exporting Backup File Error !");
 							e.printStackTrace();
 							return;
 						}
 
-						PresentationLogic.msg(
-								"Success Exporting Backup File !", "Success");
+						GUILogic.msg("Success Exporting Backup File !", "Success");
 
 					}
 				}
@@ -1301,7 +1280,7 @@ public class GUI {
 		AutoStartWebserver.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				PresentationLogic.set_Configuration(
+				GUILogic.set_Configuration(
 						GUICONFIG_AUTO_START_WEBSERVER, AutoStartWebserver.isSelected());
 			}
 		});
@@ -1309,7 +1288,7 @@ public class GUI {
 		BootstrappingMode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				PresentationLogic.set_Configuration(
+				GUILogic.set_Configuration(
 						Configuration.BOOTSTRAPPING_MODE, BootstrappingMode.isSelected());
 			}
 		});
@@ -1319,7 +1298,7 @@ public class GUI {
 			public void actionPerformed(ActionEvent arg0) {
 				if(arg0.getSource()==comboBox)
 				{
-						   PresentationLogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, comboBox.getSelectedItem().toString());
+					GUILogic.set_Configuration(Configuration.OVERRIDE_VALIDATION_SERVICE_RESULT, comboBox.getSelectedItem().toString());
 				}
 			}
 		});
@@ -1329,15 +1308,14 @@ public class GUI {
 			public void mouseReleased(MouseEvent arg0) {
 				int get_port = Integer.valueOf(textField_Port.getText());
 				if (get_port < 200 || get_port > 65535) {
-					PresentationLogic
-							.msg("Please enter a valid Port Number(200 < Number < 65535)! ");
+					GUILogic.msg("Please enter a valid Port Number(200 < Number < 65535)! ");
 
 				} else {
 					Port = get_port;
-					PresentationLogic.set_Configuration(
+					GUILogic.set_Configuration(
 							Configuration.SERVER_PORT, Port);
 
-					PresentationLogic.msg("The service will be bound to port "
+					GUILogic.msg("The service will be bound to port "
 							+ Port + " when it is started next time!",
 							"Attention");
 
@@ -1384,7 +1362,7 @@ public class GUI {
 									"Are you Sure ?", JOptionPane.YES_NO_OPTION);
 					if (n == JOptionPane.YES_OPTION) {
 						assessment_expiration_millis = expire;
-						PresentationLogic.set_Configuration(
+						GUILogic.set_Configuration(
 								Configuration.ASSESSMENT_EXPIRATION_MILLIS,
 								assessment_expiration_millis);
 						try {
@@ -1400,8 +1378,7 @@ public class GUI {
 							arg.printStackTrace();
 						}
 
-						table_Ass.setModel(PresentationLogic
-								.refresh_Ass_Table());
+						table_Ass.setModel(GUILogic.refresh_Ass_Table());
 						refresh_ColWidth();
 
 					} else {
@@ -1411,8 +1388,7 @@ public class GUI {
 
 				} else {
 
-					PresentationLogic
-							.msg("Please enter a valid Expiration Time in millisecond !");
+					GUILogic.msg("Please enter a valid Expiration Time in millisecond !");
 				}
 
 			}
@@ -1439,9 +1415,9 @@ public class GUI {
 										"Error", JOptionPane.DEFAULT_OPTION);
 						e.printStackTrace();
 					}
-					table_TC.setModel(PresentationLogic.refresh_TC_Table());
-					table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
-					table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+					table_TC.setModel(GUILogic.refresh_TC_Table());
+					table_uTC.setModel(GUILogic.refresh_uTC_Table());
+					table_Ass.setModel(GUILogic.refresh_Ass_Table());
 					refresh_ColWidth();
 
 				}
@@ -1473,7 +1449,7 @@ public class GUI {
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent evt) {
-							PresentationLogic.bootstrapTrustView(
+							GUILogic.bootstrapTrustView(
 									file, securityLevel, frame);
 						}
 					});
@@ -1493,7 +1469,7 @@ public class GUI {
 
 						if (fileChooser.showOpenDialog(button) ==
 								JFileChooser.APPROVE_OPTION) {
-							PresentationLogic.bootstrapTrustView(
+							GUILogic.bootstrapTrustView(
 									fileChooser.getSelectedFile(), securityLevel, frame);
 						}
 					}
@@ -1603,9 +1579,9 @@ public class GUI {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
 
-				table_TC.setModel(PresentationLogic.refresh_TC_Table());
-				table_uTC.setModel(PresentationLogic.refresh_uTC_Table());
-				table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+				table_TC.setModel(GUILogic.refresh_TC_Table());
+				table_uTC.setModel(GUILogic.refresh_uTC_Table());
+				table_Ass.setModel(GUILogic.refresh_Ass_Table());
 				refresh_ColWidth();
 
 			}
@@ -1755,8 +1731,7 @@ public class GUI {
 		@Override
 		public void tableChanged(TableModelEvent e) {
 
-			TrustAssessment Clicked_Ass = PresentationLogic
-					.getAss_by_Click(table_Ass);
+			TrustAssessment Clicked_Ass = GUILogic.getAss_by_Click(table_Ass);
 			TrustAssessment new_Ass = Clicked_Ass;
 			String Change = (String) table_Ass.getValueAt(e.getFirstRow(),
 					e.getColumn());
@@ -1764,8 +1739,7 @@ public class GUI {
 			String regex = "^\\s*\\(\\s*(\\s*0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0)\\s*,\\s*(0\\.[0-9]+|1\\.0\\s*)\\s*\\)\\s*$";
 
 			if (!Change.matches(regex)) {
-				PresentationLogic
-						.msg("Please enter the valid value(between 0.0 and 1.0) for each item. example:(0.5, 0.5, 0.5)");
+				GUILogic.msg("Please enter the valid value(between 0.0 and 1.0) for each item. example:(0.5, 0.5, 0.5)");
 
 				if (e.getColumn() == 3)
 					Change = "(" + Clicked_Ass.getO_it_ca().getT() + ", "
@@ -1819,13 +1793,12 @@ public class GUI {
 				view.close();
 
 			} catch (ModelAccessException e1) {
-				PresentationLogic
-						.msg("Error reading or concurrent modifying the database! ");
+				GUILogic.msg("Error reading or concurrent modifying the database! ");
 
 				e1.printStackTrace();
 			}
 
-			table_Ass.setModel(PresentationLogic.refresh_Ass_Table());
+			table_Ass.setModel(GUILogic.refresh_Ass_Table());
 			refresh_ColWidth();
 
 		}

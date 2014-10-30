@@ -11,7 +11,7 @@ import org.sqlite.SQLiteDataSource;
 
 import support.BootstrapService.Observer;
 
-final public class SQLiteURLBootstrapping {
+final class SQLiteURLBootstrapping {
 	private SQLiteURLBootstrapping() { }
 
 	public static void bootstrap(double securityLevel, Observer observer,

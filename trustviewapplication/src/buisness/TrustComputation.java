@@ -9,9 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import services.ValidationResult;
 import support.ValidationService;
 import util.Option;
-import util.ValidationResult;
 import CertainTrust.CertainTrust;
 import data.Configuration;
 import data.TrustAssessment;

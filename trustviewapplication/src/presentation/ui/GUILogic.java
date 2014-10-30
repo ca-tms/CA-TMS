@@ -1,4 +1,4 @@
-package presentation.logic;
+package presentation.ui;
 
 import java.awt.Component;
 import java.awt.Toolkit;
@@ -36,7 +36,7 @@ import data.TrustView;
  * provide some logical functions for the GUI class
  *
  */
-public class PresentationLogic {
+public class GUILogic {
 
 	/**
 	 * load a X509 certificate into program

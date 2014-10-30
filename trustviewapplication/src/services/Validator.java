@@ -1,4 +1,4 @@
-package services.logic;
+package services;
 
 import java.util.Collections;
 import java.util.Date;
@@ -9,8 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import support.Service;
 import support.ValidationService;
 import util.CertificatePathValidity;
-import util.ValidationResult;
-import util.ValidationResultSpec;
 import buisness.TrustComputation;
 import buisness.TrustViewControl;
 import data.Configuration;
@@ -36,9 +34,9 @@ public final class Validator {
 	 * @throws ModelAccessException if accessing the data model,
 	 * whose data the validation is based on, failed
 	 */
-	public static ValidatorResult validate(ValidationRequest request)
+	public static ValidationInformation validate(ValidationRequest request)
 			throws ModelAccessException {
-		ValidatorResult result = new ValidatorResult(
+		ValidationInformation result = new ValidationInformation(
 				ValidationResult.UNKNOWN,
 				request.getValidationRequestSpec() ==
 					ValidationRequestSpec.RETRIEVE_RECOMMENDATION
@@ -172,7 +170,7 @@ public final class Validator {
 	 * @param securityLevel
 	 * @param spec
 	 */
-	private static ValidatorResult validate(TrustView trustView,
+	private static ValidationInformation validate(TrustView trustView,
 			Configuration config, ValidationService validationService,
 			String hostURL, List<TrustCertificate> certificatePath,
 			double securityLevel, ValidationRequestSpec spec) {
@@ -218,13 +216,13 @@ public final class Validator {
 			// we will not run whole trust validation algorithm,
 			// but just add the certificate to the watchlist
 			trustView.addCertificateToWatchlist(hostCertificate);
-			return new ValidatorResult(
+			return new ValidationInformation(
 					ValidationResult.TRUSTED,
 					ValidationResultSpec.VALIDATED_ON_WATCHLIST);
 		}
 
 		if (spec == ValidationRequestSpec.RETRIEVE_RECOMMENDATION)
-			return new ValidatorResult(
+			return new ValidationInformation(
 					validationService.query(hostCertificate),
 					ValidationResultSpec.RECOMMENDED);
 
@@ -249,7 +247,7 @@ public final class Validator {
 				// certificate on watchlist has not expired yet
 				// as long as the certificate is on the watchlist,
 				// assume it is trusted
-				return new ValidatorResult(
+				return new ValidationInformation(
 						ValidationResult.TRUSTED,
 						ValidationResultSpec.VALIDATED_ON_WATCHLIST);
 		}
@@ -286,11 +284,11 @@ public final class Validator {
 				(resultSpec == ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY ||
 					resultSpec == ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA)) {
 			trustView.addCertificateToWatchlist(hostCertificate);
-			return new ValidatorResult(
+			return new ValidationInformation(
 					ValidationResult.TRUSTED,
 					ValidationResultSpec.VALIDATED_ON_WATCHLIST);
 		}
 
-		return new ValidatorResult(result, resultSpec);
+		return new ValidationInformation(result, resultSpec);
 	}
 }

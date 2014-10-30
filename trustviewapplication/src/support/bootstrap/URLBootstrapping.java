@@ -10,16 +10,16 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import services.logic.ValidationRequest;
-import services.logic.ValidationRequestSpec;
-import services.logic.Validator;
 import util.CertificatePathValidity;
 import util.Util;
 import data.TrustCertificate;
 
+import services.ValidationRequest;
+import services.ValidationRequestSpec;
+import services.Validator;
 import support.BootstrapService;
 
-final public class URLBootstrapping {
+final class URLBootstrapping {
 	private URLBootstrapping() { }
 
 	public static boolean bootstrap(Iterator urls, int maxSize,

@@ -1,4 +1,4 @@
-package services.logic;
+package services;
 
 /**
  * Represents a validation query specification that contains further

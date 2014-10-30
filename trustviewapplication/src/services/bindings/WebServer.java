@@ -23,10 +23,10 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import services.logic.JsonRequestDecoder;
-import services.logic.ValidationRequest;
-import services.logic.Validator;
-import services.logic.ValidatorResult;
+import services.ValidationInformation;
+import services.ValidationRequest;
+import services.Validator;
+
 import data.Configuration;
 import data.Model;
 
@@ -150,7 +150,7 @@ public class WebServer {
 						ValidationRequest request = JsonRequestDecoder.decode(object);
 
 						// perform trust validation
-						ValidatorResult result = Validator.validate(request);
+						ValidationInformation result = Validator.validate(request);
 
 						// create answer JSON string
 						StringBuilder jsonResult = new StringBuilder();

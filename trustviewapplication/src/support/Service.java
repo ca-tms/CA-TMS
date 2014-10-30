@@ -27,6 +27,7 @@ import data.CRLInfo;
 import data.OCSPInfo;
 import data.TrustCertificate;
 
+import services.ValidationResult;
 import sslcheck.core.NotaryManager;
 import sslcheck.core.TLSConnectionInfo;
 import support.bootstrap.ChromiumBootstrapService;
@@ -34,7 +35,6 @@ import support.bootstrap.FirefoxBootstrapService;
 import support.revocation.CRL;
 import support.revocation.OCSP;
 import util.Option;
-import util.ValidationResult;
 
 /**
  * Provides central access point for external services
