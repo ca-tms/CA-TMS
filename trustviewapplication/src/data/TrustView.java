@@ -110,7 +110,7 @@ public interface TrustView extends AutoCloseable {
 	void setUntrustedCertificate(TrustCertificate S);
 
 	/**
-	 * Removes the given (trusted or untrusted) certificate from the
+	 * Removes the given trusted or untrusted certificate from the
 	 * <code>TrustView</code>.
 	 *
 	 * This will not remove certificates in the S set of any
@@ -119,6 +119,18 @@ public interface TrustView extends AutoCloseable {
 	 * @param S
 	 */
 	void removeCertificate(TrustCertificate S);
+
+	/**
+	 * Sets the given certificate to be revoked
+	 * @param certificate
+	 */
+	void setRevokedCertificate(TrustCertificate certificate);
+
+	/**
+	 * @return whether the given certificate is set to be revoked
+	 * @return
+	 */
+	boolean isCertificateRevoked(TrustCertificate certificate);
 
 	/**
 	 * @return a collection of all {@link TrustCertificate}s

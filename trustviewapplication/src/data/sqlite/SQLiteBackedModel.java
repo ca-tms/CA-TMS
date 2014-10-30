@@ -101,6 +101,7 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"notbefore DATETIME NOT NULL," + // not before
 						"notafter DATETIME NOT NULL," +  // not after
 						"certdata BLOB," +               // DER-encoded certificate
+						"revoked BOOLEAN NOT NULL," +    // is certificate revoked
 						"trusted BOOLEAN NOT NULL," +    // is certificate trusted
 						"untrusted BOOLEAN NOT NULL," +  // is certificate untrusted
 						"S BOOLEAN NOT NULL," +          // is certificate in the S set

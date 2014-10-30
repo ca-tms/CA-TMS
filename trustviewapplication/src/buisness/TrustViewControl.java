@@ -93,8 +93,10 @@ public final class TrustViewControl {
 	 * revoked
 	 * @param certificate
 	 */
-	public static boolean isCertificateValid(TrustCertificate certificate) {
-		return !isCertificateExpired(certificate) && !isCertificateRevoked(certificate);
+	public static boolean isCertificateValid(TrustView trustView,
+			TrustCertificate certificate) {
+		return !isCertificateExpired(certificate) &&
+		       !isCertificateRevoked(trustView, certificate);
 	}
 
 	/**
@@ -113,9 +115,11 @@ public final class TrustViewControl {
 	 * @return whether the given certificate is revoked; does not check if the
 	 * certificate is outside of its validity period
 	 * @param certificate
+	 * @param trustView
 	 */
-	public static boolean isCertificateRevoked(TrustCertificate certificate) {
-		return false;
+	public static boolean isCertificateRevoked(TrustView trustView,
+			TrustCertificate certificate) {
+		return trustView.isCertificateRevoked(certificate);
 	}
 
 	/**
@@ -156,24 +160,24 @@ public final class TrustViewControl {
 		existingCertificates.retainAll(trustedCertificates);
 
 		for (TrustCertificate cert : existingCertificates)
-			if (isCertificateExpired(cert) && !isCertificateRevoked(cert) &&
+			if (isCertificateExpired(cert) && !isCertificateRevoked(trustView, cert) &&
 					cert.getIssuer().equals(hostCertificate.getIssuer()) &&
 					cert.getPublicKey().equals(hostCertificate.getPublicKey()))
 				return ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA_KEY;
 
 		for (TrustCertificate cert : existingCertificates)
-			if (isCertificateValid(cert) &&
+			if (isCertificateValid(trustView, cert) &&
 					!cert.getIssuer().equals(hostCertificate.getIssuer()) &&
 					cert.getPublicKey().equals(hostCertificate.getPublicKey()))
 				return ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_KEY;
 
 		for (TrustCertificate cert : existingCertificates)
-			if (!isCertificateValid(cert) &&
+			if (!isCertificateValid(trustView, cert) &&
 					cert.getIssuer().equals(hostCertificate.getIssuer()))
 				return ValidationResultSpec.VALIDATED_EXISTING_EXPIRED_SAME_CA;
 
 		for (TrustCertificate cert : existingCertificates)
-			if (isCertificateValid(cert) &&
+			if (isCertificateValid(trustView, cert) &&
 					cert.getIssuer().equals(hostCertificate.getIssuer()))
 				return ValidationResultSpec.VALIDATED_EXISTING_VALID_SAME_CA;
 

@@ -51,7 +51,9 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement getCertificates;
 	private final PreparedStatement getCertificateTrust;
 	private final InsertUpdateStmnt setCertificateTrust;
+	private final InsertUpdateStmnt setCertificateRevoked;
 	private final InsertUpdateStmnt setCertificate;
+	private final PreparedStatement getCertificate;
 	private final PreparedStatement getCertificatesForHost;
 	private final PreparedStatement addCertificateToHost;
 	private final PreparedStatement addCertificateToWatchlist;
@@ -101,7 +103,7 @@ public class SQLiteBackedTrustView implements TrustView {
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
-						"trusted", "!0", "untrusted", "!0", "S", "?" });
+						"revoked", "!0", "trusted", "!0", "untrusted", "!0", "S", "?" });
 
 				setAssessmentValid = connection.prepareStatement(
 						"UPDATE assessments SET timestamp=? WHERE k=? AND ca=?");
@@ -118,13 +120,22 @@ public class SQLiteBackedTrustView implements TrustView {
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
-						"trusted", "?", "untrusted", "?", "S", "!0" });
+						"revoked", "!0", "trusted", "?", "untrusted", "?", "S", "!0" });
 
 				setCertificate = new InsertUpdateStmnt(connection, "certificates",
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
-						"trusted", "!0", "untrusted", "!0", "S", "!0" });
+						"revoked", "!0", "trusted", "!0", "untrusted", "!0", "S", "!0" });
+
+				setCertificateRevoked = new InsertUpdateStmnt(connection, "certificates",
+						new String [] { "serial", "?", "issuer", "?" }, new String [] {
+						"subject", "?", "publickey", "?",
+						"notbefore", "?", "notafter", "?", "certdata", "?",
+						"revoked", "?", "trusted", "!0", "untrusted", "!0", "S", "!0" });
+
+				getCertificate = connection.prepareStatement(
+						"SELECT * FROM certificates WHERE serial=? AND issuer=?");
 
 				// accessing certificate hosts
 				getCertificatesForHost = connection.prepareStatement(
@@ -413,6 +424,45 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public void setRevokedCertificate(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+			setCertificateRevoked.setString(1, certificate.getSerial());
+			setCertificateRevoked.setString(2, certificate.getIssuer());
+			setCertificateRevoked.setString(3, certificate.getSubject());
+			setCertificateRevoked.setString(4, certificate.getPublicKey());
+			setCertificateRevoked.setTimestamp(5, new Timestamp(certificate.getNotBefore().getTime()));
+			setCertificateRevoked.setTimestamp(6, new Timestamp(certificate.getNotAfter().getTime()));
+			if (certificate.getCertificate() != null)
+				setCertificateRevoked.setBytes(7, certificate.getCertificate().getEncoded());
+			else
+				setCertificateRevoked.setNull(7, Types.BLOB);
+			setCertificateRevoked.setBoolean(8, true);
+			setCertificateRevoked.executeUpdate();
+		}
+		catch (SQLException | CertificateEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public boolean isCertificateRevoked(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+			getCertificate.setString(1, certificate.getSerial());
+			getCertificate.setString(2, certificate.getIssuer());
+			try (ResultSet result = getCertificate.executeQuery()) {
+				if (result.next() && result.getBoolean(8))
+					return true;
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
 	public Collection<TrustCertificate> getCertificatesForHost(String host) {
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
@@ -504,6 +554,7 @@ public class SQLiteBackedTrustView implements TrustView {
 	public Collection<TrustCertificate> getWatchlist() {
 		List<TrustCertificate> watchlist = new ArrayList<>();
 		try {
+			validateDatabaseConnection();
 			try (ResultSet result = getWatchlistCertificates.executeQuery()) {
 				while (result.next())
 					watchlist.add(constructCertificate(result));
@@ -518,11 +569,12 @@ public class SQLiteBackedTrustView implements TrustView {
 	@Override
 	public Date getWatchlistCerrtificateTimestamp(TrustCertificate certificate) {
 		try {
+			validateDatabaseConnection();
 			getWatchlistCertificate.setString(1, certificate.getSerial());
 			getWatchlistCertificate.setString(2, certificate.getIssuer());
 			try (ResultSet result = getWatchlistCertificate.executeQuery()) {
 				if (result.next())
-					return result.getTimestamp(13);
+					return result.getTimestamp(14);
 			}
 		}
 		catch (SQLException e) {
@@ -574,23 +626,24 @@ public class SQLiteBackedTrustView implements TrustView {
 	@Override
 	public CRLInfo getCRL(TrustCertificate crlIssuer) {
 		try {
+			validateDatabaseConnection();
 			getCRL.setString(1, crlIssuer.getSerial());
 			getCRL.setString(2, crlIssuer.getIssuer());
 			try (ResultSet result = getCRL.executeQuery()) {
 				if (result.next()) {
 					crlIssuer = constructCertificate(result);
 
-					List<String> strings = deserialize(result.getString(13));
+					List<String> strings = deserialize(result.getString(14));
 					List<URL> urls = new ArrayList<>(strings.size());
 					for (String string : strings)
 						urls.add(new URL(string));
 
-					Timestamp timestamp = result.getTimestamp(14);
+					Timestamp timestamp = result.getTimestamp(15);
 					Option<Date> nextUpdate = !result.wasNull()
 							? new Option<Date>(new Date(timestamp.getTime()))
 							: new Option<Date>();
 
-					byte[] blob = result.getBytes(15);
+					byte[] blob = result.getBytes(16);
 					Option<CRL> crl = !result.wasNull()
 							? new Option<CRL>(
 								CertificateFactory.getInstance("X.509").
@@ -647,18 +700,19 @@ public class SQLiteBackedTrustView implements TrustView {
 	@Override
 	public OCSPInfo getOCSP(TrustCertificate certificateIssuer) {
 		try {
+			validateDatabaseConnection();
 			getOCSP.setString(1, certificateIssuer.getSerial());
 			getOCSP.setString(2, certificateIssuer.getIssuer());
 			try (ResultSet result = getOCSP.executeQuery()) {
 				if (result.next()) {
 					certificateIssuer = constructCertificate(result);
 
-					List<String> strings = deserialize(result.getString(13));
+					List<String> strings = deserialize(result.getString(14));
 					List<URL> urls = new ArrayList<>(strings.size());
 					for (String string : strings)
 						urls.add(new URL(string));
 
-					Timestamp timestamp = result.getTimestamp(14);
+					Timestamp timestamp = result.getTimestamp(15);
 					Option<Date> nextUpdate = !result.wasNull()
 							? new Option<Date>(new Date(timestamp.getTime()))
 							: new Option<Date>();
@@ -686,7 +740,7 @@ public class SQLiteBackedTrustView implements TrustView {
 			// remove expired watchlist certificates
 			try (ResultSet result = getWatchlistCertificates.executeQuery()) {
 				while (result.next())
-					if (nowMillis - result.getTimestamp(13).getTime()
+					if (nowMillis - result.getTimestamp(14).getTime()
 							> watchlistExpirationMillis) {
 						removeCertificateFromWatchlist.setString(1, result.getString(1));
 						removeCertificateFromWatchlist.setString(2, result.getString(2));
@@ -785,7 +839,9 @@ public class SQLiteBackedTrustView implements TrustView {
 				getCertificates.close();
 				getCertificateTrust.close();
 				setCertificateTrust.close();
+				setCertificateRevoked.close();
 				setCertificate.close();
+				getCertificate.close();
 				getCertificatesForHost.close();
 				addCertificateToHost.close();
 				addCertificateToWatchlist.close();
