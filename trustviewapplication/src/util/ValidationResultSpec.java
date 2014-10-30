@@ -14,7 +14,7 @@ public enum ValidationResultSpec {
 	VALIDATED_EXISTING_EXPIRED_SAME_CA,
 	/** an existing certificate for the respective host has expired or was revoked;
 	 *  the new certificate was issued by the same CA for the same key as the previous one;
-	 *  the system will automatically accept the new certificate; */
+	 *  the validation result should be "valid" */
 	VALIDATED_EXISTING_EXPIRED_SAME_CA_KEY,
 	/** a valid certificate for the respective host already exists;
 	 *  the new certificate was issued by the same CA for a different key as the previous one;
@@ -29,6 +29,8 @@ public enum ValidationResultSpec {
 	VALIDATED_EXISTING,
 	/** the certificate is preliminarily trusted because it is on the watchlist */
 	VALIDATED_ON_WATCHLIST,
+	/** the certificate is revoked */
+	VALIDATED_REVOKED,
 	/** recommendation result from external validation services, no validation */
 	RECOMMENDED
 }

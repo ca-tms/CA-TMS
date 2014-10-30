@@ -194,6 +194,9 @@ public class WebServer {
 						case VALIDATED_ON_WATCHLIST:
 							jsonResult.append("\"validated-on-watchlist\"");
 							break;
+						case VALIDATED_REVOKED:
+							jsonResult.append("\"validated-revoked\"");
+							break;
 						case RECOMMENDED:
 							jsonResult.append("\"recommended\"");
 							break;
