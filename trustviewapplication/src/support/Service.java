@@ -77,6 +77,9 @@ public final class Service {
 				}
 				catch (Exception e) {
 					e.printStackTrace();
+					System.err.println(
+							"Validation service query failed. " +
+							"Assuming result is unknown.");
 					return ValidationResult.UNKNOWN;
 				}
 			}
@@ -117,6 +120,9 @@ public final class Service {
 				}
 				catch (Exception e) {
 					e.printStackTrace();
+					System.err.println(
+							"Validation service time-limited query failed. " +
+							"Assuming result is unknown.");
 					resultFuture.cancel(true);
 					return ValidationResult.UNKNOWN;
 				}
@@ -227,6 +233,11 @@ public final class Service {
 				if (crlInfo == null)
 					update();
 
+				if (crlInfo == null)
+					System.err.println(
+							"CRL information not available. " +
+							"Assuming certificate is not revoked.");
+
 				if (crlInfo != null && certificate.getCertificate() != null)
 					return crlInfo.getCRL().get().isRevoked(certificate.getCertificate());
 
@@ -306,6 +317,10 @@ public final class Service {
 					catch (IOException | GeneralSecurityException e) {
 						e.printStackTrace();
 					}
+
+				System.err.println(
+						"OCSP services unreachable. " +
+						"Assuming certificate is not revoked.");
 				return false;
 			}
 
