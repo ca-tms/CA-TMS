@@ -34,6 +34,17 @@ public class CRLInfo {
 	}
 
 	/**
+	 * Creates a new <code>CRLInfo</code> instance
+	 * @param crlIssuer the issuer of the CRL
+	 * @param urls the URLs where the CRL can be retrieved from
+	 */
+	public CRLInfo(TrustCertificate crlIssuer, List<URL> urls) {
+		this.crlIssuer = crlIssuer;
+		this.urls = Collections.unmodifiableList(new ArrayList<>(urls));
+		this.nextUpdate = new Option<>();
+		this.crl = new Option<>();
+	}
+	/**
 	 * @return the issuer of the CRL
 	 */
 	public TrustCertificate getCRLIssuer() {
@@ -59,5 +70,19 @@ public class CRLInfo {
 	 */
 	public Option<CRL> getCRL() {
 		return crl;
+	}
+
+	/**
+	 * @return whether the given certificate has been revoked; will return
+	 * <code>false</code> if the CRL data is not available
+	 * @see #getCRL()
+	 * @param certificate
+	 */
+	public boolean isRevoked(TrustCertificate certificate) {
+		if (!crl.isSet())
+			return false;
+		if (certificate.getCertificate() == null)
+			return true;
+		return crl.get().isRevoked(certificate.getCertificate());
 	}
 }

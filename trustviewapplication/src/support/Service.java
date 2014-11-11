@@ -212,7 +212,8 @@ public final class Service {
 	 * and query the given Certificate Revocation List
 	 * @param info information on where the CRL can be retrieved from
 	 */
-	public static RevocationService getRevocationService(final CRLInfo info) {
+	public static RevocationService<CRLInfo> getRevocationService(
+			final CRLInfo info) {
 		return getRevocationService(info, -1);
 	}
 
@@ -223,9 +224,9 @@ public final class Service {
 	 * @param timeoutMillis the number of milliseconds which the download
 	 * attempt for each CRL file should be cancelled after
 	 */
-	public static RevocationService getRevocationService(final CRLInfo info,
-			final int timeoutMillis) {
-		return new RevocationService() {
+	public static RevocationService<CRLInfo> getRevocationService(
+			final CRLInfo info, final int timeoutMillis) {
+		return new RevocationService<CRLInfo>() {
 			private CRLInfo crlInfo = null;
 
 			@Override
@@ -233,15 +234,14 @@ public final class Service {
 				if (crlInfo == null)
 					update();
 
-				if (crlInfo == null)
+				if (crlInfo == null) {
 					System.err.println(
 							"CRL information not available. " +
 							"Assuming certificate is not revoked.");
+					return false;
+				}
 
-				if (crlInfo != null && certificate.getCertificate() != null)
-					return crlInfo.getCRL().get().isRevoked(certificate.getCertificate());
-
-				return false;
+				return crlInfo.isRevoked(certificate);
 			}
 
 			@Override
@@ -269,10 +269,8 @@ public final class Service {
 			}
 
 			@Override
-			public <T> T getInfo(Class<T> infoClass) {
-				if (infoClass.isAssignableFrom(CRLInfo.class))
-					return infoClass.cast(crlInfo != null ? crlInfo : info);
-				return null;
+			public CRLInfo getInfo() {
+				return crlInfo != null ? crlInfo : info;
 			}
 		};
 	}
@@ -282,7 +280,8 @@ public final class Service {
 	 * the given OCSP service
 	 * @param info information on where the OCSP service can be reached
 	 */
-	public static RevocationService getRevocationService(final OCSPInfo info) {
+	public static RevocationService<OCSPInfo> getRevocationService(
+			final OCSPInfo info) {
 		return getRevocationService(info, -1);
 	}
 
@@ -293,9 +292,9 @@ public final class Service {
 	 * @param timeoutMillis the number of milliseconds which the query should be
 	 * cancelled after
 	 */
-	public static RevocationService getRevocationService(final OCSPInfo info,
-			final int timeoutMillis) {
-		return new RevocationService() {
+	public static RevocationService<OCSPInfo> getRevocationService(
+			final OCSPInfo info, final int timeoutMillis) {
+		return new RevocationService<OCSPInfo>() {
 			private OCSPInfo ocspInfo = null;
 
 			@Override
@@ -335,10 +334,8 @@ public final class Service {
 			}
 
 			@Override
-			public <T> T getInfo(Class<T> infoClass) {
-				if (infoClass.isAssignableFrom(OCSPInfo.class))
-					return infoClass.cast(ocspInfo != null ? ocspInfo : info);
-				return null;
+			public OCSPInfo getInfo() {
+				return ocspInfo != null ? ocspInfo : info;
 			}
 		};
 	}
@@ -350,10 +347,10 @@ public final class Service {
 	 * @param revocationService the revocation service that will be used to
 	 * query a revocation result
 	 */
-	public static RevocationService getRevocationService(
-			final RevocationService revocationService) {
+	public static <T> RevocationService<T> getRevocationService(
+			final RevocationService<T> revocationService) {
 		final Map<TrustCertificate, Boolean> cache = new HashMap<>();
-		return new RevocationService() {
+		return new RevocationService<T>() {
 			@Override
 			public boolean isRevoked(TrustCertificate certificate) {
 				Boolean result = cache.get(certificate);
@@ -376,8 +373,8 @@ public final class Service {
 			}
 
 			@Override
-			public <T> T getInfo(Class<T> infoClass) {
-				return revocationService.getInfo(infoClass);
+			public T getInfo() {
+				return revocationService.getInfo();
 			}
 		};
 	}

@@ -10,7 +10,7 @@ import data.TrustCertificate;
 /**
  * Represents an external revocation service
  */
-public interface RevocationService {
+public interface RevocationService<RevocationInfo> {
 	/**
 	 * @return if the given certificate is revoked as determined by the external
 	 * revocation service
@@ -35,10 +35,11 @@ public interface RevocationService {
 	Option<Date> getNextUpdate();
 
 	/**
-	 * @return the revocation service information or <code>null</code> if the
-	 * information cannot be represented by the given class; can be of type
-	 * {@link CRLInfo} or {@link OCSPInfo}
+	 * @return the revocation service information; {@link CRLInfo} or
+	 * {@link OCSPInfo} are candidates for this information; calls to
+	 * {@link #update()} or {@link #isRevoked(TrustCertificate)} may cause this
+	 * method to return updated information
 	 * @param infoClass
 	 */
-	<T> T getInfo(Class<T> infoClass);
+	RevocationInfo getInfo();
 }

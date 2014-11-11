@@ -30,6 +30,17 @@ public class OCSPInfo {
 	}
 
 	/**
+	 * Creates a new <code>OCSPInfo</code> instance
+	 * @param certificateIssuer the issuer of the certificates to be checked
+	 * @param urls the URLs where the OSCP services can be reached
+	 */
+	public OCSPInfo(TrustCertificate certificateIssuer, List<URL> urls) {
+		this.certificateIssuer = certificateIssuer;
+		this.urls = Collections.unmodifiableList(new ArrayList<>(urls));
+		this.nextUpdate = new Option<>();
+	}
+
+	/**
 	 * @return the issuer of the certificates to be checked
 	 */
 	public TrustCertificate getCertificateIssuer() {
