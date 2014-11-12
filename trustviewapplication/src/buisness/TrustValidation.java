@@ -160,5 +160,4 @@ public final class TrustValidation {
 
 		return new ValidationInformation(result, resultSpec);
 	}
-
 }

@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
- * Prepared SQLite statement that provides UPSERT (UPDATE or INSERT
+ * Prepared SQLite statement that provides UPSERT (UPDATE or INSERT)
  * functionality to UPDATE existing records or INSERT new records depending on
  * if records with the given primary key already exist
  * @see PreparedStatement
  */
-class InsertUpdateStmnt implements AutoCloseable {
+class UpdateInsertStmnt implements AutoCloseable {
 	private final int primaryValuesCount;
 	private final int allValuesCount;
 	private final PreparedStatement insertStatement;
@@ -22,7 +22,7 @@ class InsertUpdateStmnt implements AutoCloseable {
 	 * database connection that updates or inserts a new record with the given
 	 * key-value pairs for the primary key values and the key-value pairs for
 	 * the other values. Key-value pairs are given by successive elements of the
-	 * respective arrays. Placeholder for the {@link PreparedStatement} are
+	 * respective arrays. Placeholders for the {@link PreparedStatement} are
 	 * specified by <code>'?'</code> character. Default values that are to be
 	 * used for newly inserted records and ignored for updated records are
 	 * specified by a string starting with <code>'!'</code> character and
@@ -33,7 +33,7 @@ class InsertUpdateStmnt implements AutoCloseable {
 	 * @param values
 	 * @throws SQLException
 	 */
-	InsertUpdateStmnt(Connection connection, String table,
+	UpdateInsertStmnt(Connection connection, String table,
 			String[] primaryValues, String[] values) throws SQLException {
 		if (primaryValues.length % 2 != 0 || values.length % 2 != 0)
 			throw new IllegalArgumentException("key-value definition count not a multiple of 2");
@@ -47,11 +47,12 @@ class InsertUpdateStmnt implements AutoCloseable {
 		for (int i = 1; i < primaryValues.length; i+= 2)
 			for (int k = 0, l = primaryValues[i].length(); k < l; k++)
 				if (primaryValues[i].charAt(k) == '?')
-					primaryValuesCounter = ++allValuesCounter;
+					allValuesCounter++;
+		primaryValuesCounter = allValuesCounter;
 		for (int i = 1; i < values.length; i+= 2)
 			for (int k = 0, l = values[i].length(); k < l; k++)
 				if (values[i].charAt(k) == '?')
-					++allValuesCounter;
+					allValuesCounter++;
 
 		primaryValuesCount = primaryValuesCounter;
 		allValuesCount = allValuesCounter;

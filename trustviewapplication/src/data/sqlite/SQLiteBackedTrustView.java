@@ -45,14 +45,14 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement getAssessment;
 	private final PreparedStatement getAssessments;
 	private final PreparedStatement getAssessmentsS;
-	private final InsertUpdateStmnt setAssessment;
-	private final InsertUpdateStmnt setAssessmentS;
+	private final UpdateInsertStmnt setAssessment;
+	private final UpdateInsertStmnt setAssessmentS;
 	private final PreparedStatement setAssessmentValid;
 	private final PreparedStatement getCertificates;
 	private final PreparedStatement getCertificateTrust;
-	private final InsertUpdateStmnt setCertificateTrust;
-	private final InsertUpdateStmnt setCertificateRevoked;
-	private final InsertUpdateStmnt setCertificate;
+	private final UpdateInsertStmnt setCertificateTrust;
+	private final UpdateInsertStmnt setCertificateRevoked;
+	private final UpdateInsertStmnt setCertificate;
 	private final PreparedStatement getCertificate;
 	private final PreparedStatement getCertificatesForHost;
 	private final PreparedStatement addCertificateToHost;
@@ -60,9 +60,9 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement removeCertificateFromWatchlist;
 	private final PreparedStatement getWatchlistCertificate;
 	private final PreparedStatement getWatchlistCertificates;
-	private final InsertUpdateStmnt addCRL;
+	private final UpdateInsertStmnt addCRL;
 	private final PreparedStatement getCRL;
-	private final InsertUpdateStmnt addOCSP;
+	private final UpdateInsertStmnt addOCSP;
 	private final PreparedStatement getOCSP;
 	private final PreparedStatement removeAssessment;
 	private final PreparedStatement removeCertificate;
@@ -89,7 +89,7 @@ public class SQLiteBackedTrustView implements TrustView {
 						"SELECT * FROM certificates WHERE publickey=? AND subject=? AND S=1");
 
 				// setting assessments
-				setAssessment = new InsertUpdateStmnt(connection, "assessments",
+				setAssessment = new UpdateInsertStmnt(connection, "assessments",
 						new String [] { "k", "?" }, new String [] { "ca", "?",
 						"o_kl_t", "?", "o_kl_c", "?", "o_kl_f", "?",
 						"o_kl_r", "?", "o_kl_s", "?",
@@ -99,7 +99,7 @@ public class SQLiteBackedTrustView implements TrustView {
 						"o_it_ee_r", "?", "o_it_ee_s", "?",
 						"timestamp", "?" });
 
-				setAssessmentS = new InsertUpdateStmnt(connection, "certificates",
+				setAssessmentS = new UpdateInsertStmnt(connection, "certificates",
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
@@ -116,19 +116,19 @@ public class SQLiteBackedTrustView implements TrustView {
 						"SELECT * FROM certificates WHERE trusted=? AND untrusted=?");
 
 				// setting certificates
-				setCertificateTrust = new InsertUpdateStmnt(connection, "certificates",
+				setCertificateTrust = new UpdateInsertStmnt(connection, "certificates",
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
 						"revoked", "!0", "trusted", "?", "untrusted", "?", "S", "!0" });
 
-				setCertificate = new InsertUpdateStmnt(connection, "certificates",
+				setCertificate = new UpdateInsertStmnt(connection, "certificates",
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
 						"revoked", "!0", "trusted", "!0", "untrusted", "!0", "S", "!0" });
 
-				setCertificateRevoked = new InsertUpdateStmnt(connection, "certificates",
+				setCertificateRevoked = new UpdateInsertStmnt(connection, "certificates",
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
@@ -166,7 +166,7 @@ public class SQLiteBackedTrustView implements TrustView {
 						"  AND certificates.issuer = watchlist.issuer");
 
 				// CRL
-				addCRL = new InsertUpdateStmnt(connection, "crl",
+				addCRL = new UpdateInsertStmnt(connection, "crl",
 							new String [] { "serial", "?", "issuer", "?" }, new String [] {
 							"urls", "?", "nextupdate", "?", "crldata", "?" });
 
@@ -177,7 +177,7 @@ public class SQLiteBackedTrustView implements TrustView {
 						"  WHERE certificates.serial=? AND certificates.issuer=?");
 
 				// OCSP
-				addOCSP = new InsertUpdateStmnt(connection, "ocsp",
+				addOCSP = new UpdateInsertStmnt(connection, "ocsp",
 						new String [] { "serial", "?", "issuer", "?" }, new String [] {
 						"urls", "?", "nextupdate", "?" });
 
