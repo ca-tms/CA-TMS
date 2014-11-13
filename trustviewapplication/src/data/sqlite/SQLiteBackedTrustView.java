@@ -48,12 +48,12 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final UpdateInsertStmnt setAssessment;
 	private final UpdateInsertStmnt setAssessmentS;
 	private final PreparedStatement setAssessmentValid;
+	private final PreparedStatement getCertificate;
 	private final PreparedStatement getCertificates;
 	private final PreparedStatement getCertificateTrust;
 	private final UpdateInsertStmnt setCertificateTrust;
 	private final UpdateInsertStmnt setCertificateRevoked;
 	private final UpdateInsertStmnt setCertificate;
-	private final PreparedStatement getCertificate;
 	private final PreparedStatement getCertificatesForHost;
 	private final PreparedStatement addCertificateToHost;
 	private final PreparedStatement addCertificateToWatchlist;
@@ -109,6 +109,9 @@ public class SQLiteBackedTrustView implements TrustView {
 						"UPDATE assessments SET timestamp=? WHERE k=? AND ca=?");
 
 				// retrieving certificates
+				getCertificate = connection.prepareStatement(
+						"SELECT * FROM certificates WHERE serial=? AND issuer=?");
+
 				getCertificates = connection.prepareStatement(
 						"SELECT * FROM certificates");
 
@@ -133,9 +136,6 @@ public class SQLiteBackedTrustView implements TrustView {
 						"subject", "?", "publickey", "?",
 						"notbefore", "?", "notafter", "?", "certdata", "?",
 						"revoked", "?", "trusted", "!0", "untrusted", "!0", "S", "!0" });
-
-				getCertificate = connection.prepareStatement(
-						"SELECT * FROM certificates WHERE serial=? AND issuer=?");
 
 				// accessing certificate hosts
 				getCertificatesForHost = connection.prepareStatement(
@@ -357,6 +357,23 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public boolean isCertificateTrusted(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+			getCertificate.setString(1, certificate.getSerial());
+			getCertificate.setString(2, certificate.getIssuer());
+			try (ResultSet result = getCertificate.executeQuery()) {
+				if (result.next() && result.getBoolean(9))
+					return true;
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
 	public Collection<TrustCertificate> getUntrustedCertificates() {
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
@@ -375,6 +392,23 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
+	public boolean isCertificateUntrusted(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+			getCertificate.setString(1, certificate.getSerial());
+			getCertificate.setString(2, certificate.getIssuer());
+			try (ResultSet result = getCertificate.executeQuery()) {
+				if (result.next() && result.getBoolean(10))
+					return true;
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
 	public Collection<TrustCertificate> getAllCertificates() {
 		Set<TrustCertificate> certificates = new HashSet<>();
 		try {
@@ -388,6 +422,23 @@ public class SQLiteBackedTrustView implements TrustView {
 			e.printStackTrace();
 		}
 		return certificates;
+	}
+
+	@Override
+	public boolean hasCertificate(TrustCertificate certificate) {
+		try {
+			validateDatabaseConnection();
+			getCertificate.setString(1, certificate.getSerial());
+			getCertificate.setString(2, certificate.getIssuer());
+			try (ResultSet result = getCertificate.executeQuery()) {
+				if (result.next())
+					return true;
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -836,12 +887,12 @@ public class SQLiteBackedTrustView implements TrustView {
 				setAssessment.close();
 				setAssessmentS.close();
 				setAssessmentValid.close();
+				getCertificate.close();
 				getCertificates.close();
 				getCertificateTrust.close();
 				setCertificateTrust.close();
 				setCertificateRevoked.close();
 				setCertificate.close();
-				getCertificate.close();
 				getCertificatesForHost.close();
 				addCertificateToHost.close();
 				addCertificateToWatchlist.close();

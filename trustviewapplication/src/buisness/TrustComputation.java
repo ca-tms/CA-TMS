@@ -5,9 +5,7 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import services.ValidationResult;
 import support.ValidationService;
@@ -219,7 +217,7 @@ public final class TrustComputation {
 
 			// If C at position h+1 is not an untrusted certificate,
 			// update the assessment with a negative experience
-			if (!trustView.getUntrustedCertificates().contains(p.get(h + 1))) {
+			if (!trustView.isCertificateUntrusted(p.get(h + 1))) {
 				if (h < p.size() - 2)
 					assessment.getO_it_ca().addS(1);
 				else
@@ -325,20 +323,15 @@ public final class TrustComputation {
 	 */
 	public static ValidationResult validate(TrustView trustView, Configuration config,
 			List<TrustCertificate> p, double l, ValidationService VS) {
-		Set<TrustCertificate> trustedCertificates =
-				new HashSet<TrustCertificate>(trustView.getTrustedCertificates());
-		Set<TrustCertificate> untrustedCertificates =
-				new HashSet<TrustCertificate>(trustView.getUntrustedCertificates());
-
 		// check if the last certificate is already trusted
-		if (trustedCertificates.contains(p.get(p.size() - 1))) {
+		if (trustView.isCertificateTrusted(p.get(p.size() - 1))) {
 			updateAssessmentsTimestamps(trustView, p);
 			return ValidationResult.TRUSTED;
 		}
 
 		// check if p contains untrusted certificate
 		for (TrustCertificate cert : p)
-			if (untrustedCertificates.contains(cert)) {
+			if (trustView.isCertificateUntrusted(cert)) {
 				updateAssessmentsTimestamps(trustView, p);
 				return ValidationResult.UNTRUSTED;
 			}

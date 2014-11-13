@@ -83,10 +83,20 @@ public interface TrustView extends AutoCloseable {
 	Collection<TrustCertificate> getTrustedCertificates();
 
 	/**
+	 * @return whether the given certificate is trusted
+	 */
+	boolean isCertificateTrusted(TrustCertificate certificate);
+
+	/**
 	 * @return a collection of all untrusted certificates that are
 	 * currently stored in the <code>TrustView</code>
 	 */
 	Collection<TrustCertificate> getUntrustedCertificates();
+
+	/**
+	 * @return whether the given certificate is untrusted
+	 */
+	boolean isCertificateUntrusted(TrustCertificate certificate);
 
 	/**
 	 * @return a collection of all certificates that are
@@ -96,6 +106,14 @@ public interface TrustView extends AutoCloseable {
 	 * and certificates on the watchlist
 	 */
 	Collection<TrustCertificate> getAllCertificates();
+
+	/**
+	 * @return whether the given certificate is stored in the
+	 * <code>TrustView</code>, this includes trusted and untrusted certificates,
+	 * as well as certificates in the S set of any {@link TrustAssessment}
+	 * and certificates on the watchlist
+	 */
+	boolean hasCertificate(TrustCertificate certificate);
 
 	/**
 	 * Sets the given certificate to be trusted
@@ -128,7 +146,6 @@ public interface TrustView extends AutoCloseable {
 
 	/**
 	 * @return whether the given certificate is set to be revoked
-	 * @return
 	 */
 	boolean isCertificateRevoked(TrustCertificate certificate);
 

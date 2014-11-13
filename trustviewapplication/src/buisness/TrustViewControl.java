@@ -5,6 +5,7 @@ import java.net.URL;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,18 +147,17 @@ public final class TrustViewControl {
 	 */
 	public static ValidationResultSpec deriveValidationSpec(
 			TrustView trustView, TrustCertificate hostCertificate, String hostURL) {
-		Collection<TrustCertificate> trustedCertificates =
-				trustView.getTrustedCertificates();
-		Collection<TrustCertificate> untrustedCertificates =
-				trustView.getUntrustedCertificates();
-
-		if (trustedCertificates.contains(hostCertificate) ||
-				untrustedCertificates.contains(hostCertificate))
+		if (trustView.isCertificateTrusted(hostCertificate) ||
+				trustView.isCertificateUntrusted(hostCertificate))
 			return ValidationResultSpec.VALIDATED;
 
 		Collection<TrustCertificate> existingCertificates =
-				TrustViewControl.retrieveCertificatesForHost(trustView, hostURL);
-		existingCertificates.retainAll(trustedCertificates);
+				retrieveCertificatesForHost(trustView, hostURL);
+
+		Iterator<TrustCertificate> iterator = existingCertificates.iterator();
+		while (iterator.hasNext())
+			if (!trustView.isCertificateTrusted(iterator.next()))
+				iterator.remove();
 
 		for (TrustCertificate cert : existingCertificates)
 			if (isCertificateExpired(cert) && !isCertificateRevoked(trustView, cert) &&
