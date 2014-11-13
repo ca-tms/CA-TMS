@@ -18,8 +18,10 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import CertainTrust.CertainTrust;
@@ -40,7 +42,6 @@ import data.TrustView;
  */
 public class SQLiteBackedTrustView implements TrustView {
 	private final Connection connection;
-	private final Configuration config;
 
 	private final PreparedStatement getAssessment;
 	private final PreparedStatement getAssessments;
@@ -70,12 +71,26 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final PreparedStatement eraseAssessments;
 	private final PreparedStatement eraseCertificates;
 
+	private final long watchlistExpirationMillis;
+	private final long assessmentExpirationMillis;
+	private final int opinionN;
+
+	// CRLs are not directly inserted into the data base but as batch
+	// when finalizing the connection for performance reasons
+	private final Map<TrustCertificate, CRLInfo> deferredCRLBatch = new HashMap<>();
+
 	public SQLiteBackedTrustView(Connection connection) throws ModelAccessException  {
 		try {
 			this.connection = connection;
 
 			// configuration values
-			config = Model.openConfiguration();
+			try (Configuration config = Model.openConfiguration()) {
+				watchlistExpirationMillis =
+						config.get(Configuration.WATCHLIST_EXPIRATION_MILLIS, Long.class);
+				assessmentExpirationMillis =
+						config.get(Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
+				opinionN = config.get(Configuration.OPINION_N, Integer.class);
+			}
 
 			try {
 				// retrieving assessments
@@ -638,11 +653,7 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void addCRL(CRLInfo crlInfo) {
 		try {
 			validateDatabaseConnection();
-
 			TrustCertificate certificate = crlInfo.getCRLIssuer();
-			List<String> urls = new ArrayList<>(crlInfo.getURLs().size());
-			for (URL url : crlInfo.getURLs())
-				urls.add(url.toString());
 
 			setCertificate.setString(1, certificate.getSerial());
 			setCertificate.setString(2, certificate.getIssuer());
@@ -656,26 +667,19 @@ public class SQLiteBackedTrustView implements TrustView {
 				setCertificate.setNull(7, Types.BLOB);
 			setCertificate.executeUpdate();
 
-			addCRL.setString(1, certificate.getSerial());
-			addCRL.setString(2, certificate.getIssuer());
-			addCRL.setString(3, serialize(urls));
-			if (crlInfo.getNextUpdate().isSet())
-				addCRL.setTimestamp(4, new Timestamp(crlInfo.getNextUpdate().get().getTime()));
-			else
-				addCRL.setNull(4, Types.TIMESTAMP);
-			if (crlInfo.getCRL().isSet() && crlInfo.getCRL().get() instanceof X509CRL)
-				addCRL.setBytes(5, ((X509CRL) crlInfo.getCRL().get()).getEncoded());
-			else
-				addCRL.setNull(5, Types.BLOB);
-			addCRL.executeUpdate();
+			deferredCRLBatch.put(certificate, crlInfo);
 		}
-		catch (SQLException | CertificateException | CRLException e) {
+		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public CRLInfo getCRL(TrustCertificate crlIssuer) {
+		CRLInfo deferredCRLInfo = deferredCRLBatch.get(crlIssuer);
+		if (deferredCRLInfo != null)
+			return deferredCRLInfo;
+
 		try {
 			validateDatabaseConnection();
 			getCRL.setString(1, crlIssuer.getSerial());
@@ -782,10 +786,6 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void clean() {
 		try {
 			validateDatabaseConnection();
-			final long watchlistExpirationMillis =
-					config.get(Configuration.WATCHLIST_EXPIRATION_MILLIS, Long.class);
-			final long assessmentExpirationMillis =
-					config.get(Configuration.ASSESSMENT_EXPIRATION_MILLIS, Long.class);
 			final long nowMillis = new Date().getTime();
 
 			// remove expired watchlist certificates
@@ -872,7 +872,36 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	private void finalizeConnection() throws ModelAccessException, SQLException {
 		try {
-			config.close();
+			if (!deferredCRLBatch.isEmpty()) {
+				// execute statements that update the CRL table as last
+				// statements of the transaction because it is much faster
+				validateDatabaseConnection();
+				for (CRLInfo crlInfo : deferredCRLBatch.values())
+					try {
+						TrustCertificate certificate = crlInfo.getCRLIssuer();
+						List<String> urls = new ArrayList<>(crlInfo.getURLs().size());
+						for (URL url : crlInfo.getURLs())
+							urls.add(url.toString());
+
+						addCRL.setString(1, certificate.getSerial());
+						addCRL.setString(2, certificate.getIssuer());
+						addCRL.setString(3, serialize(urls));
+						if (crlInfo.getNextUpdate().isSet())
+							addCRL.setTimestamp(4, new Timestamp(crlInfo.getNextUpdate().get().getTime()));
+						else
+							addCRL.setNull(4, Types.TIMESTAMP);
+						if (crlInfo.getCRL().isSet() && crlInfo.getCRL().get() instanceof X509CRL)
+							addCRL.setBytes(5, ((X509CRL) crlInfo.getCRL().get()).getEncoded());
+						else
+							addCRL.setNull(5, Types.BLOB);
+						addCRL.executeUpdate();
+					}
+					catch (SQLException | CRLException e) {
+						e.printStackTrace();
+					}
+				deferredCRLBatch.clear();
+			}
+
 			connection.commit();
 		}
 		catch (SQLException e) {
@@ -1014,8 +1043,6 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	private TrustAssessment constructAssessment(ResultSet result)
 			throws CertificateException, SQLException {
-		final int opinionN = config.get(Configuration.OPINION_N, Integer.class);
-
 		Set<TrustCertificate> S = new HashSet<>();
 		getAssessmentsS.setString(1, result.getString(1));
 		getAssessmentsS.setString(2, result.getString(2));
