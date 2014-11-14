@@ -60,4 +60,22 @@ public class OCSPInfo {
 	public Option<Date> getNextUpdate() {
 		return nextUpdate;
 	}
+
+	@Override
+	public int hashCode() {
+		return 31 * certificateIssuer.hashCode() + urls.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OCSPInfo other = (OCSPInfo) obj;
+		return certificateIssuer.equals(other.getCertificateIssuer()) &&
+		       urls.equals(other.getURLs());
+	}
 }

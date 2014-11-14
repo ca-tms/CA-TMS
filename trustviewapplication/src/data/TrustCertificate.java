@@ -168,7 +168,7 @@ public class TrustCertificate {
 	@Override
 	public int hashCode() {
 		return 29791 * serial.hashCode() + 961 * issuer.hashCode() +
-				31 * subject.hashCode() + publicKey.hashCode();
+		       31 * subject.hashCode() + publicKey.hashCode();
 	}
 
 	@Override

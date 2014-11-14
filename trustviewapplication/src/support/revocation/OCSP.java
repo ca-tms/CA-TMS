@@ -285,6 +285,9 @@ public class OCSP {
 		CertificateFactory factory = CertificateFactory.getInstance("X.509");
 
 		try {
+			if (response.getResponseBytes() == null)
+				return new Response(false, null);
+
 			// create basic response object
 			BasicOCSPResponse basicResponse = BasicOCSPResponse.getInstance(
 					parseASN1(response.getResponseBytes().getResponse()));
@@ -296,7 +299,7 @@ public class OCSP {
 			Signature signature = Signature.getInstance(algorithm);
 
 			// set signature algorithm parameters
-			ASN1Encodable encodableParams = basicResponse.getSignatureAlgorithm().getParameters(); //.toASN1Primitive();
+			ASN1Encodable encodableParams = basicResponse.getSignatureAlgorithm().getParameters();
 			if (encodableParams != null &&
 					!encodableParams.equals(org.bouncycastle.asn1.DERNull.INSTANCE)) {
 
@@ -365,7 +368,9 @@ public class OCSP {
 			//   unknown     [2]     IMPLICIT UnknownInfo
 			return new Response(
 					singleResponse.getCertStatus().getTagNo() == 1,
-					singleResponse.getNextUpdate().getDate());
+					singleResponse.getNextUpdate() != null
+						? singleResponse.getNextUpdate().getDate()
+						: null);
 		}
 		catch (ClassCastException | IllegalArgumentException | ParseException e) {
 			throw new IOException(e);

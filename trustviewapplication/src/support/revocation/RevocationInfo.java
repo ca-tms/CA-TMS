@@ -3,6 +3,7 @@ package support.revocation;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -17,12 +18,14 @@ import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 
 import data.TrustCertificate;
 
@@ -33,6 +36,9 @@ import data.TrustCertificate;
 public class RevocationInfo {
 	private List<String> ocsp = new ArrayList<>();
 	private List<String> crl = new ArrayList<>();
+	private List<Byte> subjectKeyIdentifier = null;
+	private List<Byte> authorityKeyIdentifier = null;
+	private String authoritySerial = null;
 
 	/**
 	 * Creates a new <code>RevocationInfo</code> instance  based on the given
@@ -96,6 +102,39 @@ public class RevocationInfo {
 					}
 
 				crl = Collections.unmodifiableList(crl);
+
+				// Authority Key Identifier
+				AuthorityKeyIdentifier authorityKeyId = AuthorityKeyIdentifier.getInstance(
+						certificateExtension(x509cert, Extension.authorityKeyIdentifier.getId()));
+
+				if (authorityKeyId != null) {
+					byte[] keyidentifier = authorityKeyId.getKeyIdentifier();
+					if (keyidentifier != null) {
+						authorityKeyIdentifier = new ArrayList<>(keyidentifier.length);
+						for (byte value : keyidentifier)
+							authorityKeyIdentifier.add(value);
+						authorityKeyIdentifier = Collections.unmodifiableList(authorityKeyIdentifier);
+					}
+
+					BigInteger serial = authorityKeyId.getAuthorityCertSerialNumber();
+					if (serial != null)
+						authoritySerial = serial.toString();
+				}
+
+				// Subject Key Identifier
+				SubjectKeyIdentifier subjectKeyId = SubjectKeyIdentifier.getInstance(
+						certificateExtension(x509cert, Extension.subjectKeyIdentifier.getId()));
+
+				if (subjectKeyId != null) {
+					byte[] keyidentifier = subjectKeyId.getKeyIdentifier();
+					if (keyidentifier != null) {
+						subjectKeyIdentifier = new ArrayList<>(keyidentifier.length);
+						for (byte value : keyidentifier)
+							subjectKeyIdentifier.add(value);
+						subjectKeyIdentifier = Collections.unmodifiableList(subjectKeyIdentifier);
+					}
+				}
+
 			}
 			catch (ClassCastException | IllegalArgumentException e) {
 				e.printStackTrace();
@@ -114,6 +153,27 @@ public class RevocationInfo {
 	 */
 	public List<String> getCRL() {
 		return crl;
+	}
+
+	/**
+	 * @return the subject key identifier or <code>null</code> if not available
+	 */
+	public List<Byte> getSubjectKeyIdentifier() {
+		return subjectKeyIdentifier;
+	}
+
+	/**
+	 * @return the authority key identifier or <code>null</code> if not available
+	 */
+	public List<Byte> getAuthorityKeyIdentifier() {
+		return authorityKeyIdentifier;
+	}
+
+	/**
+	 * @return the authority serial number or <code>null</code> if not available
+	 */
+	public String getAuthoritySerial() {
+		return authoritySerial;
 	}
 
 	/**

@@ -85,4 +85,22 @@ public class CRLInfo {
 			return true;
 		return crl.get().isRevoked(certificate.getCertificate());
 	}
+
+	@Override
+	public int hashCode() {
+		return 31 * crlIssuer.hashCode() + urls.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CRLInfo other = (CRLInfo) obj;
+		return crlIssuer.equals(other.getCRLIssuer()) &&
+		       urls.equals(other.getURLs());
+	}
 }
