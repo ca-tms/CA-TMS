@@ -107,11 +107,6 @@ public final class Model {
 			}
 
 			@Override
-			public void close() throws ModelAccessException {
-				configuration.close();
-			}
-
-			@Override
 			public void delete(String key) {
 				configuration.delete(key);
 			}
@@ -119,6 +114,16 @@ public final class Model {
 			@Override
 			public void erase() {
 				configuration.erase();
+			}
+
+			@Override
+			public void save() throws ModelAccessException {
+				configuration.save();
+			}
+
+			@Override
+			public void close() throws ModelAccessException {
+				configuration.close();
 			}
 		};
 	}

@@ -6,12 +6,12 @@ package data;
  * {@link String} constants, that should be used for the
  * <code>key</code> argument of the interface's methods.</p>
  *
- * <p>A <code>Configuration</code> object must be closed after usage in order for
- * any modification made on the <code>Configuration</code> to take effect and
- * to release acquired resources.</p>
+ * <p>A <code>Configuration</code> object must be saved in order for any
+ * modification made on the <code>Configuration</code> to take effect and
+ * it must be closed after usage to release acquired resources.</p>
  *
- * <p>Closing the <code>Configuration</code> object may fail in case of concurrent
- * modifications.</p>
+ * <p>Saving the <code>Configuration</code> object may fail in case of
+ * concurrent modifications.</p>
  */
 public interface Configuration extends AutoCloseable {
 	static String OPINION_N = "opinion-n";
@@ -79,6 +79,11 @@ public interface Configuration extends AutoCloseable {
 	 * is read-only and does not permit changing values
 	 */
 	void erase() throws UnsupportedOperationException;
+
+	/**
+	 * Saves all modifications made to <code>Configuration</code> and closes it
+	 */
+	void save() throws ModelAccessException;
 
 	@Override
 	void close() throws ModelAccessException;

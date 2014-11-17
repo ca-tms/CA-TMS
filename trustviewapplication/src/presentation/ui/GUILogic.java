@@ -165,10 +165,8 @@ public class GUILogic {
 
 		Collection<TrustCertificate> Certs_temp = null;
 
-		try {
-			TrustView view = data.Model.openTrustView();
+		try (TrustView view = data.Model.openTrustView()) {
 			Certs_temp = view.getTrustedCertificates();
-			view.close();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -266,10 +264,8 @@ public class GUILogic {
 		};
 
 		Collection<TrustCertificate> Certs_temp = null;
-		try {
-			TrustView view = data.Model.openTrustView();
+		try (TrustView view = data.Model.openTrustView()) {
 			Certs_temp = view.getUntrustedCertificates();
-			view.close();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -365,10 +361,8 @@ public class GUILogic {
 		};
 
 		Collection<TrustAssessment> Assessments_temp = null;
-		try {
-			TrustView view = data.Model.openTrustView();
+		try (TrustView view = data.Model.openTrustView()) {
 			Assessments_temp = view.getAssessments();
-			view.close();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -417,10 +411,8 @@ public class GUILogic {
 
 		Collection<TrustCertificate> Certs_temp = null;
 
-		try {
-			TrustView view = data.Model.openTrustView();
+		try (TrustView view = data.Model.openTrustView()) {
 			Certs_temp = view.getTrustedCertificates();
-			view.close();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -465,10 +457,8 @@ public class GUILogic {
 
 		Collection<TrustCertificate> Certs_temp = null;
 
-		try {
-			TrustView view = data.Model.openTrustView();
+		try (TrustView view = data.Model.openTrustView()) {
 			Certs_temp = view.getUntrustedCertificates();
-			view.close();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -513,10 +503,8 @@ public class GUILogic {
 
 		TrustAssessment Ass_temp = null;
 
-		try {
-			TrustView view = data.Model.openTrustView();
+		try (TrustView view = data.Model.openTrustView()) {
 			Ass_temp = view.getAssessment(k, ca);
-			view.close();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -535,13 +523,9 @@ public class GUILogic {
 	 * @param value
 	 */
 	public static <T> void set_Configuration(String key, T value) {
-		Configuration conf;
-		try {
-			conf = data.Model.openConfiguration();
-
+		try (Configuration conf = data.Model.openConfiguration()) {
 			conf.set(key, value);
-
-			conf.close();
+			conf.save();
 
 		} catch (ModelAccessException e) {
 			JOptionPane
@@ -560,14 +544,8 @@ public class GUILogic {
 	 * @return
 	 */
 	public static <T> T get_Configuration(String key, Class<T> type) {
-		Configuration conf;
-		T type_temp = null;
-		try {
-			conf = data.Model.openConfiguration();
-
-			type_temp = conf.get(key, type);
-
-			conf.close();
+		try (Configuration conf = data.Model.openConfiguration()) {
+			return conf.get(key, type);
 
 		} catch (ModelAccessException e) {
 			JOptionPane
@@ -576,10 +554,8 @@ public class GUILogic {
 							"Error reading or concurrent modifying the database! Please restart the application ",
 							"Error", JOptionPane.DEFAULT_OPTION);
 			e.printStackTrace();
-
+			return null;
 		}
-		return type_temp;
-
 	}
 
 	/**
@@ -590,15 +566,9 @@ public class GUILogic {
 	 * @return
 	 */
 	public static <T> T get_Configuration(String key, Class<T> type, T defaultValue) {
-		Configuration conf;
-		T type_temp = defaultValue;
-		try {
-			conf = data.Model.openConfiguration();
-
+		try (Configuration conf = data.Model.openConfiguration()) {
 			if (conf.exists(key))
-				type_temp = conf.get(key, type);
-
-			conf.close();
+				return conf.get(key, type);
 
 		} catch (ModelAccessException e) {
 			JOptionPane
@@ -609,7 +579,7 @@ public class GUILogic {
 			e.printStackTrace();
 
 		}
-		return type_temp;
+		return defaultValue;
 
 	}
 

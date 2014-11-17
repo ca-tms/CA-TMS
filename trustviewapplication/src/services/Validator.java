@@ -72,6 +72,9 @@ public final class Validator {
 						// perform validation
 						result = TrustValidation.validate(trustView, config,
 								request, validationService);
+
+						config.close();
+						trustView.save();
 					}
 					catch (ModelAccessException | CancellationException e) {
 						if (attempts == 0)

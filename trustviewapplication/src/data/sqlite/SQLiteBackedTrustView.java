@@ -74,6 +74,7 @@ public class SQLiteBackedTrustView implements TrustView {
 	private final long watchlistExpirationMillis;
 	private final long assessmentExpirationMillis;
 	private final int opinionN;
+	private final List<Notification> notifications = new ArrayList<>();
 
 	// CRLs are not directly inserted into the data base but as batch
 	// when finalizing the connection for performance reasons
@@ -225,7 +226,7 @@ public class SQLiteBackedTrustView implements TrustView {
 		}
 		catch (Throwable t) {
 			try {
-				finalizeConnection();
+				close();
 			}
 			catch (Throwable u) {
 				t.addSuppressed(u);
@@ -858,19 +859,12 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public void close() throws ModelAccessException {
-		try {
-			finalizeConnection();
-		}
-		catch (ModelAccessException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			throw new ModelAccessException(e);
-		}
+	public void notify(Notification notification) {
+		notifications.add(notification);
 	}
 
-	private void finalizeConnection() throws ModelAccessException, SQLException {
+	@Override
+	public void save() throws ModelAccessException {
 		try {
 			if (!deferredCRLBatch.isEmpty()) {
 				// execute statements that update the CRL table as last
@@ -903,12 +897,21 @@ public class SQLiteBackedTrustView implements TrustView {
 			}
 
 			connection.commit();
+
+			for (Notification notification : notifications)
+				notification.saved();
 		}
 		catch (SQLException e) {
-			connection.rollback();
-			throw e;
+			throw new ModelAccessException(e);
 		}
 		finally {
+			close();
+		}
+	}
+
+	@Override
+	public void close() throws ModelAccessException {
+		try {
 			try {
 				getAssessment.close();
 				getAssessments.close();
@@ -939,8 +942,14 @@ public class SQLiteBackedTrustView implements TrustView {
 				eraseCertificates.close();
 			}
 			finally {
-				connection.close();
+				if (!connection.isClosed()) {
+					connection.rollback();
+					connection.close();
+				}
 			}
+		}
+		catch (SQLException e) {
+			throw new ModelAccessException(e);
 		}
 	}
 

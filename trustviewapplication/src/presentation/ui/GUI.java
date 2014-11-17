@@ -106,8 +106,6 @@ public class GUI {
 	private JTextField textField_med;
 	private JTextField textField_low;
 
-	private TrustView view;
-
 	private float security_level_low;
 	private float security_level_med;
 	private float security_level_high;
@@ -412,12 +410,11 @@ public class GUI {
 						return;
 					}
 
-					try {
+					try (TrustView view = data.Model.openTrustView()) {
 						X509Certificate cert = GUILogic
 								.LoadCert(Cert_Path);
-						TrustView view = data.Model.openTrustView();
 						view.setTrustedCertificate(new TrustCertificate(cert));
-						view.close();
+						view.save();
 
 						table_TC.setModel(GUILogic.refresh_TC_Table());
 						table_uTC.setModel(GUILogic
@@ -453,10 +450,9 @@ public class GUI {
 					if (Cert == null)
 						return;
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.removeCertificate(Cert);
-						view.close();
+						view.save();
 
 						table_TC.setModel(GUILogic.refresh_TC_Table());
 						refresh_ColWidth();
@@ -483,10 +479,9 @@ public class GUI {
 					if (uTCertificate == null)
 						return;
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.setUntrustedCertificate(uTCertificate);
-						view.close();
+						view.save();
 
 						table_TC.setModel(GUILogic.refresh_TC_Table());
 						table_uTC.setModel(GUILogic.refresh_uTC_Table());
@@ -591,12 +586,11 @@ public class GUI {
 						return;
 					}
 
-					try {
+					try (TrustView view = data.Model.openTrustView()) {
 						X509Certificate cert = GUILogic
 								.LoadCert(Cert_Path);
-						TrustView view = data.Model.openTrustView();
 						view.setUntrustedCertificate(new TrustCertificate(cert));
-						view.close();
+						view.save();
 
 						table_uTC.setModel(GUILogic
 								.refresh_uTC_Table());
@@ -635,10 +629,9 @@ public class GUI {
 						return;
 					}
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.removeCertificate(Cert);
-						view.close();
+						view.save();
 
 						table_uTC.setModel(GUILogic
 								.refresh_uTC_Table());
@@ -667,10 +660,9 @@ public class GUI {
 					if (TCertificate == null)
 						return;
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.setTrustedCertificate(TCertificate);
-						view.close();
+						view.save();
 
 						table_TC.setModel(GUILogic.refresh_TC_Table());
 						table_uTC.setModel(GUILogic
@@ -762,10 +754,9 @@ public class GUI {
 					if (Ass == null)
 						return;
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.removeAssessment(Ass.getK(), Ass.getCa());
-						view.close();
+						view.save();
 
 						table_Ass.setModel(GUILogic
 								.refresh_Ass_Table());
@@ -807,10 +798,9 @@ public class GUI {
 					k = (String) table_Ass.getValueAt(row, 0);
 					ca = (String) table_Ass.getValueAt(row, 1);
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.setAssessmentValid(k, ca);
-						view.close();
+						view.save();
 					} catch (ModelAccessException e) {
 						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
@@ -825,10 +815,9 @@ public class GUI {
 			public void mousePressed(MouseEvent arg0) {
 				if (arg0.getButton() == 1 || arg0.getButton() == 3) {
 
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.clean();
-						view.close();
+						view.save();
 					} catch (ModelAccessException e) {
 						GUILogic.msg("Error reading or concurrent modifying the database! ");
 
@@ -931,13 +920,13 @@ public class GUI {
 		Outer_General_Setting.setLayout(null);
 
 		JLabel lblNewLabel_1 = new JLabel(
-				"Assessment Expiration (in Milliseconds):");
+				"Assessment Expiration (in days):");
 		lblNewLabel_1.setBounds(10, 29, 270, 15);
 		Outer_General_Setting.add(lblNewLabel_1);
 
 		textField_Expiration = new JTextField();
 		textField_Expiration.setBounds(264, 26, 172, 21);
-		textField_Expiration.setText("" + assessment_expiration_millis);
+		textField_Expiration.setText("" + (assessment_expiration_millis / 24 / 60 / 60 / 1000));
 		Outer_General_Setting.add(textField_Expiration);
 		textField_Expiration.setColumns(10);
 
@@ -1361,14 +1350,13 @@ public class GUI {
 											+ " ? If it's set too small, all the \"out-dated\" Assessments will be deleted !",
 									"Are you Sure ?", JOptionPane.YES_NO_OPTION);
 					if (n == JOptionPane.YES_OPTION) {
-						assessment_expiration_millis = expire;
+						assessment_expiration_millis = expire * 24 * 60 * 60 * 1000;
 						GUILogic.set_Configuration(
 								Configuration.ASSESSMENT_EXPIRATION_MILLIS,
 								assessment_expiration_millis);
-						try {
-							view = data.Model.openTrustView();
+						try (TrustView view = data.Model.openTrustView()) {
 							view.clean();
-							view.close();
+							view.save();
 						} catch (ModelAccessException arg) {
 							JOptionPane
 									.showConfirmDialog(
@@ -1383,12 +1371,12 @@ public class GUI {
 
 					} else {
 						textField_Expiration.setText(""
-								+ assessment_expiration_millis);
+								+ (assessment_expiration_millis / 24 / 60 / 60 / 1000));
 					}
 
 				} else {
 
-					GUILogic.msg("Please enter a valid Expiration Time in millisecond !");
+					GUILogic.msg("Please enter a valid expiration time in days !");
 				}
 
 			}
@@ -1403,10 +1391,9 @@ public class GUI {
 						"Are you sure to reset all the data in the database ?",
 						"Are you Sure ?", JOptionPane.YES_NO_OPTION);
 				if (n == JOptionPane.YES_OPTION) {
-					try {
-						view = data.Model.openTrustView();
+					try (TrustView view = data.Model.openTrustView()) {
 						view.erase();
-						view.close();
+						view.save();
 					} catch (ModelAccessException e) {
 						JOptionPane
 								.showConfirmDialog(
@@ -1489,11 +1476,9 @@ public class GUI {
 								"Are you Sure ?", JOptionPane.YES_NO_OPTION);
 				if (n == JOptionPane.YES_OPTION) {
 
-					Configuration conf;
-					try {
-						conf = data.Model.openConfiguration();
+					try (Configuration conf = data.Model.openConfiguration()) {
 						conf.erase();
-						conf.close();
+						conf.save();
 					} catch (ModelAccessException e) {
 						JOptionPane
 								.showConfirmDialog(
@@ -1787,10 +1772,9 @@ public class GUI {
 
 			}
 
-			try {
-				TrustView view = data.Model.openTrustView();
+			try (TrustView view = data.Model.openTrustView()) {
 				view.setAssessment(new_Ass);
-				view.close();
+				view.save();
 
 			} catch (ModelAccessException e1) {
 				GUILogic.msg("Error reading or concurrent modifying the database! ");

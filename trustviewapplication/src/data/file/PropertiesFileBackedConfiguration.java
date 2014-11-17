@@ -64,6 +64,9 @@ public class PropertiesFileBackedConfiguration implements Configuration {
 	}
 
 	@Override
+	public void save() throws ModelAccessException { }
+
+	@Override
 	public void close() throws ModelAccessException { }
 
 	private void notSupported() {

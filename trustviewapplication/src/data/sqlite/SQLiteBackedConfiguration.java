@@ -44,7 +44,7 @@ public class SQLiteBackedConfiguration implements Configuration {
 		}
 		catch (Throwable t) {
 			try {
-				finalizeConnection();
+				close();
 			}
 			catch (Throwable u) {
 				t.addSuppressed(u);
@@ -147,32 +147,35 @@ public class SQLiteBackedConfiguration implements Configuration {
 	}
 
 	@Override
-	public void close() throws ModelAccessException {
-		try {
-			finalizeConnection();
-		}
-		catch (SQLException e) {
-			throw new ModelAccessException(e);
-		}
-	}
-
-	private void finalizeConnection() throws SQLException {
+	public void save() throws ModelAccessException {
 		try {
 			connection.commit();
 		}
 		catch (SQLException e) {
-			connection.rollback();
-			throw e;
+			throw new ModelAccessException(e);
 		}
 		finally {
+			close();
+		}
+	}
+
+	@Override
+	public void close() throws ModelAccessException {
+		try {
 			try {
 				getValue.close();
 				deleteValue.close();
 				eraseConfiguration.close();
 			}
 			finally {
-				connection.close();
+				if (!connection.isClosed()) {
+					connection.rollback();
+					connection.close();
+				}
 			}
+		}
+		catch (SQLException e) {
+			throw new ModelAccessException(e);
 		}
 	}
 
