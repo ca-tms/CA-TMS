@@ -88,6 +88,7 @@ public class TestSuite {
 			for (int i = 0; i < 20; i++) {
 				try (TrustView trustView = model.openTrustView()) {
 					trustView.setAssessment(expected);
+					trustView.save();
 				}
 
 				try (TrustView trustView = model.openTrustView()) {
@@ -123,6 +124,7 @@ public class TestSuite {
 
 			try (Configuration configuration = model.openConfiguration()) {
 				configuration.set(Configuration.QUERY_SERVICES_FOR_CA_CERTS, notaryForCA);
+				configuration.save();
 			}
 
 			for (int i = 0; i < 10; i++) {
@@ -165,6 +167,9 @@ public class TestSuite {
 				for (TrustCertificate C : assessment.getS())
 					assertEqualsCert(RCA1_SCA2, C);
 			}
+
+			config.close();
+			trustView.save();
 		}
 	}
 
@@ -187,6 +192,7 @@ public class TestSuite {
 
 			try (Configuration configuration = model.openConfiguration()) {
 				configuration.set(Configuration.QUERY_SERVICES_FOR_CA_CERTS, notaryForCA);
+				configuration.save();
 			}
 
 			// RCA1 -> RCA1 -> SCA1 -> EE1
@@ -462,6 +468,9 @@ public class TestSuite {
 					assertEqualsCert(SCA2_EE3, C);
 				else
 					assertEqualsCert(SCA3_EE4, C);
+
+			config.close();
+			trustView.save();
 		}
 	}
 }
