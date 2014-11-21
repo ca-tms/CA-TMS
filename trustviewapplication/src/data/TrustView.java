@@ -206,11 +206,12 @@ public interface TrustView extends AutoCloseable {
 	void addCRL(CRLInfo crlInfo);
 
 	/**
-	 * @return the CRL information for the given CRL issuer or <code>null</code>
-	 * if the <code>TrustView</code> does not contain such information
+	 * @return the CRL information for the given CRL service or
+	 * <code>null</code> if the <code>TrustView</code> does not contain such
+	 * information
 	 * @param crlIssuer
 	 */
-	CRLInfo getCRL(TrustCertificate crlIssuer);
+	CRLInfo getCRL(CRLInfo crlInfo);
 
 	/**
 	 * Adds the given OCSP information to the <code>TrustView</code>
@@ -219,12 +220,12 @@ public interface TrustView extends AutoCloseable {
 	void addOCSP(OCSPInfo ocspInfo);
 
 	/**
-	 * @return the OCSP information for the given certificate issuer or
+	 * @return the OCSP information for the given OCSP service or
 	 * <code>null</code> if the <code>TrustView</code> does not contain such
 	 * information
 	 * @param certificateIssuer
 	 */
-	OCSPInfo getOCSP(TrustCertificate certificateIssuer);
+	OCSPInfo getOCSP(OCSPInfo ocspInfo);
 
 	/**
 	 * Cleans the trust view.

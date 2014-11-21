@@ -146,7 +146,7 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"FOREIGN KEY (serial, issuer)" +
 						"  REFERENCES certificates(serial, issuer)" +
 						"  ON DELETE CASCADE," +
-						"PRIMARY KEY (serial, issuer))");
+						"PRIMARY KEY (serial, issuer, urls))");
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS ocsp (" +
@@ -158,7 +158,7 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"FOREIGN KEY (serial, issuer)" +
 						"  REFERENCES certificates(serial, issuer)" +
 						"  ON DELETE CASCADE," +
-						"PRIMARY KEY (serial, issuer))");
+						"PRIMARY KEY (serial, issuer, urls))");
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS configuration (" +

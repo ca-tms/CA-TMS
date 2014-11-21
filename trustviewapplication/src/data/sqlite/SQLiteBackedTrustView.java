@@ -78,7 +78,7 @@ public class SQLiteBackedTrustView implements TrustView {
 
 	// CRLs are not directly inserted into the data base but as batch
 	// when finalizing the connection for performance reasons
-	private final Map<TrustCertificate, CRLInfo> deferredCRLBatch = new HashMap<>();
+	private final Map<CRLInfo, CRLInfo> deferredCRLBatch = new HashMap<>();
 
 	public SQLiteBackedTrustView(Connection connection) throws ModelAccessException  {
 		try {
@@ -183,25 +183,25 @@ public class SQLiteBackedTrustView implements TrustView {
 
 				// CRL
 				addCRL = new UpdateInsertStmnt(connection, "crl",
-							new String [] { "serial", "?", "issuer", "?" }, new String [] {
-							"urls", "?", "nextupdate", "?", "crldata", "?" });
+							new String [] { "serial", "?", "issuer", "?", "urls", "?" },
+							new String [] { "nextupdate", "?", "crldata", "?" });
 
 				getCRL = connection.prepareStatement(
 						"SELECT * FROM certificates JOIN crl " +
 						"  ON certificates.serial = crl.serial" +
 						"  AND certificates.issuer = crl.issuer" +
-						"  WHERE certificates.serial=? AND certificates.issuer=?");
+						"  WHERE crl.serial=? AND crl.issuer=? AND crl.urls=?");
 
 				// OCSP
 				addOCSP = new UpdateInsertStmnt(connection, "ocsp",
-						new String [] { "serial", "?", "issuer", "?" }, new String [] {
-						"urls", "?", "nextupdate", "?" });
+						new String [] { "serial", "?", "issuer", "?", "urls", "?" },
+						new String [] { "nextupdate", "?" });
 
 				getOCSP = connection.prepareStatement(
 						"SELECT * FROM certificates JOIN ocsp " +
 						"  ON certificates.serial = ocsp.serial" +
 						"  AND certificates.issuer = ocsp.issuer" +
-						"  WHERE certificates.serial=? AND certificates.issuer=?");
+						"  WHERE ocsp.serial=? AND ocsp.issuer=? AND ocsp.urls=?");
 
 				// cleaning the trust view
 				removeAssessment = connection.prepareStatement(
@@ -668,7 +668,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				setCertificate.setNull(7, Types.BLOB);
 			setCertificate.executeUpdate();
 
-			deferredCRLBatch.put(certificate, crlInfo);
+			deferredCRLBatch.put(crlInfo, crlInfo);
 		}
 		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
@@ -676,18 +676,23 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public CRLInfo getCRL(TrustCertificate crlIssuer) {
-		CRLInfo deferredCRLInfo = deferredCRLBatch.get(crlIssuer);
+	public CRLInfo getCRL(CRLInfo crlInfo) {
+		CRLInfo deferredCRLInfo = deferredCRLBatch.get(crlInfo);
 		if (deferredCRLInfo != null)
 			return deferredCRLInfo;
 
 		try {
 			validateDatabaseConnection();
-			getCRL.setString(1, crlIssuer.getSerial());
-			getCRL.setString(2, crlIssuer.getIssuer());
+			List<String> crlInfoURLs = new ArrayList<>(crlInfo.getURLs().size());
+			for (URL url : crlInfo.getURLs())
+				crlInfoURLs.add(url.toString());
+
+			getCRL.setString(1, crlInfo.getCRLIssuer().getSerial());
+			getCRL.setString(2, crlInfo.getCRLIssuer().getIssuer());
+			getCRL.setString(3, serialize(crlInfoURLs));
 			try (ResultSet result = getCRL.executeQuery()) {
 				if (result.next()) {
-					crlIssuer = constructCertificate(result);
+					TrustCertificate crlIssuer = constructCertificate(result);
 
 					List<String> strings = deserialize(result.getString(14));
 					List<URL> urls = new ArrayList<>(strings.size());
@@ -754,14 +759,19 @@ public class SQLiteBackedTrustView implements TrustView {
 	}
 
 	@Override
-	public OCSPInfo getOCSP(TrustCertificate certificateIssuer) {
+	public OCSPInfo getOCSP(OCSPInfo ocspInfo) {
 		try {
 			validateDatabaseConnection();
-			getOCSP.setString(1, certificateIssuer.getSerial());
-			getOCSP.setString(2, certificateIssuer.getIssuer());
+			List<String> ocspInfoURLs = new ArrayList<>(ocspInfo.getURLs().size());
+			for (URL url : ocspInfo.getURLs())
+				ocspInfoURLs.add(url.toString());
+
+			getOCSP.setString(1, ocspInfo.getCertificateIssuer().getSerial());
+			getOCSP.setString(2, ocspInfo.getCertificateIssuer().getIssuer());
+			getOCSP.setString(3, serialize(ocspInfoURLs));
 			try (ResultSet result = getOCSP.executeQuery()) {
 				if (result.next()) {
-					certificateIssuer = constructCertificate(result);
+					TrustCertificate certificateIssuer = constructCertificate(result);
 
 					List<String> strings = deserialize(result.getString(14));
 					List<URL> urls = new ArrayList<>(strings.size());
