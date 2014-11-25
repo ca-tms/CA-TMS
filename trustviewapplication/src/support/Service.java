@@ -73,7 +73,7 @@ public final class Service {
 							host, 443, new Certificate[] { certificate.getCertificate() });
 					info.validateCertificates(nm);
 					return info.isTrusted() ?
-							ValidationResult.TRUSTED : ValidationResult.UNTRUSTED;
+							ValidationResult.TRUSTED : ValidationResult.UNKNOWN;
 				}
 				catch (Exception e) {
 					e.printStackTrace();

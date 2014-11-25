@@ -16,10 +16,11 @@ import data.TrustView;
  * Validator for {@link ValidationRequest}s
  */
 public final class Validator {
+	static final int MAX_VALIDATION_SERVICE_ATTEMPTS = 3;
 	static final int MAX_ATTEMPTS = 60;
 	static final int WAIT_ATTEMPT_MILLIS = 500;
 
-	private static final ReentrantLock lock = new ReentrantLock();
+	private static final ReentrantLock lock = new ReentrantLock(true);
 
 	private Validator() { }
 
@@ -31,17 +32,19 @@ public final class Validator {
 	 */
 	public static ValidationInformation validate(ValidationRequest request)
 			throws ModelAccessException {
+		final boolean retrieveRecommendation =
+				request.getValidationRequestSpec() ==
+					ValidationRequestSpec.RETRIEVE_RECOMMENDATION;
+
 		ValidationInformation result = new ValidationInformation(
 				ValidationResult.UNKNOWN,
-				request.getValidationRequestSpec() ==
-					ValidationRequestSpec.RETRIEVE_RECOMMENDATION
+				retrieveRecommendation
 						? ValidationResultSpec.RECOMMENDED
 						: ValidationResultSpec.VALIDATED);
 
 		try {
 			if (request.getCertificatePathValidity() == CertificatePathValidity.VALID ||
-					request.getValidationRequestSpec() ==
-						ValidationRequestSpec.RETRIEVE_RECOMMENDATION) {
+					retrieveRecommendation) {
 
 				System.out.println("Performing trust validation ...");
 				System.out.println("  URL: " + request.getURL());
@@ -54,13 +57,12 @@ public final class Validator {
 							"bypassing trust validation algorithm.");
 				}
 
-				if (request.getValidationRequestSpec() ==
-						ValidationRequestSpec.RETRIEVE_RECOMMENDATION)
+				if (retrieveRecommendation)
 					System.out.println("Only querying validation services for recommendation.");
 
 				ValidationService validationService = null;
 
-				int attempts = 0;
+				int attempts = 0, validationServiceAttempts = 0;
 				while (true) {
 					try (TrustView trustView = Model.openTrustView();
 					     Configuration config = Model.openConfiguration()) {
@@ -88,10 +90,20 @@ public final class Validator {
 							throw e;
 						}
 
-						if (e instanceof CancellationException)
-							System.err.println(
-									"Trust validation failed due validation service time out. " +
-									"Retrying ...");
+						if (e instanceof CancellationException) {
+							if (++validationServiceAttempts >= MAX_VALIDATION_SERVICE_ATTEMPTS) {
+								validationService =
+									Service.getValidationService(ValidationResult.UNKNOWN);
+
+								System.err.println(
+										"Trust validation failed due validation service time out. " +
+										"Assuming result is unknown.");
+							}
+							else
+								System.err.println(
+										"Trust validation failed due validation service time out. " +
+										"Retrying ...");
+						}
 						else
 							System.err.println(
 									"Trust validation or TrustView update failed. " +
@@ -141,7 +153,7 @@ public final class Validator {
 					String.class);
 		final long validationServiceTimeoutMillis =
 				config.get(
-					Configuration.VALIDATION_TIMEOUT_MILLIS,
+					Configuration.VALIDATION_SERVICE_TIMEOUT_MILLIS,
 					Long.class);
 
 		ValidationService service;
