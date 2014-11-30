@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -131,6 +130,68 @@ public class GUILogic {
 		task.execute();
 	}
 
+	/**
+	 * @return the issuer string representation for the given certificate
+	 * @param certificate
+	 */
+	public static String getIssuerString(TrustCertificate certificate) {
+		if (certificate.getCertificate() instanceof X509Certificate) {
+			X509Certificate x509cert = (X509Certificate) certificate.getCertificate();
+			return x509cert.getIssuerX500Principal().toString();
+		}
+		return certificate.getIssuer();
+	}
+
+	/**
+	 * @return the subject string representation for the given certificate
+	 * @param certificate
+	 */
+	public static String getSubjectString(TrustCertificate certificate) {
+		if (certificate.getCertificate() instanceof X509Certificate) {
+			X509Certificate x509cert = (X509Certificate) certificate.getCertificate();
+			return x509cert.getSubjectX500Principal().toString();
+		}
+		return certificate.getSubject();
+	}
+
+	/**
+	 * @return the public key string representation for the given certificate
+	 * @param certificate
+	 */
+	public static String getPublicKeyString(TrustCertificate certificate) {
+		if (certificate.getCertificate() instanceof X509Certificate) {
+			X509Certificate x509cert = (X509Certificate) certificate.getCertificate();
+
+			if (x509cert.getPublicKey() instanceof RSAPublicKey) {
+				RSAPublicKey key = (RSAPublicKey) x509cert.getPublicKey();
+				return "[" + x509cert.getPublicKey().getAlgorithm() + "] " +
+						key.getModulus().bitCount() + " bits, " +
+						"modulus: " + key.getModulus().toString(16) + ", " +
+						"public exponent: " + key.getPublicExponent().toString(16);
+			}
+
+			if (x509cert.getPublicKey() instanceof DSAPublicKey) {
+				DSAPublicKey key = (DSAPublicKey) x509cert.getPublicKey();
+				return "[" + x509cert.getPublicKey().getAlgorithm() + "] " +
+						"parameters: " + key.getParams() + ", " +
+						"y: " + key.getY().toString(16);
+			}
+
+			if (x509cert.getPublicKey() instanceof ECPublicKey) {
+				ECPublicKey key = (ECPublicKey) x509cert.getPublicKey();
+				return "[" + x509cert.getPublicKey().getAlgorithm() + "] " +
+						"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
+						"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
+						"parameters: " + key.getParams();
+			}
+
+			return "[" + x509cert.getPublicKey().getAlgorithm() + "] " +
+					certificate.getPublicKey();
+		}
+
+		return certificate.getPublicKey();
+	}
+
 	// /////////////////////////////////////////////////////////refresh_TC_Table/////////////////////////////////////////////////////////////////////////////////////
 
 	/**
@@ -139,7 +200,7 @@ public class GUILogic {
 	@SuppressWarnings("deprecation")
 	public static DefaultTableModel refresh_TC_Table() {
 
-		DefaultTableModel Model = new DefaultTableModel(new Object[][] {},
+		DefaultTableModel model = new DefaultTableModel(new Object[][] {},
 				new String[] { "Serial", "Issuer", "Subject", "PublicKey",
 						"NotBefore", "NotAfter" }) {
 
@@ -175,58 +236,25 @@ public class GUILogic {
 			e1.printStackTrace();
 		}
 
+		if (Certs_temp == null)
+			return model;
+
 		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
 		TrustCertificate certificate;
 
 		while (it_cert.hasNext()) {
 			certificate = it_cert.next();
-			Certificate cert = certificate.getCertificate();
-
-			String serial = certificate.getSerial();
-			String issuer = certificate.getIssuer();
-			String subject = certificate.getSubject();
-			String publicKey =
-					(cert != null
-						? "[" + cert.getPublicKey().getAlgorithm() + "] " : "") +
-					certificate.getPublicKey();
-			String notBefore = certificate.getNotBefore().toGMTString();
-			String notAfter = certificate.getNotAfter().toGMTString();
-
-			if (cert != null) {
-				if (cert instanceof X509Certificate) {
-					X509Certificate x509cert = (X509Certificate) cert;
-					issuer = x509cert.getIssuerX500Principal().toString();
-					subject = x509cert.getSubjectX500Principal().toString();
-				}
-
-				if (cert.getPublicKey() instanceof RSAPublicKey) {
-					RSAPublicKey key = (RSAPublicKey) cert.getPublicKey();
-					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-							key.getModulus().bitCount() + " bits, " +
-							"modulus: " + key.getModulus().toString(16) + ", " +
-							"public exponent: " + key.getPublicExponent().toString(16);
-				}
-				if (cert.getPublicKey() instanceof DSAPublicKey) {
-					DSAPublicKey key = (DSAPublicKey) cert.getPublicKey();
-					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-							"parameters: " + key.getParams() + ", " +
-							"y: " + key.getY().toString(16);
-				}
-				if (cert.getPublicKey() instanceof ECPublicKey) {
-					ECPublicKey key = (ECPublicKey) cert.getPublicKey();
-					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-							"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
-							"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
-							"parameters: " + key.getParams();
-				}
-			}
-
-			Model.addRow(new Object[] {
-					serial, issuer, subject, publicKey, notBefore, notAfter });
-
+			model.addRow(new Object[] {
+					certificate.getSerial(),
+					getIssuerString(certificate),
+					getSubjectString(certificate),
+					getPublicKeyString(certificate),
+					certificate.getNotBefore().toGMTString(),
+					certificate.getNotAfter().toGMTString()
+			});
 		}
 
-		return Model;
+		return model;
 	}
 
 	// /////////////////////////////////////////////////////////refresh_uTC_Table/////////////////////////////////////////////////////////////////////////////////////
@@ -239,7 +267,7 @@ public class GUILogic {
 
 	@SuppressWarnings("deprecation")
 	public static DefaultTableModel refresh_uTC_Table() {
-		DefaultTableModel Model = new DefaultTableModel(new Object[][] {},
+		DefaultTableModel model = new DefaultTableModel(new Object[][] {},
 				new String[] { "Serial", "Issuer", "Subject", "PublicKey",
 						"NotBefore", "NotAfter" }) {
 
@@ -274,57 +302,25 @@ public class GUILogic {
 			e1.printStackTrace();
 		}
 
+		if (Certs_temp == null)
+			return model;
+
 		Iterator<TrustCertificate> it_cert = Certs_temp.iterator();
 		TrustCertificate certificate;
 		while (it_cert.hasNext()) {
 			certificate = it_cert.next();
-			Certificate cert = certificate.getCertificate();
 
-			String serial = certificate.getSerial();
-			String issuer = certificate.getIssuer();
-			String subject = certificate.getSubject();
-			String publicKey =
-					(cert != null
-						? "[" + cert.getPublicKey().getAlgorithm() + "] " : "") +
-					certificate.getPublicKey();
-			String notBefore = certificate.getNotBefore().toGMTString();
-			String notAfter = certificate.getNotAfter().toGMTString();
-
-			if (cert != null) {
-				if (cert instanceof X509Certificate) {
-					X509Certificate x509cert = (X509Certificate) cert;
-					issuer = x509cert.getIssuerX500Principal().toString();
-					subject = x509cert.getSubjectX500Principal().toString();
-				}
-
-				if (cert.getPublicKey() instanceof RSAPublicKey) {
-					RSAPublicKey key = (RSAPublicKey) cert.getPublicKey();
-					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-							key.getModulus().bitCount() + " bits, " +
-							"modulus: " + key.getModulus().toString(16) + ", " +
-							"public exponent: " + key.getPublicExponent().toString(16);
-				}
-				if (cert.getPublicKey() instanceof DSAPublicKey) {
-					DSAPublicKey key = (DSAPublicKey) cert.getPublicKey();
-					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-							"parameters: " + key.getParams() + ", " +
-							"y: " + key.getY().toString(16);
-				}
-				if (cert.getPublicKey() instanceof ECPublicKey) {
-					ECPublicKey key = (ECPublicKey) cert.getPublicKey();
-					publicKey = "[" + cert.getPublicKey().getAlgorithm() + "] " +
-							"public x coord: " + key.getW().getAffineX().toString(16) + ", " +
-							"public y coord: " + key.getW().getAffineY().toString(16) + ", " +
-							"parameters: " + key.getParams();
-				}
-			}
-
-			Model.addRow(new Object[] {
-					serial, issuer, subject, publicKey, notBefore, notAfter });
-
+			model.addRow(new Object[] {
+					certificate.getSerial(),
+					getIssuerString(certificate),
+					getSubjectString(certificate),
+					getPublicKeyString(certificate),
+					certificate.getNotBefore().toGMTString(),
+					certificate.getNotAfter().toGMTString()
+			});
 		}
 
-		return Model;
+		return model;
 	}
 
 	// /////////////////////////////////////////////////////////refresh_Ass_Table/////////////////////////////////////////////////////////////////////////////////////
@@ -336,7 +332,7 @@ public class GUILogic {
 	 */
 
 	public static DefaultTableModel refresh_Ass_Table() {
-		DefaultTableModel Model = new DefaultTableModel(
+		DefaultTableModel model = new DefaultTableModel(
 				new Object[][] {},
 				new String[] { "PublicKey", "CA", "O_kl", "O_it_ca", "O_it_ee" }) {
 
@@ -371,30 +367,37 @@ public class GUILogic {
 			e1.printStackTrace();
 		}
 
-		Iterator<TrustAssessment> it_ass = Assessments_temp.iterator();
-		TrustAssessment Assessment;
+		if (Assessments_temp == null)
+			return model;
 
+		Iterator<TrustAssessment> it_ass = Assessments_temp.iterator();
 		while (it_ass.hasNext()) {
-			Assessment = it_ass.next();
+			TrustAssessment assessment = it_ass.next();
+			Iterator<TrustCertificate> iterator = assessment.getS().iterator();
+			TrustCertificate certificate = iterator.hasNext() ? iterator.next() : null;
 
 			String o_kl = "";
-			o_kl += Assessment.getO_kl().isSet() ? "("
-					+ Assessment.getO_kl().get().getT() + ", "
-					+ Assessment.getO_kl().get().getC() + ", "
-					+ Assessment.getO_kl().get().getF() + ")" : "unknown";
+			o_kl += assessment.getO_kl().isSet() ? "("
+					+ assessment.getO_kl().get().getT() + ", "
+					+ assessment.getO_kl().get().getC() + ", "
+					+ assessment.getO_kl().get().getF() + ")" : "unknown";
 
-			String o_it_ca = "(" + Assessment.getO_it_ca().getT() + ", "
-					+ Assessment.getO_it_ca().getC() + ", "
-					+ Assessment.getO_it_ca().getF() + ")";
-			String o_it_ee = "(" + Assessment.getO_it_ee().getT() + ", "
-					+ Assessment.getO_it_ee().getC() + ", "
-					+ Assessment.getO_it_ee().getF() + ")";
+			String o_it_ca = "(" + assessment.getO_it_ca().getT() + ", "
+					+ assessment.getO_it_ca().getC() + ", "
+					+ assessment.getO_it_ca().getF() + ")";
+			String o_it_ee = "(" + assessment.getO_it_ee().getT() + ", "
+					+ assessment.getO_it_ee().getC() + ", "
+					+ assessment.getO_it_ee().getF() + ")";
 
-			Model.addRow(new Object[] { Assessment.getK(), Assessment.getCa(),
-					o_kl, o_it_ca, o_it_ee });
+			String ca = certificate != null ?
+					getSubjectString(certificate) : assessment.getCa();
+			String k = certificate != null ?
+					getPublicKeyString(certificate) : assessment.getK();
+
+			model.addRow(new Object[] { k, ca, o_kl, o_it_ca, o_it_ee });
 
 		}
-		return Model;
+		return model;
 	}
 
 	// /////////////////////////////////////////////////////////getTCert_by_Click/////////////////////////////////////////////////////////////////////////////////////
