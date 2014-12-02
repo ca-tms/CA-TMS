@@ -58,6 +58,7 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import services.RevocationValidator;
 import services.bindings.WebServer;
 import support.Service;
 import CertainTrust.CertainTrust;
@@ -147,6 +148,8 @@ public class GUI {
 				window.frame.setVisible(true);
 			}
 		});
+
+		RevocationValidator.start(false);
 	}
 
 	/**

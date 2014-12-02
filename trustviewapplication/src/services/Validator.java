@@ -1,15 +1,18 @@
 package services;
 
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import support.Service;
 import support.ValidationService;
 import util.CertificatePathValidity;
+import buisness.RevocationValidation;
 import buisness.TrustValidation;
 import data.Configuration;
 import data.Model;
 import data.ModelAccessException;
+import data.TrustCertificate;
 import data.TrustView;
 
 /**
@@ -61,6 +64,7 @@ public final class Validator {
 					System.out.println("Only querying validation services for recommendation.");
 
 				ValidationService validationService = null;
+				RevocationValidation.Validator revocationService = null;
 
 				int attempts = 0, validationServiceAttempts = 0;
 				while (true) {
@@ -71,9 +75,20 @@ public final class Validator {
 							validationService = constructValidationService(
 									config, request.getURL());
 
+						// initialize revocation service
+						if (revocationService == null && !retrieveRecommendation)
+							revocationService = constructRevocationService(
+									config, request.getCertificatePath());
+
 						// perform validation
-						result = TrustValidation.validate(trustView, config,
-								request, validationService);
+						if (!retrieveRecommendation &&
+								!revocationService.validate(trustView))
+							result = new ValidationInformation(
+									ValidationResult.UNTRUSTED,
+									ValidationResultSpec.VALIDATED_REVOKED);
+						else
+							result = TrustValidation.validate(trustView, config,
+									request, validationService);
 
 						config.close();
 						trustView.save();
@@ -185,5 +200,26 @@ public final class Validator {
 						Service.getValidationService(hostURL)));
 
 		return service;
+	}
+
+	/**
+	 * @return the certificates and associated revocation services for the
+	 * given certificate path taking account of the given configuration
+	 * @param config
+	 * @param certificatePath
+	 */
+	private static RevocationValidation.Validator constructRevocationService(
+			Configuration config, List<TrustCertificate> certificatePath) {
+		final int crlTimeoutMillis =
+				config.get(
+					Configuration.REVOCATION_CRL_TIMEOUT_MILLIS,
+					Integer.class);
+		final int ocspTimeoutMillis =
+				config.get(
+					Configuration.REVOCATION_OCSP_TIMEOUT_MILLIS,
+					Integer.class);
+
+		return RevocationValidation.createValidator(certificatePath,
+				crlTimeoutMillis, ocspTimeoutMillis);
 	}
 }

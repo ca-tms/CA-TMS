@@ -26,6 +26,9 @@ public interface Configuration extends AutoCloseable {
 	static String SERVER_PORT = "server-port";
 	static String SERVER_REQUEST_TIMEOUT_MILLIS = "server-request-timeout-millis";
 	static String VALIDATION_SERVICE_TIMEOUT_MILLIS = "validation-service-timeout-millis";
+	static String REVOCATION_CRL_TIMEOUT_MILLIS = "revocation-crl-timeout-millis";
+	static String REVOCATION_OCSP_TIMEOUT_MILLIS = "revocation-ocsp-timeout-millis";
+	static String REVOCATION_CHECKING_INTERVAL_MILLIS = "revocation-checking-interval-millis";
 	static String WATCHLIST_EXPIRATION_MILLIS = "watchlist-expiration-millis";
 	static String OVERRIDE_VALIDATION_SERVICE_RESULT = "override-validation-service-result";
 
