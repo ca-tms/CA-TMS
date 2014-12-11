@@ -20,8 +20,8 @@ TVE.SSLListener = {
             // if it's a HTTPS request and page is not excluded for this session:
             if(aLocation.scheme == "https" && !TVE.State.isAllowedPage(url)) {
                 
-                var doValidation = {
-                    notify: function(timer) {
+                var validator = {
+                    run: function() {
                         try {
                             
                             // parse standard validation result from Firefox/NSS
@@ -70,18 +70,18 @@ TVE.SSLListener = {
                             }
                             
                         }
-                        catch(err) {
-                            // maybe it's too early to access the SSLStatus when the event handler kicks in
-                            // in this case CertHandler.getValidationResult() throws an error which is caught here
-                            // wait 10 ms and try it again
-                            var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-                            timer.initWithCallback(doValidation, 10, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
+                        catch (e) {
+                            aRequest.resume();
+                            throw e;
                         }
                         
                     }
                 }
                 
-                doValidation.notify();
+                // let this onLocationChange callback return first before performing the validation
+                // which is to ensure that the security status information is available and up to date when validating
+                var threadManager = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager);
+                threadManager.currentThread.dispatch(validator, Ci.nsIEventTarget.DISPATCH_NORMAL);
                 
             } else {
                 // continue normally when it's not a HTTPS request, we want to intercept
