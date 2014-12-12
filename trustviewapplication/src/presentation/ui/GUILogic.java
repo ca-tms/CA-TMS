@@ -429,11 +429,7 @@ public class GUILogic {
 		while (it.hasNext()) {
 			TrustCertificate it_cert = it.next();
 			String it_serial = it_cert.getSerial();
-			String it_issuer = it_cert.getIssuer();
-
-			if (it_cert.getCertificate() instanceof X509Certificate)
-				it_issuer = ((X509Certificate) it_cert.getCertificate())
-						.getIssuerX500Principal().toString();
+			String it_issuer = getIssuerString(it_cert);
 
 			if (it_serial.equals(Serial) && it_issuer.equals(Issuer))
 				return it_cert;
@@ -475,11 +471,7 @@ public class GUILogic {
 		while (it.hasNext()) {
 			TrustCertificate it_cert = it.next();
 			String it_serial = it_cert.getSerial();
-			String it_issuer = it_cert.getIssuer();
-
-			if (it_cert.getCertificate() instanceof X509Certificate)
-				it_issuer = ((X509Certificate) it_cert.getCertificate())
-						.getIssuerX500Principal().toString();
+			String it_issuer = getIssuerString(it_cert);
 
 			if (it_serial.equals(Serial) && it_issuer.equals(Issuer))
 				return it_cert;
@@ -504,10 +496,10 @@ public class GUILogic {
 		k = (String) table.getValueAt(row, 0);
 		ca = (String) table.getValueAt(row, 1);
 
-		TrustAssessment Ass_temp = null;
+		Collection<TrustAssessment> Certs_temp = null;
 
 		try (TrustView view = data.Model.openTrustView()) {
-			Ass_temp = view.getAssessment(k, ca);
+			Certs_temp = view.getAssessments();
 
 		} catch (ModelAccessException e1) {
 			JOptionPane.showConfirmDialog(null,
@@ -517,7 +509,22 @@ public class GUILogic {
 			return null;
 		}
 
-		return Ass_temp;
+		Iterator<TrustAssessment> it = Certs_temp.iterator();
+		while (it.hasNext()) {
+			TrustAssessment it_ass = it.next();
+			Iterator<TrustCertificate> iterator = it_ass.getS().iterator();
+			TrustCertificate certificate = iterator.hasNext() ? iterator.next() : null;
+
+			String it_ca = certificate != null ?
+					getSubjectString(certificate) : it_ass.getCa();
+			String it_k = certificate != null ?
+					getPublicKeyString(certificate) : it_ass.getK();
+
+			if (it_ca.equals(ca) && it_k.equals(k))
+				return it_ass;
+		}
+
+		return null;
 	}
 
 	/**

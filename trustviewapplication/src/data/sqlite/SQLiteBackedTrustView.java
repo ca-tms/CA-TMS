@@ -329,6 +329,22 @@ public class SQLiteBackedTrustView implements TrustView {
 	public void removeAssessment(String k, String ca) {
 		try {
 			validateDatabaseConnection();
+			getAssessmentsS.setString(1, k);
+			getAssessmentsS.setString(2, ca);
+			try (ResultSet resultS = getAssessmentsS.executeQuery()) {
+				while (resultS.next()) {
+					setAssessmentS.setString(1, resultS.getString(1));
+					setAssessmentS.setString(2, resultS.getString(2));
+					setAssessmentS.setString(3, resultS.getString(3));
+					setAssessmentS.setString(4, resultS.getString(4));
+					setAssessmentS.setTimestamp(5, resultS.getTimestamp(5));
+					setAssessmentS.setTimestamp(6, resultS.getTimestamp(6));
+					setAssessmentS.setBytes(7, resultS.getBytes(7));
+					setAssessmentS.setBoolean(8, false);
+					setAssessmentS.executeUpdate();
+				}
+			}
+
 			removeAssessment.setString(1, k);
 			removeAssessment.setString(2, ca);
 			removeAssessment.executeUpdate();
