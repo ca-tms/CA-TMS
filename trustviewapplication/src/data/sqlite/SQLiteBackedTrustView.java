@@ -1,8 +1,6 @@
 package data.sqlite;
 
 import java.io.ByteArrayInputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateEncodingException;
@@ -699,22 +697,14 @@ public class SQLiteBackedTrustView implements TrustView {
 
 		try {
 			validateDatabaseConnection();
-			List<String> crlInfoURLs = new ArrayList<>(crlInfo.getURLs().size());
-			for (URL url : crlInfo.getURLs())
-				crlInfoURLs.add(url.toString());
 
 			getCRL.setString(1, crlInfo.getCRLIssuer().getSerial());
 			getCRL.setString(2, crlInfo.getCRLIssuer().getIssuer());
-			getCRL.setString(3, serialize(crlInfoURLs));
+			getCRL.setString(3, serialize(crlInfo.getURLs()));
 			try (ResultSet result = getCRL.executeQuery()) {
 				if (result.next()) {
 					TrustCertificate crlIssuer = constructCertificate(result);
-
-					List<String> strings = deserialize(result.getString(14));
-					List<URL> urls = new ArrayList<>(strings.size());
-					for (String string : strings)
-						urls.add(new URL(string));
-
+					List<String> urls = deserialize(result.getString(14));
 					Timestamp timestamp = result.getTimestamp(15);
 					Option<Date> nextUpdate = !result.wasNull()
 							? new Option<Date>(new Date(timestamp.getTime()))
@@ -731,8 +721,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				}
 			}
 		}
-		catch (SQLException | CertificateException | CRLException |
-		       MalformedURLException e) {
+		catch (SQLException | CertificateException | CRLException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -744,10 +733,6 @@ public class SQLiteBackedTrustView implements TrustView {
 			validateDatabaseConnection();
 
 			TrustCertificate certificate = ocspInfo.getCertificateIssuer();
-			List<String> urls = new ArrayList<>(ocspInfo.getURLs().size());
-			for (URL url : ocspInfo.getURLs())
-				urls.add(url.toString());
-
 			setCertificate.setString(1, certificate.getSerial());
 			setCertificate.setString(2, certificate.getIssuer());
 			setCertificate.setString(3, certificate.getSubject());
@@ -762,7 +747,7 @@ public class SQLiteBackedTrustView implements TrustView {
 
 			addOCSP.setString(1, certificate.getSerial());
 			addOCSP.setString(2, certificate.getIssuer());
-			addOCSP.setString(3, serialize(urls));
+			addOCSP.setString(3, serialize(ocspInfo.getURLs()));
 			if (ocspInfo.getNextUpdate().isSet())
 				addOCSP.setTimestamp(4, new Timestamp(ocspInfo.getNextUpdate().get().getTime()));
 			else
@@ -778,22 +763,14 @@ public class SQLiteBackedTrustView implements TrustView {
 	public OCSPInfo getOCSP(OCSPInfo ocspInfo) {
 		try {
 			validateDatabaseConnection();
-			List<String> ocspInfoURLs = new ArrayList<>(ocspInfo.getURLs().size());
-			for (URL url : ocspInfo.getURLs())
-				ocspInfoURLs.add(url.toString());
 
 			getOCSP.setString(1, ocspInfo.getCertificateIssuer().getSerial());
 			getOCSP.setString(2, ocspInfo.getCertificateIssuer().getIssuer());
-			getOCSP.setString(3, serialize(ocspInfoURLs));
+			getOCSP.setString(3, serialize(ocspInfo.getURLs()));
 			try (ResultSet result = getOCSP.executeQuery()) {
 				if (result.next()) {
 					TrustCertificate certificateIssuer = constructCertificate(result);
-
-					List<String> strings = deserialize(result.getString(14));
-					List<URL> urls = new ArrayList<>(strings.size());
-					for (String string : strings)
-						urls.add(new URL(string));
-
+					List<String> urls = deserialize(result.getString(14));
 					Timestamp timestamp = result.getTimestamp(15);
 					Option<Date> nextUpdate = !result.wasNull()
 							? new Option<Date>(new Date(timestamp.getTime()))
@@ -803,7 +780,7 @@ public class SQLiteBackedTrustView implements TrustView {
 				}
 			}
 		}
-		catch (SQLException | CertificateException | MalformedURLException e) {
+		catch (SQLException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -899,13 +876,9 @@ public class SQLiteBackedTrustView implements TrustView {
 				for (CRLInfo crlInfo : deferredCRLBatch.values())
 					try {
 						TrustCertificate certificate = crlInfo.getCRLIssuer();
-						List<String> urls = new ArrayList<>(crlInfo.getURLs().size());
-						for (URL url : crlInfo.getURLs())
-							urls.add(url.toString());
-
 						addCRL.setString(1, certificate.getSerial());
 						addCRL.setString(2, certificate.getIssuer());
-						addCRL.setString(3, serialize(urls));
+						addCRL.setString(3, serialize(crlInfo.getURLs()));
 						if (crlInfo.getNextUpdate().isSet())
 							addCRL.setTimestamp(4, new Timestamp(crlInfo.getNextUpdate().get().getTime()));
 						else

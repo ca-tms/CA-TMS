@@ -1,6 +1,5 @@
 package data;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -13,7 +12,7 @@ import util.Option;
  */
 public class OCSPInfo {
 	private final TrustCertificate certificateIssuer;
-	private final List<URL> urls;
+	private final List<String> urls;
 	private final Option<Date> nextUpdate;
 
 	/**
@@ -22,7 +21,7 @@ public class OCSPInfo {
 	 * @param urls the URLs where the OSCP services can be reached
 	 * @param nextUpdate the next update date for the OCSP service if available
 	 */
-	public OCSPInfo(TrustCertificate certificateIssuer, List<URL> urls,
+	public OCSPInfo(TrustCertificate certificateIssuer, List<String> urls,
 			Option<Date> nextUpdate) {
 		this.certificateIssuer = certificateIssuer;
 		this.urls = Collections.unmodifiableList(new ArrayList<>(urls));
@@ -34,7 +33,7 @@ public class OCSPInfo {
 	 * @param certificateIssuer the issuer of the certificates to be checked
 	 * @param urls the URLs where the OSCP services can be reached
 	 */
-	public OCSPInfo(TrustCertificate certificateIssuer, List<URL> urls) {
+	public OCSPInfo(TrustCertificate certificateIssuer, List<String> urls) {
 		this.certificateIssuer = certificateIssuer;
 		this.urls = Collections.unmodifiableList(new ArrayList<>(urls));
 		this.nextUpdate = new Option<>();
@@ -50,7 +49,7 @@ public class OCSPInfo {
 	/**
 	 * @return the URLs where the OSCP services can be reached
 	 */
-	public List<URL> getURLs() {
+	public List<String> getURLs() {
 		return urls;
 	}
 

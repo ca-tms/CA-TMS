@@ -1,7 +1,5 @@
 package buisness;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -436,8 +434,7 @@ public final class RevocationValidation {
 
 		Option<RevocationService<CRLInfo>> crlService = new Option<>();
 		if (!info.getCRL().isEmpty()) {
-			CRLInfo crlInfo = new CRLInfo(issuerCertificate,
-					stringListToURLList(info.getCRL()));
+			CRLInfo crlInfo = new CRLInfo(issuerCertificate, info.getCRL());
 
 			CRLInfo existingCRLInfo = crlPool.get(crlInfo);
 			if (existingCRLInfo == null)
@@ -452,8 +449,7 @@ public final class RevocationValidation {
 
 		Option<RevocationService<OCSPInfo>> ocspService = new Option<>();
 		if (!info.getOCSP().isEmpty()) {
-			OCSPInfo ocspInfo = new OCSPInfo(issuerCertificate,
-					stringListToURLList(info.getOCSP()));
+			OCSPInfo ocspInfo = new OCSPInfo(issuerCertificate, info.getOCSP());
 
 			OCSPInfo existingOCSPInfo = ocspPool.get(ocspInfo);
 			if (existingOCSPInfo == null)
@@ -510,7 +506,7 @@ public final class RevocationValidation {
 						!crlService.getNextUpdate().isSet() ||
 						crlService.getNextUpdate().get().getTime() <= nowMillis) {
 					System.out.println("Updating local information for CRL ...");
-					for (URL url : crlService.getInfo().getURLs())
+					for (String url : crlService.getInfo().getURLs())
 						System.out.println("  URL: " + url);
 
 					crlService.update();
@@ -557,7 +553,7 @@ public final class RevocationValidation {
 					!ocspLocalInfo.getNextUpdate().isSet() ||
 					ocspLocalInfo.getNextUpdate().get().getTime() <= nowMillis) {
 				System.out.println("Querying OCSP service ...");
-				for (URL url : ocspService.getInfo().getURLs())
+				for (String url : ocspService.getInfo().getURLs())
 					System.out.println("  URL: " + url);
 
 				// query OCSP service
@@ -586,29 +582,5 @@ public final class RevocationValidation {
 		}
 
 		return nextCheckMillis == Long.MAX_VALUE ? 0 : nextCheckMillis;
-	}
-
-	/**
-	 * @return a list of {@link URL}s converted from a list of {@link String}s
-	 * @param strings
-	 */
-	private static List<URL> stringListToURLList(List<String> strings) {
-		List<URL> urls = new ArrayList<>(strings.size());
-		for (String string : strings)
-			try {
-				if (!string.startsWith("ldap://"))
-					urls.add(new URL(string));
-			}
-			catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-
-		if (!strings.isEmpty() && urls.isEmpty()) {
-			System.out.println("Unsupported revocation service URL format");
-			for (String string : strings)
-				System.out.println("  URL: " + string);
-		}
-
-		return urls;
 	}
 }

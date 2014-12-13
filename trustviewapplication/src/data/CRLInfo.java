@@ -1,6 +1,5 @@
 package data;
 
-import java.net.URL;
 import java.security.cert.CRL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +13,7 @@ import util.Option;
  */
 public class CRLInfo {
 	private final TrustCertificate crlIssuer;
-	private final List<URL> urls;
+	private final List<String> urls;
 	private final Option<Date> nextUpdate;
 	private final Option<CRL> crl;
 
@@ -25,7 +24,7 @@ public class CRLInfo {
 	 * @param nextUpdate the next update date for the CRL if available
 	 * @param crl the CRL data if available
 	 */
-	public CRLInfo(TrustCertificate crlIssuer, List<URL> urls,
+	public CRLInfo(TrustCertificate crlIssuer, List<String> urls,
 			Option<Date> nextUpdate, Option<? extends CRL> crl) {
 		this.crlIssuer = crlIssuer;
 		this.urls = Collections.unmodifiableList(new ArrayList<>(urls));
@@ -38,7 +37,7 @@ public class CRLInfo {
 	 * @param crlIssuer the issuer of the CRL
 	 * @param urls the URLs where the CRL can be retrieved from
 	 */
-	public CRLInfo(TrustCertificate crlIssuer, List<URL> urls) {
+	public CRLInfo(TrustCertificate crlIssuer, List<String> urls) {
 		this.crlIssuer = crlIssuer;
 		this.urls = Collections.unmodifiableList(new ArrayList<>(urls));
 		this.nextUpdate = new Option<>();
@@ -54,7 +53,7 @@ public class CRLInfo {
 	/**
 	 * @return the URLs where the CRL can be retrieved from
 	 */
-	public List<URL> getURLs() {
+	public List<String> getURLs() {
 		return urls;
 	}
 

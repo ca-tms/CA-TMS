@@ -2,7 +2,6 @@ package support;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -246,7 +245,7 @@ public final class Service {
 
 			@Override
 			public void update() {
-				for (URL url : info.getURLs())
+				for (String url : info.getURLs())
 					try {
 						CRL crl = timeoutMillis >= 0
 								? new CRL(url, info.getCRLIssuer(), timeoutMillis)
@@ -299,7 +298,7 @@ public final class Service {
 
 			@Override
 			public boolean isRevoked(TrustCertificate certificate) {
-				for (URL url : info.getURLs())
+				for (String url : info.getURLs())
 					try {
 						OCSP ocsp = timeoutMillis >= 0
 								? new OCSP(url, info.getCertificateIssuer(), timeoutMillis)

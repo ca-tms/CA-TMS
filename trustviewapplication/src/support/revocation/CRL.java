@@ -1,6 +1,7 @@
 package support.revocation;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -15,6 +16,12 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Date;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 
 import util.Option;
 
@@ -36,9 +43,9 @@ public class CRL {
 	 * @throws IOException if the CRL cannot be read
 	 * @throws GeneralSecurityException if the CRL cannot be verified
 	 */
-	public CRL(URL url, TrustCertificate issuerCertificate)
+	public CRL(String url, TrustCertificate issuerCertificate)
 			throws IOException, GeneralSecurityException {
-		this(url, issuerCertificate.getCertificate());
+		this(url, issuerCertificate.getCertificate(), -1);
 	}
 
 	/**
@@ -50,12 +57,9 @@ public class CRL {
 	 * @throws IOException if the CRL cannot be read
 	 * @throws GeneralSecurityException if the CRL cannot be verified
 	 */
-	public CRL(URL url, Certificate issuerCertificate)
+	public CRL(String url, Certificate issuerCertificate)
 			throws IOException, GeneralSecurityException {
-		try (InputStream stream = url.openStream();
-		     BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
-			initialize(bufferedStream, issuerCertificate);
-		}
+		this(url, issuerCertificate, -1);
 	}
 
 	/**
@@ -69,7 +73,7 @@ public class CRL {
 	 * @throws SocketTimeoutException if the connection times out
 	 * @throws GeneralSecurityException if the CRL cannot be verified
 	 */
-	public CRL(URL url, TrustCertificate issuerCertificate, int timeoutMillis)
+	public CRL(String url, TrustCertificate issuerCertificate, int timeoutMillis)
 			throws IOException, GeneralSecurityException {
 		this(url, issuerCertificate.getCertificate(), timeoutMillis);
 	}
@@ -85,14 +89,44 @@ public class CRL {
 	 * @throws SocketTimeoutException if the connection times out
 	 * @throws GeneralSecurityException if the CRL cannot be verified
 	 */
-	public CRL(URL url, Certificate issuerCertificate, int timeoutMillis)
+	public CRL(String url, Certificate issuerCertificate, int timeoutMillis)
 			throws IOException, GeneralSecurityException {
-		URLConnection connection = url.openConnection();
-		connection.setConnectTimeout(timeoutMillis);
-		connection.setReadTimeout(timeoutMillis);
-		try (InputStream stream = connection.getInputStream();
-		     BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
-			initialize(bufferedStream, issuerCertificate);
+		if (url.startsWith("ldap://")) {
+			Hashtable<String, String> environment = new Hashtable<>();
+			environment.put(Context.INITIAL_CONTEXT_FACTORY,
+					"com.sun.jndi.ldap.LdapCtxFactory");
+			environment.put(Context.PROVIDER_URL, url);
+
+			if (timeoutMillis >= 0) {
+				String timeout = String.valueOf(timeoutMillis);
+				environment.put("com.sun.jndi.ldap.connect.timeout", timeout);
+				environment.put("com.sun.jndi.ldap.read.timeout", timeout);
+			}
+
+			try {
+				DirContext context = new InitialDirContext(environment);
+				byte[] value = (byte[]) context
+						.getAttributes("")
+						.get("certificateRevocationList;binary")
+						.get();
+				try (InputStream stream = new ByteArrayInputStream(value)) {
+					initialize(stream, issuerCertificate);
+				}
+			}
+			catch (NamingException | ClassCastException | NullPointerException e) {
+				throw new IOException("Cannot download CRL from: " + url, e);
+			}
+		}
+		else {
+			URLConnection connection = new URL(url).openConnection();
+			if (timeoutMillis >= 0) {
+				connection.setConnectTimeout(timeoutMillis);
+				connection.setReadTimeout(timeoutMillis);
+			}
+			try (InputStream stream = connection.getInputStream();
+			     BufferedInputStream bufferedStream = new BufferedInputStream(stream)) {
+				initialize(bufferedStream, issuerCertificate);
+			}
 		}
 	}
 

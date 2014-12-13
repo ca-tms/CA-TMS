@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.AlgorithmParameters;
@@ -74,8 +75,10 @@ public class OCSP {
 	 * the issuer which the given certificate is issued for
 	 * @param ocsp
 	 * @param issuerCertificate
+	 * @throws MalformedURLException
 	 */
-	public OCSP(URL ocsp, TrustCertificate issuerCertificate) {
+	public OCSP(String ocsp, TrustCertificate issuerCertificate)
+			throws MalformedURLException {
 		this(ocsp, issuerCertificate.getCertificate());
 	}
 
@@ -85,11 +88,13 @@ public class OCSP {
 	 * the issuer which the given certificate is issued for
 	 * @param ocsp
 	 * @param issuerCertificate
+	 * @throws MalformedURLException
 	 */
-	public OCSP(URL ocsp, Certificate issuerCertificate) {
+	public OCSP(String ocsp, Certificate issuerCertificate)
+			throws MalformedURLException {
 		this.timeoutMillis = -1;
 		if (issuerCertificate instanceof X509Certificate) {
-			this.ocsp = ocsp;
+			this.ocsp = new URL(ocsp);
 			this.issuerCertificate = (X509Certificate) issuerCertificate;
 		}
 		else
@@ -105,8 +110,10 @@ public class OCSP {
 	 * @param ocsp
 	 * @param issuerCertificate
 	 * @param timeoutMillis
+	 * @throws MalformedURLException
 	 */
-	public OCSP(URL ocsp, TrustCertificate issuerCertificate, int timeoutMillis) {
+	public OCSP(String ocsp, TrustCertificate issuerCertificate, int timeoutMillis)
+			throws MalformedURLException {
 		this(ocsp, issuerCertificate.getCertificate());
 		this.timeoutMillis = timeoutMillis;
 	}
@@ -120,8 +127,10 @@ public class OCSP {
 	 * @param ocsp
 	 * @param issuerCertificate
 	 * @param timeoutMillis
+	 * @throws MalformedURLException
 	 */
-	public OCSP(URL ocsp, Certificate issuerCertificate, int timeoutMillis) {
+	public OCSP(String ocsp, Certificate issuerCertificate, int timeoutMillis)
+			throws MalformedURLException {
 		this(ocsp, issuerCertificate);
 		this.timeoutMillis = timeoutMillis;
 	}
