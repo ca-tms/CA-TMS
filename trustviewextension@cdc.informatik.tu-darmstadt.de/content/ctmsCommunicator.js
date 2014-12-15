@@ -12,9 +12,14 @@
         req.onerror = function(event) {
             callback(null)
         }
-        req.open("POST", ctms);
-        req.setRequestHeader("Content-Type", "application/json")
-        req.send(JSON.stringify(data))
+        try {
+            req.open("POST", ctms);
+            req.setRequestHeader("Content-Type", "application/json")
+            req.send(JSON.stringify(data))
+        }
+        catch (e) {
+            callback(null)
+        }
     }
 
     /**
