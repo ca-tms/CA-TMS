@@ -6,7 +6,7 @@
     "DTD/xhtml1-strict.dtd">
   %htmlDTD;
   <!ENTITY % stringsDTD
-    SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
+    SYSTEM "chrome://trustviewextension/locale/strings.dtd">
   %stringsDTD;
 ]>
 
@@ -15,68 +15,68 @@
     <title/>
     <link rel="stylesheet" href="chrome://global/skin/netError.css" type="text/css" />
     <link rel="stylesheet" href="chrome://browser/skin/aboutCertError.css" type="text/css" id="aboutCertErrorCSS" />
-    <link rel="stylesheet" href="chrome://trustviewsextension/skin/error.css" type="text/css" />
+    <link rel="stylesheet" href="chrome://trustviewextension/skin/error.css" type="text/css" />
     <link rel="icon" type="image/png" id="favicon" href="chrome://global/skin/icons/warning-16.png"/>
   </head>
 
   <body>
     <div id="errorPageContainer">
       <div id="errorTitle">
-        <h1 class="unreachable">&trustviewsextension.error.heading.unreachable;</h1>
-        <h1 class="unknown">&trustviewsextension.error.heading.unknown;</h1>
-        <h1 class="untrusted">&trustviewsextension.error.heading.untrusted;</h1>
+        <h1 class="unreachable">&trustviewextension.error.heading.unreachable;</h1>
+        <h1 class="unknown">&trustviewextension.error.heading.unknown;</h1>
+        <h1 class="untrusted">&trustviewextension.error.heading.untrusted;</h1>
       </div>
       
       <div id="errorLongContent">
         <div id="errorShortDesc">
-          <p class="unreachable">&trustviewsextension.error.description.unreachable;</p>
-          <p class="unknown">&trustviewsextension.error.description.unknown;</p>
-          <p class="untrusted">&trustviewsextension.error.description.untrusted;</p>
+          <p class="unreachable">&trustviewextension.error.description.unreachable;</p>
+          <p class="unknown">&trustviewextension.error.description.unknown;</p>
+          <p class="untrusted">&trustviewextension.error.description.untrusted;</p>
 
-          <p class="firstseen">&trustviewsextension.error.description.firstseen;</p>
-          <p class="samecavalid">&trustviewsextension.error.description.samecavalid;</p>
-          <p class="differentca">&trustviewsextension.error.description.differentca;</p>
-          <p class="revoked">&trustviewsextension.error.description.revoked;</p>
+          <p class="firstseen">&trustviewextension.error.description.firstseen;</p>
+          <p class="samecavalid">&trustviewextension.error.description.samecavalid;</p>
+          <p class="differentca">&trustviewextension.error.description.differentca;</p>
+          <p class="revoked">&trustviewextension.error.description.revoked;</p>
         </div>
 
         <div id="errorLongDesc">
-          <p class="unreachable unknown untrusted">&trustviewsextension.error.solutionpreface;</p>
+          <p class="unreachable unknown untrusted">&trustviewextension.error.solutionpreface;</p>
           <ul>
-            <li class="unreachable unknown untrusted">&trustviewsextension.error.reload;</li>
-            <li class="unreachable">&trustviewsextension.error.startctms;</li>
-            <li class="unreachable">&trustviewsextension.error.configureextension;</li>
-            <li class="unreachable">&trustviewsextension.error.disableextension;</li>
-            <li class="unknown untrusted">&trustviewsextension.error.mistrust;</li>
-            <li class="unknown untrusted">&trustviewsextension.error.visit;</li>
-            <li class="unknown">&trustviewsextension.error.trust;</li>
-            <li class="unknown">&trustviewsextension.error.changelevel;</li>
+            <li class="unreachable unknown untrusted">&trustviewextension.error.reload;</li>
+            <li class="unreachable">&trustviewextension.error.startctms;</li>
+            <li class="unreachable">&trustviewextension.error.configureextension;</li>
+            <li class="unreachable">&trustviewextension.error.disableextension;</li>
+            <li class="unknown untrusted">&trustviewextension.error.mistrust;</li>
+            <li class="unknown untrusted">&trustviewextension.error.visit;</li>
+            <li class="unknown">&trustviewextension.error.trust;</li>
+            <li class="unknown">&trustviewextension.error.changelevel;</li>
           </ul>
 
           <ul id="actions">
             <li class="unreachable unknown untrusted">
               <button autocomplete="off" onclick="location.reload()">
-                &trustviewsextension.error.tryagain;
+                &trustviewextension.error.tryagain;
               </button>
             </li>
             <li class="unknown untrusted">
               <button autocomplete="off" onclick="TVE.State.forceVisit(parameters.url)">
-                &trustviewsextension.error.forcevisiting;
+                &trustviewextension.error.forcevisiting;
               </button>
             </li>
             <li class="unknown">
               <button autocomplete="off" onclick="TVE.State.trustAndVisit(parameters.url)">
-                &trustviewsextension.error.forcetrusting;
+                &trustviewextension.error.forcetrusting;
               </button>
             </li>
           </ul>
 
           <div id="additionalDesc" class="unknown">
-            <h2>&trustviewsextension.error.notaryquery.heading;</h2>
-            <p>&trustviewsextension.error.notaryquery.description;</p>
-            <p>&trustviewsextension.error.notaryquery.querying;</p>
-            <p>&trustviewsextension.error.notaryquery.trusted;</p>
-            <p>&trustviewsextension.error.notaryquery.untrusted;</p>
-            <p>&trustviewsextension.error.notaryquery.unknown;</p>
+            <h2>&trustviewextension.error.notaryquery.heading;</h2>
+            <p>&trustviewextension.error.notaryquery.description;</p>
+            <p>&trustviewextension.error.notaryquery.querying;</p>
+            <p>&trustviewextension.error.notaryquery.trusted;</p>
+            <p>&trustviewextension.error.notaryquery.untrusted;</p>
+            <p>&trustviewextension.error.notaryquery.unknown;</p>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
     <script type="application/javascript;version=1.7"><![CDATA[
       "use strict"
 
-      Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm")
+      Components.utils.import("chrome://trustviewextension/content/setupNamespace.jsm")
 
       let ioService = Components.classes["@mozilla.org/network/io-service;1"].
         getService(Components.interfaces.nsIIOService)
@@ -108,7 +108,7 @@
 
       for each (let link in document.querySelectorAll("a[href=':preferences']"))
         link.onclick = function(event) {
-          window.openDialog("chrome://trustviewsextension/content/options.xul", "", "centerscreen")
+          window.openDialog("chrome://trustviewextension/content/options.xul", "", "centerscreen")
           event.preventDefault()
         }
 

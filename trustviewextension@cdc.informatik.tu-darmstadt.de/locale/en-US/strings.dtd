@@ -1,47 +1,47 @@
-<!ENTITY trustviewsextension.toolbarbutton.label              "Trust Views">
+<!ENTITY trustviewextension.toolbarbutton.label              "Trust Views">
 
-<!ENTITY trustviewsextension.menu.secLevel.description        "Set Security Level:">
-<!ENTITY trustviewsextension.menu.secLevel.high               "high">
-<!ENTITY trustviewsextension.menu.secLevel.medium             "medium">
-<!ENTITY trustviewsextension.menu.secLevel.low                "low">
-<!ENTITY trustviewsextension.menu.openpreferences             "Preferences">
+<!ENTITY trustviewextension.menu.secLevel.description        "Set Security Level:">
+<!ENTITY trustviewextension.menu.secLevel.high               "high">
+<!ENTITY trustviewextension.menu.secLevel.medium             "medium">
+<!ENTITY trustviewextension.menu.secLevel.low                "low">
+<!ENTITY trustviewextension.menu.openpreferences             "Preferences">
 
-<!ENTITY trustviewsextension.prefs.windowtitle                "Trust Views Settings">
-<!ENTITY trustviewsextension.prefs.resetbutton                "Reset Defaults">
-<!ENTITY trustviewsextension.prefs.networkpanelabel           "Connection">
-<!ENTITY trustviewsextension.prefs.urllabel                   "CTMS URL">
-<!ENTITY trustviewsextension.prefs.portlabel                  "CTMS Port">
+<!ENTITY trustviewextension.prefs.windowtitle                "Trust Views Settings">
+<!ENTITY trustviewextension.prefs.resetbutton                "Reset Defaults">
+<!ENTITY trustviewextension.prefs.networkpanelabel           "Connection">
+<!ENTITY trustviewextension.prefs.urllabel                   "CTMS URL">
+<!ENTITY trustviewextension.prefs.portlabel                  "CTMS Port">
 
-<!ENTITY trustviewsextension.error.heading.unreachable        "Trust Views System Unreachable">
-<!ENTITY trustviewsextension.error.description.unreachable    "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
+<!ENTITY trustviewextension.error.heading.unreachable        "Trust Views System Unreachable">
+<!ENTITY trustviewextension.error.description.unreachable    "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
 
-<!ENTITY trustviewsextension.error.heading.unknown            "Unknown Certificate">
-<!ENTITY trustviewsextension.error.description.unknown        "The certificate provided by the website is unknown. The Trust Views System can’t decide if the connection is trustworthy.">
-<!ENTITY trustviewsextension.error.description.firstseen      "This is the first known certificate for the website.">
-<!ENTITY trustviewsextension.error.description.samecavalid    "An already known certificate for the website is still valid. The current certificate is issued by the same CA. This means that the CA has issued multiple certificates in parallel for the website.">
-<!ENTITY trustviewsextension.error.description.differentca    "An certificate for the website is already known, but the current certificate is issued by another CA for a different key."> 
-<!ENTITY trustviewsextension.error.description.revoked        "The certificate for the website has been revoked and is no longer valid.">
+<!ENTITY trustviewextension.error.heading.unknown            "Unknown Certificate">
+<!ENTITY trustviewextension.error.description.unknown        "The certificate provided by the website is unknown. The Trust Views System can’t decide if the connection is trustworthy.">
+<!ENTITY trustviewextension.error.description.firstseen      "This is the first known certificate for the website.">
+<!ENTITY trustviewextension.error.description.samecavalid    "An already known certificate for the website is still valid. The current certificate is issued by the same CA. This means that the CA has issued multiple certificates in parallel for the website.">
+<!ENTITY trustviewextension.error.description.differentca    "An certificate for the website is already known, but the current certificate is issued by another CA for a different key."> 
+<!ENTITY trustviewextension.error.description.revoked        "The certificate for the website has been revoked and is no longer valid.">
 
-<!ENTITY trustviewsextension.error.heading.untrusted          "Untrusted Website">
-<!ENTITY trustviewsextension.error.description.untrusted      "You are about to securely connect to a website, but the Trust Views System decided that your connection is not trustworthy.">
+<!ENTITY trustviewextension.error.heading.untrusted          "Untrusted Website">
+<!ENTITY trustviewextension.error.description.untrusted      "You are about to securely connect to a website, but the Trust Views System decided that your connection is not trustworthy.">
 
-<!ENTITY trustviewsextension.error.solutionpreface            "You can try:">
-<!ENTITY trustviewsextension.error.reload                     "Reloading the page.">
-<!ENTITY trustviewsextension.error.startctms                  "Starting the Trust Views Webserver and try again.">
-<!ENTITY trustviewsextension.error.configureextension         "Configuring the Trust Views Extension <a href=':preferences'>preferences</a>.">
-<!ENTITY trustviewsextension.error.disableextension           "Disabling the Trust Views Extension if you don’t want to use it.<br/><strong>Warning:</strong>&nbsp;This means, you will go without the additional security of the Trust Views System.">
-<!ENTITY trustviewsextension.error.mistrust                   "Mistrusting the website and decide to better not visit it.">
-<!ENTITY trustviewsextension.error.visit                      "Visiting the website anyway. This would disable the warning for this particular page during this session.">
-<!ENTITY trustviewsextension.error.trust                      "Visit the page anyway and trust the certificate in the future.">
-<!ENTITY trustviewsextension.error.changelevel                "Setting the security level to a lower value and try again.">
+<!ENTITY trustviewextension.error.solutionpreface            "You can try:">
+<!ENTITY trustviewextension.error.reload                     "Reloading the page.">
+<!ENTITY trustviewextension.error.startctms                  "Starting the Trust Views Webserver and try again.">
+<!ENTITY trustviewextension.error.configureextension         "Configuring the Trust Views Extension <a href=':preferences'>preferences</a>.">
+<!ENTITY trustviewextension.error.disableextension           "Disabling the Trust Views Extension if you don’t want to use it.<br/><strong>Warning:</strong>&nbsp;This means, you will go without the additional security of the Trust Views System.">
+<!ENTITY trustviewextension.error.mistrust                   "Mistrusting the website and decide to better not visit it.">
+<!ENTITY trustviewextension.error.visit                      "Visiting the website anyway. This would disable the warning for this particular page during this session.">
+<!ENTITY trustviewextension.error.trust                      "Visit the page anyway and trust the certificate in the future.">
+<!ENTITY trustviewextension.error.changelevel                "Setting the security level to a lower value and try again.">
 
-<!ENTITY trustviewsextension.error.tryagain                   "Try Again">
-<!ENTITY trustviewsextension.error.forcevisiting              "I want to ignore this warning temporarily and visit the page">
-<!ENTITY trustviewsextension.error.forcetrusting              "I have verified the trustworthiness of the certificate">
+<!ENTITY trustviewextension.error.tryagain                   "Try Again">
+<!ENTITY trustviewextension.error.forcevisiting              "I want to ignore this warning temporarily and visit the page">
+<!ENTITY trustviewextension.error.forcetrusting              "I have verified the trustworthiness of the certificate">
 
-<!ENTITY trustviewsextension.error.notaryquery.heading        "Notaries recommendation">
-<!ENTITY trustviewsextension.error.notaryquery.description    "You can <a href=':query-notaries'>query external validation services (notaries)</a> to get an additional opinion.">
-<!ENTITY trustviewsextension.error.notaryquery.querying       "Querying external validation services (notaries) to get an additional opinion&nbsp;…">
-<!ENTITY trustviewsextension.error.notaryquery.trusted        "External validation services (notaries) consider the certificate to be <strong>trusted</strong>.">
-<!ENTITY trustviewsextension.error.notaryquery.untrusted      "External validation services (notaries) consider the certificate to be <strong>untrusted</strong>.">
-<!ENTITY trustviewsextension.error.notaryquery.unknown        "External validation services (notaries) consider the certificate’s trustworthiness to be <strong>unknown</strong>.">
+<!ENTITY trustviewextension.error.notaryquery.heading        "Notaries recommendation">
+<!ENTITY trustviewextension.error.notaryquery.description    "You can <a href=':query-notaries'>query external validation services (notaries)</a> to get an additional opinion.">
+<!ENTITY trustviewextension.error.notaryquery.querying       "Querying external validation services (notaries) to get an additional opinion&nbsp;…">
+<!ENTITY trustviewextension.error.notaryquery.trusted        "External validation services (notaries) consider the certificate to be <strong>trusted</strong>.">
+<!ENTITY trustviewextension.error.notaryquery.untrusted      "External validation services (notaries) consider the certificate to be <strong>untrusted</strong>.">
+<!ENTITY trustviewextension.error.notaryquery.unknown        "External validation services (notaries) consider the certificate’s trustworthiness to be <strong>unknown</strong>.">

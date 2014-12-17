@@ -4,12 +4,12 @@
 
     <Description about="urn:mozilla:install-manifest">
         
-        <em:id>trustviewsextension@cdc.informatik.tu-darmstadt.de</em:id>
+        <em:id>trustviewextension@cdc.informatik.tu-darmstadt.de</em:id>
         <em:name>Trust Views Extension</em:name>
         <em:version>1.2</em:version>
         <em:type>2</em:type>
         
-        <em:optionsURL>chrome://trustviewsextension/content/options.xul</em:optionsURL>
+        <em:optionsURL>chrome://trustviewextension/content/options.xul</em:optionsURL>
         
         <em:targetApplication>
             <Description>

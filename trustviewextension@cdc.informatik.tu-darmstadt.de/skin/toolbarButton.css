@@ -1,9 +1,9 @@
 @charset "UTF-8";
 
-#trustviewsextension-toolbarbutton {
-    list-style-image: url("chrome://trustviewsextension/skin/toolbarButton_large.png");
+#trustviewextension-toolbarbutton {
+    list-style-image: url("chrome://trustviewextension/skin/toolbarButton_large.png");
 }
 
-toolbar[iconsize="small"] #trustviewsextension-toolbarbutton {
-    list-style-image: url("chrome://trustviewsextension/skin/toolbarButton_small.png");
+toolbar[iconsize="small"] #trustviewextension-toolbarbutton {
+    list-style-image: url("chrome://trustviewextension/skin/toolbarButton_small.png");
 }

@@ -8,5 +8,5 @@ if("undefined" == typeof(TVE)) {
 };
 
 // assign preferences branch to namespace
-TVE.Prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.trustviewsextension.");
+TVE.Prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.trustviewextension.");
 TVE.Prefs.QueryInterface(Components.interfaces.nsIPrefBranch);

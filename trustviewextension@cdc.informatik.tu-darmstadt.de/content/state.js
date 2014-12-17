@@ -29,7 +29,7 @@ TVE.State = {
             
             function contentLoaded(event) {
                 let window = event.originalTarget.defaultView
-                if (window.location.origin == "chrome://trustviewsextension") {
+                if (window.location.origin == "chrome://trustviewextension") {
                     window.rawCertChain = rawCertChain
                     browser.removeEventListener("DOMContentLoaded", contentLoaded, false);
                 }
@@ -37,7 +37,7 @@ TVE.State = {
             browser.addEventListener("DOMContentLoaded", contentLoaded, false);
 
             browser.loadURIWithFlags(
-                "chrome://trustviewsextension/content/error.xhtml?" +
+                "chrome://trustviewextension/content/error.xhtml?" +
                 "id=" + type + ";" +
                 "class=" + encodeURIComponent(info) + ";" +
                 "url=" + encodeURIComponent(url),

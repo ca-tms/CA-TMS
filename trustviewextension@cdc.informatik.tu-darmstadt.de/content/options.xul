@@ -2,28 +2,28 @@
 
 <?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
  
-<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
+<!DOCTYPE overlay SYSTEM "chrome://trustviewextension/locale/strings.dtd">
 
-<prefwindow id="trustviewsextension-prefs" title="&trustviewsextension.prefs.windowtitle;" buttons="accept, cancel, extra1" buttonlabelextra1="&trustviewsextension.prefs.resetbutton;" ondialogextra1="TVE.UI.resetPreferences();" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<prefwindow id="trustviewextension-prefs" title="&trustviewextension.prefs.windowtitle;" buttons="accept, cancel, extra1" buttonlabelextra1="&trustviewextension.prefs.resetbutton;" ondialogextra1="TVE.UI.resetPreferences();" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <script type="application/javascript">
-        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
+        Components.utils.import("chrome://trustviewextension/content/setupNamespace.jsm");
     </script>
  
-    <prefpane id="trustviewsextension-prefs-networkpane" label="&trustviewsextension.prefs.networkpanelabel;">
+    <prefpane id="trustviewextension-prefs-networkpane" label="&trustviewextension.prefs.networkpanelabel;">
         <preferences>
-            <preference id="trustviewsextension-prefs-ctmsURL" name="extensions.trustviewsextension.ctmsURL" type="string" />
-            <preference id="trustviewsextension-prefs-ctmsPort" name="extensions.trustviewsextension.ctmsPort" type="string" />
+            <preference id="trustviewextension-prefs-ctmsURL" name="extensions.trustviewextension.ctmsURL" type="string" />
+            <preference id="trustviewextension-prefs-ctmsPort" name="extensions.trustviewextension.ctmsPort" type="string" />
         </preferences>
 
         <vbox align="end">
             <hbox align="baseline">
-                <label control="trustviewsextension-prefs-ctmsURL-control" value="&trustviewsextension.prefs.urllabel;" />
-                <textbox id="trustviewsextension-prefs-ctmsURL-control" preference="trustviewsextension-prefs-ctmsURL" />
+                <label control="trustviewextension-prefs-ctmsURL-control" value="&trustviewextension.prefs.urllabel;" />
+                <textbox id="trustviewextension-prefs-ctmsURL-control" preference="trustviewextension-prefs-ctmsURL" />
             </hbox>
             <hbox align="baseline">
-                <label control="trustviewsextension-prefs-ctmsPort-control" value="&trustviewsextension.prefs.portlabel;" />
-                <textbox id="trustviewsextension-prefs-ctmsPort-control" preference="trustviewsextension-prefs-ctmsPort" />
+                <label control="trustviewextension-prefs-ctmsPort-control" value="&trustviewextension.prefs.portlabel;" />
+                <textbox id="trustviewextension-prefs-ctmsPort-control" preference="trustviewextension-prefs-ctmsPort" />
             </hbox>
         </vbox>
     </prefpane>

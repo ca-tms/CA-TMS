@@ -11,11 +11,11 @@ TVE.firstRun = function() {
         TVE.Prefs.setBoolPref("firstRunDone", true);
         
         let toolbar = document.getElementById("nav-bar");
-        toolbar.insertItem("trustviewsextension-toolbarbutton", null);
+        toolbar.insertItem("trustviewextension-toolbarbutton", null);
         toolbar.setAttribute("currentset", toolbar.currentSet);
         document.persist(toolbar.id, "currentset");
         
-        let item = document.getElementById("trustviewsextension-secLevelMenuitem-medium");
+        let item = document.getElementById("trustviewextension-secLevelMenuitem-medium");
         item.setAttribute("checked", true);
     }
 };

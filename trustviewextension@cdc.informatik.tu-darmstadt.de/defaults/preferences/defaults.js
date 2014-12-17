@@ -1,4 +1,4 @@
-pref("extensions.trustviewsextension.firstRunDone", false);
-pref("extensions.trustviewsextension.ctmsURL", "http://localhost");
-pref("extensions.trustviewsextension.ctmsPort", "8084");
-pref("extensions.trustviewsextension.secLevel", "medium");
+pref("extensions.trustviewextension.firstRunDone", false);
+pref("extensions.trustviewextension.ctmsURL", "http://localhost");
+pref("extensions.trustviewextension.ctmsPort", "8084");
+pref("extensions.trustviewextension.secLevel", "medium");

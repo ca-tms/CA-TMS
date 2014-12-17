@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
-<?xml-stylesheet type="text/css" href="chrome://trustviewsextension/skin/toolbarButton.css" ?>
+<?xml-stylesheet type="text/css" href="chrome://trustviewextension/skin/toolbarButton.css" ?>
 
-<!DOCTYPE overlay SYSTEM "chrome://trustviewsextension/locale/strings.dtd">
+<!DOCTYPE overlay SYSTEM "chrome://trustviewextension/locale/strings.dtd">
 
-<overlay id="trustviewsextension-browser-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay id="trustviewextension-browser-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <script type="application/javascript">
-        Components.utils.import("chrome://trustviewsextension/content/setupNamespace.jsm");
+        Components.utils.import("chrome://trustviewextension/content/setupNamespace.jsm");
     </script>
-    <script type="application/javascript" src="chrome://trustviewsextension/content/ui.js" />
-    <script type="application/javascript" src="chrome://trustviewsextension/content/certHandler.js" />
-    <script type="application/javascript" src="chrome://trustviewsextension/content/state.js" />
-    <script type="application/javascript" src="chrome://trustviewsextension/content/sslListener.js" />
-    <script type="application/javascript" src="chrome://trustviewsextension/content/ctmsCommunicator.js" />
-    <script type="application/javascript" src="chrome://trustviewsextension/content/init.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/ui.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/certHandler.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/state.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/sslListener.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/ctmsCommunicator.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/init.js" />
 
     <toolbarpalette id="BrowserToolbarPalette">
-        <toolbarbutton id="trustviewsextension-toolbarbutton" label="&trustviewsextension.toolbarbutton.label;" type="menu">
+        <toolbarbutton id="trustviewextension-toolbarbutton" label="&trustviewextension.toolbarbutton.label;" type="menu">
             <menupopup>
-                <menuitem disabled="true" label="&trustviewsextension.menu.secLevel.description;" />
-                <menuitem type="radio" group="trustviewsextension-secLevel-group" label="&trustviewsextension.menu.secLevel.high;" id="trustviewsextension-secLevelMenuitem-high" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'high');" />
-                <menuitem type="radio" group="trustviewsextension-secLevel-group" label="&trustviewsextension.menu.secLevel.medium;" id="trustviewsextension-secLevelMenuitem-medium" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'medium');" />
-                <menuitem type="radio" group="trustviewsextension-secLevel-group" label="&trustviewsextension.menu.secLevel.low;" id="trustviewsextension-secLevelMenuitem-low" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'low');" />
+                <menuitem disabled="true" label="&trustviewextension.menu.secLevel.description;" />
+                <menuitem type="radio" group="trustviewextension-secLevel-group" label="&trustviewextension.menu.secLevel.high;" id="trustviewextension-secLevelMenuitem-high" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'high');" />
+                <menuitem type="radio" group="trustviewextension-secLevel-group" label="&trustviewextension.menu.secLevel.medium;" id="trustviewextension-secLevelMenuitem-medium" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'medium');" />
+                <menuitem type="radio" group="trustviewextension-secLevel-group" label="&trustviewextension.menu.secLevel.low;" id="trustviewextension-secLevelMenuitem-low" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'low');" />
                 <menuseparator />
-                <menuitem label="&trustviewsextension.menu.openpreferences;" oncommand="window.openDialog('chrome://trustviewsextension/content/options.xul');" />
+                <menuitem label="&trustviewextension.menu.openpreferences;" oncommand="window.openDialog('chrome://trustviewextension/content/options.xul');" />
             </menupopup>
         </toolbarbutton>
     </toolbarpalette>
