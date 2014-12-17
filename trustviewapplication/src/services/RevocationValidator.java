@@ -1,5 +1,6 @@
 package services;
 
+import util.Util;
 import buisness.RevocationValidation;
 import data.Configuration;
 import data.Model;
@@ -87,6 +88,8 @@ public class RevocationValidator {
 			System.out.println("Revocation validation completed.");
 			break;
 		}
+
+		Util.tryClearCertificateFactoryCache();
 	}
 
 	/**

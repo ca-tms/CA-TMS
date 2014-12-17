@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
@@ -97,5 +98,35 @@ public final class Util {
 			e.printStackTrace();
 		}
 		return new Certificate[] { };
+	}
+
+	/**
+	 * Attempts to clear the {@link CertificateFactory} cache
+	 */
+	public static void tryClearCertificateFactoryCache() {
+		CertificateFactory factory;
+
+		try {
+			factory = CertificateFactory.getInstance("X.509");
+		}
+		catch (Exception e) {
+			return;
+		}
+
+		// passing null will throw an exception
+		// but will also clear the cache on common implementations
+		// although this is not a documented API feature
+
+		try {
+			factory.generateCertificate(null);
+		}
+		catch (Exception e) { }
+
+		try {
+			factory.generateCRL(null);
+		}
+		catch (Exception e) { }
+
+		System.gc();
 	}
 }
