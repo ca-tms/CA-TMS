@@ -114,6 +114,14 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"PRIMARY KEY (serial, issuer))");
 
 			statement.execute(
+					"CREATE INDEX IF NOT EXISTS certificates_subject_index " +
+						"ON certificates (publickey, subject)");
+
+			statement.execute(
+					"CREATE INDEX IF NOT EXISTS certificates_trusted_index " +
+						"ON certificates (trusted, untrusted)");
+
+			statement.execute(
 					"CREATE TABLE IF NOT EXISTS certhosts (" +
 						"serial VARCHAR NOT NULL," +     // serial
 						"issuer VARCHAR NOT NULL," +     // issuer
@@ -123,6 +131,10 @@ public class SQLiteBackedModel implements AutoCloseable {
 						"  REFERENCES certificates(serial, issuer)" +
 						"  ON DELETE CASCADE," +
 						"PRIMARY KEY (serial, issuer, host))");
+
+			statement.execute(
+					"CREATE INDEX IF NOT EXISTS certhosts_index " +
+						"ON certhosts (host)");
 
 			statement.execute(
 					"CREATE TABLE IF NOT EXISTS watchlist (" +
