@@ -37,7 +37,7 @@
       <p class="unreachable unknown untrusted">&trustviewextension.error.solutionpreface;</p>
       <ul>
         <li class="unreachable unknown untrusted">&trustviewextension.error.reload;</li>
-        <li class="unreachable">&trustviewextension.error.startctms;</li>
+        <li class="unreachable">&trustviewextension.error.startcatms;</li>
         <li class="unreachable">&trustviewextension.error.configureextension;</li>
         <li class="unreachable">&trustviewextension.error.disableextension;</li>
         <li class="unknown untrusted">&trustviewextension.error.mistrust;</li>
@@ -109,11 +109,11 @@
           let statusElement = document.querySelector("#additionalDesc")
           statusElement.className += " querying"
 
-          TVE.CTMSCommunicator.requestRecommendation(
+          TVE.CATMSCommunicator.requestRecommendation(
             parameters["url"],
             rawCertChain,
-            function(ctmsResult) {
-              let state = ctmsResult == null ? "" : "query-" + ctmsResult.result
+            function(catmsResult) {
+              let state = catmsResult == null ? "" : "query-" + catmsResult.result
               statusElement.className = statusElement.className.replace("querying", state)
             })
         }

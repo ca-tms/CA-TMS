@@ -12,18 +12,18 @@
  
     <prefpane id="trustviewextension-prefs-networkpane" label="&trustviewextension.prefs.networkpanelabel;">
         <preferences>
-            <preference id="trustviewextension-prefs-ctmsURL" name="extensions.trustviewextension.ctmsURL" type="string" />
-            <preference id="trustviewextension-prefs-ctmsPort" name="extensions.trustviewextension.ctmsPort" type="string" />
+            <preference id="trustviewextension-prefs-catmsURL" name="extensions.trustviewextension.catmsURL" type="string" />
+            <preference id="trustviewextension-prefs-catmsPort" name="extensions.trustviewextension.catmsPort" type="string" />
         </preferences>
 
         <vbox align="end">
             <hbox align="baseline">
-                <label control="trustviewextension-prefs-ctmsURL-control" value="&trustviewextension.prefs.urllabel;" />
-                <textbox id="trustviewextension-prefs-ctmsURL-control" preference="trustviewextension-prefs-ctmsURL" />
+                <label control="trustviewextension-prefs-catmsURL-control" value="&trustviewextension.prefs.urllabel;" />
+                <textbox id="trustviewextension-prefs-catmsURL-control" preference="trustviewextension-prefs-catmsURL" />
             </hbox>
             <hbox align="baseline">
-                <label control="trustviewextension-prefs-ctmsPort-control" value="&trustviewextension.prefs.portlabel;" />
-                <textbox id="trustviewextension-prefs-ctmsPort-control" preference="trustviewextension-prefs-ctmsPort" />
+                <label control="trustviewextension-prefs-catmsPort-control" value="&trustviewextension.prefs.portlabel;" />
+                <textbox id="trustviewextension-prefs-catmsPort-control" preference="trustviewextension-prefs-catmsPort" />
             </hbox>
         </vbox>
     </prefpane>

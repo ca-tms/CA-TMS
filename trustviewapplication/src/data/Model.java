@@ -16,7 +16,7 @@ import data.sqlite.SQLiteBackedModel;
  */
 public final class Model {
 	private static final String DATABASE_FILE_NAME =
-			File.separator + "ctms" + File.separator + "ctms.sqlite";
+			File.separator + "catms" + File.separator + "catms.sqlite";
 	private static final String DEFAULT_CONFIGURATION_FILE_NAME =
 			"/configuration.properties";
 

@@ -14,7 +14,7 @@
     <script type="application/javascript" src="chrome://trustviewextension/content/certHandler.js" />
     <script type="application/javascript" src="chrome://trustviewextension/content/state.js" />
     <script type="application/javascript" src="chrome://trustviewextension/content/sslListener.js" />
-    <script type="application/javascript" src="chrome://trustviewextension/content/ctmsCommunicator.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/catmsCommunicator.js" />
     <script type="application/javascript" src="chrome://trustviewextension/content/init.js" />
 
     <toolbarpalette id="BrowserToolbarPalette">

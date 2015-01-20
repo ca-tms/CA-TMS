@@ -29,30 +29,30 @@ TVE.SSLListener = {
                             
                             if(validationResult == "valid") {
                             
-                                // gather data for upcoming CTMS validation
+                                // gather data for upcoming CA-TMS validation
                                 let rawChain = TVE.CertHandler.getRawChain(aBrowser);
                                 let secLevel = TVE.Prefs.getCharPref("secLevel");
                                 let hostCertTrusted = TVE.State.doWeWantToTrust(url);
                                 
-                                // this is called when CTMS successfully answered the request
-                                var callback = function(ctmsResult) {
+                                // this is called when CA-TMS successfully answered the request
+                                var callback = function(catmsResult) {
                                     let warningType = null;
-                                    if (ctmsResult == null)
+                                    if (catmsResult == null)
                                         warningType = "unreachable";
-                                    else if (ctmsResult.result == "untrusted")
+                                    else if (catmsResult.result == "untrusted")
                                         warningType = "untrusted";
-                                    else if (ctmsResult.result == "unknown")
+                                    else if (catmsResult.result == "unknown")
                                         warningType = "unknown";
                                     
                                     let warningInfo = ""
-                                    if (ctmsResult != null) {
-                                        if (ctmsResult.resultSpec == "validated-first-seen")
+                                    if (catmsResult != null) {
+                                        if (catmsResult.resultSpec == "validated-first-seen")
                                             warningInfo = "firstseen";
-                                        else if (ctmsResult.resultSpec == "validated-existing-valid-same-ca")
+                                        else if (catmsResult.resultSpec == "validated-existing-valid-same-ca")
                                             warningInfo = "samecavalid";
-                                        else if (ctmsResult.resultSpec == "validated-existing")
+                                        else if (catmsResult.resultSpec == "validated-existing")
                                             warningInfo = "differentca";
-                                        else if (ctmsResult.resultSpec == "validated-revoked")
+                                        else if (catmsResult.resultSpec == "validated-revoked")
                                             warningInfo = "revoked";
                                     }
                                     
@@ -61,8 +61,8 @@ TVE.SSLListener = {
                                         TVE.State.warnUser(aBrowser, url, warningType, warningInfo, rawChain);
                                 }
                                 
-                                // query CTMS!
-                                TVE.CTMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, hostCertTrusted, callback);
+                                // query CA-TMS!
+                                TVE.CATMSCommunicator.requestValidation(url, rawChain, validationResult, secLevel, hostCertTrusted, callback);
                             
                             } else {
                                 // when standard validation result is not valid

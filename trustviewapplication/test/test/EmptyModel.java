@@ -15,7 +15,7 @@ import data.sqlite.SQLiteBackedModel;
 
 public final class EmptyModel implements AutoCloseable {
 	private static final String DATABASE_FILE_NAME =
-			"ctms-test-working-dir" + File.separator + "ctms.sqlite";
+			"catms-test-working-dir" + File.separator + "catms.sqlite";
 	private static final String DEFAULT_CONFIGURATION_FILE_NAME =
 			"/configuration.properties";
 

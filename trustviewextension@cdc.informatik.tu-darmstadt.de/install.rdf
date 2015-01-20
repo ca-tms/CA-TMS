@@ -5,7 +5,7 @@
     <Description about="urn:mozilla:install-manifest">
         
         <em:id>trustviewextension@cdc.informatik.tu-darmstadt.de</em:id>
-        <em:name>Trust Views Extension</em:name>
+        <em:name>CA Trust Management System</em:name>
         <em:version>1.2</em:version>
         <em:type>2</em:type>
         

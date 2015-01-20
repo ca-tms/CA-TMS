@@ -9,8 +9,8 @@
 <!ENTITY trustviewextension.prefs.windowtitle                "Trust Views Settings">
 <!ENTITY trustviewextension.prefs.resetbutton                "Reset Defaults">
 <!ENTITY trustviewextension.prefs.networkpanelabel           "Connection">
-<!ENTITY trustviewextension.prefs.urllabel                   "CTMS URL">
-<!ENTITY trustviewextension.prefs.portlabel                  "CTMS Port">
+<!ENTITY trustviewextension.prefs.urllabel                   "CA-TMS URL">
+<!ENTITY trustviewextension.prefs.portlabel                  "CA-TMS Port">
 
 <!ENTITY trustviewextension.error.heading.unreachable        "Trust Views System Unreachable">
 <!ENTITY trustviewextension.error.description.unreachable    "It seems that the Trust Views System is unreachable. It may be possible that the Trust Views Webserver is not running properly.">
@@ -27,7 +27,7 @@
 
 <!ENTITY trustviewextension.error.solutionpreface            "You can try:">
 <!ENTITY trustviewextension.error.reload                     "Reloading the page.">
-<!ENTITY trustviewextension.error.startctms                  "Starting the Trust Views Webserver and try again.">
+<!ENTITY trustviewextension.error.startcatms                 "Starting the Trust Views Webserver and try again.">
 <!ENTITY trustviewextension.error.configureextension         "Configuring the Trust Views Extension <a href=':preferences'>preferences</a>.">
 <!ENTITY trustviewextension.error.disableextension           "Disabling the Trust Views Extension if you don’t want to use it.<br/><strong>Warning:</strong>&nbsp;This means, you will go without the additional security of the Trust Views System.">
 <!ENTITY trustviewextension.error.mistrust                   "Mistrusting the website and decide to better not visit it.">

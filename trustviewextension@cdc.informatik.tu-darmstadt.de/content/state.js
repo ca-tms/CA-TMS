@@ -4,12 +4,12 @@
 TVE.State = {
     
     /**
-     * Holds hostnames for which CTMS validation is disabled during the session.
+     * Holds hostnames for which CA-TMS validation is disabled during the session.
      */
     allowedPages : {},
     
     /**
-     * Holds hostnames for which CTMS validation should trust the certificate even if result is unknown.
+     * Holds hostnames for which CA-TMS validation should trust the certificate even if result is unknown.
      */
     wantToTrust : {},
     
@@ -64,7 +64,7 @@ TVE.State = {
     },
     
     /**
-     * Checks whether url is excluded from CTMS validation or not.
+     * Checks whether url is excluded from CA-TMS validation or not.
      */
     isAllowedPage : function(url) {
         var host = this.getHostname(url);
