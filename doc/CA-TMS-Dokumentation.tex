@@ -59,8 +59,9 @@ Im Folgenden wird das CA-TMS-System beschrieben.
 \subsection{Entwicklungsumgebung}
 Die Anwendung baut auf Java 7 auf. Da zur Entwicklung Eclipse genutzt wurde, liegt ein Eclipse-Projekt vor. Die gesamte Anwendung lässt sich aber auch mit Hilfe einer Ant-Build-Datei kompilieren. Die dabei generierte \texttt{JAR}-Datei enthält alle nötigen Abhängigkeiten. Dabei handelt es sich um die folgenden Bibliotheken:
 \begin{description}
+\item[Bouncy Castle main package (bcprov-jdk15on-151.jar)] wird benötigt, um CRLs und OCSP-Anfragen zu parsen
 \item[CertainTrust SDK (CertainTrustSDK-1.0.jar)] ist das grundlegende Toolkit zur Modellierung/Berechnung von Computational Trust
-\item[Java JSON API (javax.json-1.0.4.jar)] wird benötigt um eingehende Validierungsanfragen (von der Firefox-Extension) zu lesen, die in JSON kodiert sind
+\item[Java JSON API (javax.json-1.0.4.jar)] wird benötigt, um eingehende Validierungsanfragen (von der Firefox-Extension) zu lesen, die in JSON kodiert sind
 \item[Java JDBC connection pool manager (miniconnectionpoolmanager.jar)] ist ein einfacher Manager, um JDBC-Datenbankverbindungen zu verwalten
 \item[SQLite connection pool (sqlite-connection-pool\_v1.1.0.jar)] stellt einen Pool für SQLite-Verbindungen zur Verfügung, der im Zusammenspiel mit dem \textit{Java JDBC connection pool manager} genutzt wird, um einen Pool von wiederverwendbaren und potentiell nebenläufigen SQLite-Verbindungen zu verwalten
 \item[SQLite JDBC (sqlite-jdbc-3.7.2.jar)] stellt den Zugriff auf SQLite-Datenbanken zur Verfügung, der zur persistenten Daten-Speicherung genutzt wird
@@ -108,12 +109,63 @@ Zentraler Zugriff auf das Datenmodell erfolgt über die Klasse \texttt{data.Mode
 
 \subsection{Trust-Validierung}
 
-Die Algorithmen zur Berechnung der Trust-Werte und zur Trust-Validierung sind in der Klasse \texttt{buisness.Computation} implementiert. Es handelt sich dabei um die in \cite{braun2013trust}, Abschnitte 4.3, 4.4 und 4.5 beschriebenen Algorithmen der Initialisierung der Trust Assessments, der Trust-Validierung und der Trust-View-Aktualisierung.
+Die Algorithmen zur Berechnung der Trust-Werte und zur Trust-Validierung sind in der Klasse \texttt{buisness.TrustComputation} implementiert. Es handelt sich dabei um die in \cite{braun2013trust}, Abschnitte 4.3, 4.4 und 4.5 beschriebenen Algorithmen der Initialisierung der Trust Assessments, der Trust-Validierung und der Trust-View-Aktualisierung. Eine Anfrage zur Trust-Validierung wird nach dem in \cref{validation} dargestellten Algorithmus verarbeitet.
 
-Die Standardpfadvalidierung wird von Firefox ausgeführt und das Resultat wird der Java-Applikation übermittelt. Diese prüft die Gültigkeit/Revokation der Zertifikate und die Gültigkeit des Zertifikatspfades nicht mehr selbst, sondern verlässt sich auf die Validierung, die von Firefox ausgeführt wurde. Dies bedeutet insbesondere auch, dass für die Gültigkeit der Root Certificate Store von Firefox maßgeblich ist und nicht der der Java Runtime. Die Klassen im Package \texttt{support.revocation} sind deshalb zurzeit nicht implementiert.
+Die Standardpfadvalidierung wird von Firefox ausgeführt und das Resultat wird der Java-Applikation übermittelt. Diese prüft die Gültigkeit des Zertifikatspfades nicht mehr selbst, sondern verlässt sich auf die Validierung, die von Firefox ausgeführt wurde. Dies bedeutet insbesondere auch, dass für die Gültigkeit der Root Certificate Store von Firefox maßgeblich ist und nicht der der Java Runtime.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{validation}
+  \caption{Verarbeitung von Anfragen zur Trust-Validierung}
+  \label{validation}
+\end{figure}
+
+Bei der Verarbeitung von Anfragen zur Trust-Validierung wird auf eine interne \emph{Watchlist} für Zertifikate und auf Notare als externe Zertifikatsvalidierungsdienste zurückgegriffen. Darüber hinaus werden verschiedene Spezialfälle identifiziert, unter denen ein Zertifikat direkt als vertrauenswürdig eingestuft werden kann.
+
+\subsubsection{Watchlist für Zertifikate}
+
+Die Watchlist enthält Zertifikate, die vorläufig als vertrauenswürdig eingestuft sind (aufgrund einer Nutzerentscheidung oder weil einem anderen Zertifikat für den selben Host und Schlüssel bereits vertraut wird). Die Vertrauenswürdigkeit von Zertifikaten auf der Watchlist wird nach einer bestimmten Zeitspanne erneut bewertet.
+
+\subsubsection{Validierungsdienste für Zertifikate}
+
+Die Algorithmen zur Trust-Validierung und der Trust-View-Aktualisierung können zusätzliche Informationen über die Vertrauenswürdigkeit eines Zertifikats einholen. Abhängig vom festgestellten \emph{Spezialfall} und davon, ob der \emph{Bootstrapping-Modus} aktiviert ist, wird das Host-Zertifikat als \emph{vertrauenswürdig} oder \emph{unbekannt} eingestuft oder externe Validierungsdienste (Notare) werden angefragt.
+
+Validierungsdienste werden ausschließlich für Host-Zertifikate angefragt, da die Notar-Dienste für CA-Zertifikate keine verwertbaren Informationen liefern.
+
+\subsubsection{Spezialfälle für Zertifikate}
+
+Für ein durch einen \emph{Trust Validation Request} gegebenes Host-Zertifikat $H$ wird versucht ein zugehöriges Zertifikat $C$ für den selben Host wie $H$ innerhalb der Menge vertrauenswürdiger Zertifikate im Trust View zu finden:
+
+\begin{enumerate}
+
+\item \textbf{existierendes Zertifikat für den Host mit demselben öffentlichen Schlüssel von derselben CA}
+
+Falls ein Zertifikat $C$ existiert, das abgelaufen, aber nicht revoziert ist, mit demselben \emph{Issuer} und demselben \emph{Public Key} wie $H$, wird $H$ als \textbf{definitiv vertrauenswürdig} eingestuft.
+
+\item \textbf{existierendes gültiges Zertifikat für den Host mit demselben öffentlichen Schlüssel}
+
+Falls ein Zertifikat $C$ existiert, das weder revoziert noch abgelaufen ist, mit einem anderen \emph{Issuer} als $H$, aber demselben \emph{Public Key} wie $H$ (CA-Wechsel), wird $H$ als \textbf{vorläufig vertrauenswürdig} eingestuft.
+
+\item \textbf{existierendes abgelaufenes Zertifikat für den Host von derselben CA}
+
+Falls ein Zertifikat $C$ existiert, das abgelaufen oder revoziert ist, mit demselben \emph{Issuer} wie $H$ (wahrscheinlich normaler Zertifikatswechsel), wird $H$ als \textbf{vorläufig vertrauenswürdig} eingestuft.
+
+\item \textbf{existierendes gültiges Zertifikat für den Host von derselben CA}
+
+Falls ein Zertifikat $C$ existiert, das weder revoziert noch abgelaufen ist, mit demselben \emph{Issuer} wie $H$ (nebeneinander mehrere gültige Zertifikate von derselben CA), wird die Vertrauenswürdigkeit von $H$ als \textbf{unbekannt} eingestuft.
+
+\item \textbf{existierendes Zertifikat für den Host}
+
+Falls ein Zertifikat $C$ existiert, mit einem anderen \emph{Issuer} und einem anderen wie \emph{Public Key} als $H$, wird die Vertrauenswürdigkeit von $H$ als \textbf{unbekannt} eingestuft.
+
+\item \textbf{erstes Zertifikat für den Host}
+
+In allen anderen Fällen (erstes Mal, dass ein Zertifikat für den Host verarbeitet wird), wird die Vertrauenswürdigkeit von $H$ als \textbf{unbekannt} eingestuft.
+
+\end{enumerate}
 
 \subsection{Bindings}
-Bindings stellen eine Schnittstelle für andere Anwendungen zur Verfügung, um das Trust-Modell nutzen zu können. Die allgemeine Funktionalität, die von allen Bindings genutzt werden kann, wie der Zugriff auf die Trust-Berechnung-Komponente und das Datenmodell, um die Trust-Validierung auf dessen Basis auszuführen, ist in der Klasse \texttt{services.logic.Validator} implementiert. Momentan existiert ein Binding \texttt{services.bindings.WebServer}, das einen simplen WebServer zur Verfügung stellt, über den das ebenfalls im Rahmen dieses Projektes entwickelte Firefox-Plugin mit dem CA-TMS kommunizieren kann, um den Service der Trust-Validierung zu nutzen. Der Webserver kann über die graphische Oberfläche gestartet werden.
+Bindings stellen eine Schnittstelle für andere Anwendungen zur Verfügung, um das Trust-Modell nutzen zu können. Die allgemeine Funktionalität, die von allen Bindings genutzt werden kann, wie der Zugriff auf die Trust-Berechnung-Komponente und das Datenmodell, um die Trust-Validierung auf dessen Basis auszuführen, ist in der Klasse \texttt{services.Validator} implementiert. Momentan existiert ein Binding \texttt{services.bindings.WebServer}, das einen simplen WebServer zur Verfügung stellt, über den das ebenfalls im Rahmen dieses Projektes entwickelte Firefox-Plugin mit dem CA-TMS kommunizieren kann, um den Service der Trust-Validierung zu nutzen. Der Webserver kann über die graphische Oberfläche gestartet werden.
 
 \subsection{Graphische Oberfläche}
 Das CA-TMS kann über die grafische Benutzeroberfläche gesteuert werden, die sich in \texttt{presentation.ui} befindet. Wichtigste Funktion ist das Starten des Webservers, über den die Firefox-Extension mit der Java-Anwendung kommunizieren kann. Außerdem ist das Ansehen und Bearbeiten von vertrauenswürdigen und unvertrauenswürdigen Zertifikaten sowie den \textit{Trust Assessments} möglich. In der Konfigurationsansicht können die Werte für die Security-Level und den TCP Port angepasst werden. Zudem ist es möglich, die Datenbank, in der der Trust View gespeichert ist, zu löschen oder ein Backup zu erstellen bzw. wieder einzuspielen. Die Nutzung des Notary-Moduls ist freiwillig und kann, insbesondere zu Testzwecken, mit einem gewünschten Ergebnis überschrieben werden. Dafür bietet die grafische Oberfläche eine Einstellungsmöglichkeit.
@@ -125,7 +177,7 @@ Im Folgenden wird die zum CA-TMS-System gehörige Firefox-Extension beschrieben.
 Standardmäßig akzeptiert Firefox alle gültigen Zertifikate, die von beliebigen, im Browser registrierten CAs ausgestellt wurden. Das sind inzwischen sehr viele und diese Tatsache liegt dem Vertrauens-Problem der derzeitigen Web-PKI zu Grunde. Um das alternative Vertrauenskonzept der Trust Views zu benutzen, integriert sich die Firefox-Extension in den Browser und delegiert die Trust-Berechnung an die CA-TMS-Anwendung, um anschließend angemessen auf das Ergebnis zu reagieren und den Benutzer ggf. zu warnen.
 
 \subsection{Installation}
-Die Installation der Extension funktioniert wie von Firefox-Addons gewohnt. Liegt keine fertige .xpi-Datei vor, muss diese zunächst erzeugt werden. Dazu wird der Inhalt des Ordners, der die Extension enthält, in ein zip-Archiv gepackt. Die Dateiendung sollte anschließend in .xpi geändert werden. Es sollte nun also eine Datei \texttt{trustviewsextension@cdc.informatik.tu-darmstadt.de.xpi} existieren, in der sich auf oberster Ebene (unter anderem) die Datei \texttt{install.rdf} befindet. Die .xpi Datei kann dann in den Firefox gezogen werden und wird folglich installiert.
+Die Installation der Extension funktioniert wie von Firefox-Addons gewohnt. Liegt keine fertige .xpi-Datei vor, muss diese zunächst erzeugt werden. Dazu wird der Inhalt des Ordners, der die Extension enthält, in ein zip-Archiv gepackt. Die Dateiendung sollte anschließend in .xpi geändert werden. Es sollte nun also eine Datei \texttt{trustviewextension@cdc.informatik.tu-darmstadt.de.xpi} existieren, in der sich auf oberster Ebene (unter anderem) die Datei \texttt{install.rdf} befindet. Die .xpi Datei kann dann in den Firefox gezogen werden und wird folglich installiert.
 
 \subsection{Benutzung}
 Während der Installation der Extension wird ein zusätzlicher Button in die Toolbar des Browsers integriert. Über diesen Button wird ein Menü bereitgestellt, in dem Einstellungen vorgenommen werden können. Dort lässt sich das Sicherheitslevel auf eine der drei Stufen \glqq hoch\grqq, \glqq mittel\grqq ~oder \glqq niedrig\grqq ~einstellen, was das Sicherheitsbedürfnis des Benutzers für die Webseiten widerspiegeln soll, die als nächstes besucht werden. Für Online-Banking oder e-Commerce dürfte beispielsweise ein höheres Level erforderlich sein, als für das Lesen einer Nachrichtenseite. Das ausgewählte Sicherheitslevel geht dann als Parameter in die Vertrauensberechnung der CA-TMS-Anwendung ein. Außerdem lässt sich über das Menü das Konfigurationsfenster der Extension aufrufen, in dem die Verbindungsinformationen (Host und Port) zur CA-TMS-Anwendung geändert werden können, mit der die Extension über HTTP kommuniziert.\\
@@ -155,8 +207,8 @@ In \texttt{catmsCommunicator.js} ist das Objekt \texttt{CATMSCommunicator} defin
 
 \subsubsection{State}
 Das in \texttt{state.js} definierte Objekt \texttt{State} ist dafür zuständig Warnseiten anzuzeigen, sowie eine Liste temporär erlaubter Seiten zu managen, die während der aktiven Sitzung von der Trust-Überprüfung ausgenommen werden.\\
-Schlägt der Verbindungsaufbau mit dem CA-TMS fehl, wird die Warnseite \texttt{catmsUnreachable.xul} angezeigt, auf der dem Benutzer erklärt wird, dass der Webservice aktiviert werden sollte.\\
-Wird hingegen ein Zertifikat für unvertrauenswürdig erachtet, wird der Benutzer auf der Warnseite \texttt{untrustedWebsite.xul} gewarnt und erhält die Möglichkeit, es mit geändertem Sicherheitslevel erneut zu versuchen, oder die Warnung zu ignorieren und die Website dennoch zu besuchen. In letzterem Fall wird die entsprechende Seite für die aktive Sitzung von Trust-Überprüfungen ausgenommen.\\
+Schlägt der Verbindungsaufbau mit dem CA-TMS fehl, wird eine Warnseite angezeigt, auf der dem Benutzer erklärt wird, dass der Webservice aktiviert werden sollte.\\
+Wird hingegen ein Zertifikat für unvertrauenswürdig erachtet, wird der Benutzer auf der Warnseite gewarnt und erhält die Möglichkeit, es mit geändertem Sicherheitslevel erneut zu versuchen, oder die Warnung zu ignorieren und die Website dennoch zu besuchen. In letzterem Fall wird die entsprechende Seite für die aktive Sitzung von Trust-Überprüfungen ausgenommen.\\
 Ist das Ergebnis unknown, gibt es eine Fehlerseite, auf der der Benutzer das Zertifikat manuell als vertrauenswürdig kennzeichnen kann. Dazu wird ein Flag gesetzt, welches bei der nächsten Trust-Validierung mitgesendet wird.
 
 \subsubsection{Optionen} 
