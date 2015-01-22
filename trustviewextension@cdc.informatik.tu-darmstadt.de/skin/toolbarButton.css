@@ -1,0 +1,9 @@
+@charset "UTF-8";
+
+#trustviewextension-toolbarbutton {
+    list-style-image: url("chrome://trustviewextension/skin/toolbarButton_large.png");
+}
+
+toolbar[iconsize="small"] #trustviewextension-toolbarbutton {
+    list-style-image: url("chrome://trustviewextension/skin/toolbarButton_small.png");
+}

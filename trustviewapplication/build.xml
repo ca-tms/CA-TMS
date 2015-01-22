@@ -1,0 +1,66 @@
+<project name="TrustViewsApplication" default="jar">
+
+	<description>
+		This builds the Trust Views Application.
+	</description>
+	
+	<property name="src" value="src" />
+	<property name="res" value="res" />
+	<property name="lib" value="lib" />
+	<property name="build" value="bin" />
+	<property name="export" value="jar" />
+	
+	<property name="exportname" value="CA-TMS.jar" />
+	<property name="mainclass" value="presentation/ui/GUI" />
+	
+	<path id="library-classpath">
+		<fileset dir="${lib}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+	
+	<target name="clean">
+	   	<delete dir="${build}" />
+		<delete dir="${export}" />
+	</target>
+
+	<target name="init" depends="clean">
+		<mkdir dir="${build}" />
+		<mkdir dir="${export}" />
+	</target>
+
+	<target name="compile" depends="init">
+		<javac includeantruntime="false" srcdir="${src}" destdir="${build}">
+			<classpath refid="library-classpath" />
+		</javac>
+		<copy todir="${build}">
+			<fileset dir="${src}" includes="**/*.properties" />
+		</copy>
+		<copy todir="${build}">
+			<fileset dir="${res}" />
+		</copy>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar destfile="${export}/${exportname}-external-libs-temp">
+			<zipgroupfileset dir="${lib}" includes="*.jar" />
+		</jar>
+		<jar destfile="${export}/${exportname}">
+			<fileset dir="${build}" />
+			<zipfileset src="${export}/${exportname}-external-libs-temp">
+				<exclude name="META-INF/*.SF" />
+				<exclude name="META-INF/*.DSA" />
+				<exclude name="META-INF/*.RSA" />
+			</zipfileset>
+			<manifest>
+				<attribute name="Main-Class" value="${mainclass}" />
+			</manifest>
+		</jar>
+		<delete file="${export}/${exportname}-external-libs-temp"/>
+	</target>
+
+	<target name="run" depends="jar">
+		<java jar="${export}/${exportname}" fork="true" />
+	</target>
+	
+</project>

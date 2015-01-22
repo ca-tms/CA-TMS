@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+ 
+<!DOCTYPE overlay SYSTEM "chrome://trustviewextension/locale/strings.dtd">
+
+<prefwindow id="trustviewextension-prefs" title="&trustviewextension.prefs.windowtitle;" buttons="accept, cancel, extra1" buttonlabelextra1="&trustviewextension.prefs.resetbutton;" ondialogextra1="TVE.UI.resetPreferences();" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/javascript">
+        Components.utils.import("chrome://trustviewextension/content/setupNamespace.jsm");
+    </script>
+ 
+    <prefpane id="trustviewextension-prefs-networkpane" label="&trustviewextension.prefs.networkpanelabel;">
+        <preferences>
+            <preference id="trustviewextension-prefs-catmsURL" name="extensions.trustviewextension.catmsURL" type="string" />
+            <preference id="trustviewextension-prefs-catmsPort" name="extensions.trustviewextension.catmsPort" type="string" />
+        </preferences>
+
+        <vbox align="end">
+            <hbox align="baseline">
+                <label control="trustviewextension-prefs-catmsURL-control" value="&trustviewextension.prefs.urllabel;" />
+                <textbox id="trustviewextension-prefs-catmsURL-control" preference="trustviewextension-prefs-catmsURL" />
+            </hbox>
+            <hbox align="baseline">
+                <label control="trustviewextension-prefs-catmsPort-control" value="&trustviewextension.prefs.portlabel;" />
+                <textbox id="trustviewextension-prefs-catmsPort-control" preference="trustviewextension-prefs-catmsPort" />
+            </hbox>
+        </vbox>
+    </prefpane>
+ 
+</prefwindow>

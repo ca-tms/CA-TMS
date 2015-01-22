@@ -1,0 +1,47 @@
+<!ENTITY trustviewextension.toolbarbutton.label              "Trust Views">
+
+<!ENTITY trustviewextension.menu.secLevel.description        "Setze Sicherheitslevel:">
+<!ENTITY trustviewextension.menu.secLevel.high               "hoch">
+<!ENTITY trustviewextension.menu.secLevel.medium             "mittel">
+<!ENTITY trustviewextension.menu.secLevel.low                "niedrig">
+<!ENTITY trustviewextension.menu.openpreferences             "Einstellungen">
+
+<!ENTITY trustviewextension.prefs.windowtitle                "Trust Views Einstellungen">
+<!ENTITY trustviewextension.prefs.resetbutton                "Standard wiederherstellen">
+<!ENTITY trustviewextension.prefs.networkpanelabel           "Verbindung">
+<!ENTITY trustviewextension.prefs.urllabel                   "CA-TMS URL">
+<!ENTITY trustviewextension.prefs.portlabel                  "CA-TMS Port">
+
+<!ENTITY trustviewextension.error.heading.unreachable        "Trust Views System unerreichbar">
+<!ENTITY trustviewextension.error.description.unreachable    "Das Trust Views System scheint nicht erreichbar zu sein. Möglicherweise läuft der Trust Views Webserver nicht korrekt.">
+
+<!ENTITY trustviewextension.error.heading.unknown            "Unbekanntes Zertifikat">
+<!ENTITY trustviewextension.error.description.unknown        "Das von der Website ausgelieferte Zertifikat ist unbekannt. Das Trust Views System kann nicht entscheiden, ob der Verbindung vertraut werden sollte.">
+<!ENTITY trustviewextension.error.description.firstseen      "Dies ist das erste bekannte Zertifikat für die Webseite.">
+<!ENTITY trustviewextension.error.description.samecavalid    "Ein bereits bekanntes Zertifikat für die Webseite ist noch gültig. Das aktuelle Zertifikat wurde von derselben CA ausgestellt. Das bedeutet, dass die CA parallel mehrere Zertifikate für die Webseite ausgestellt hat.">
+<!ENTITY trustviewextension.error.description.differentca    "Ein Zertifikat für die Webseite ist bereits bekannt, aber das aktuelle Zertifikat wurde von einer anderen CA für einen anderen Schlüssel ausgestellt."> 
+<!ENTITY trustviewextension.error.description.revoked        "Das Zertifikat für die Webseite wurde gesperrt und ist nicht mehr gültig.">
+
+<!ENTITY trustviewextension.error.heading.untrusted          "Unvertrauenswürdige Website">
+<!ENTITY trustviewextension.error.description.untrusted      "Sie sind im Begriff, eine sichere Verbindung zu einer Webseite aufzubauen, aber das Trust Views System vertraut der angefragten Website nicht.">
+
+<!ENTITY trustviewextension.error.solutionpreface            "Sie können Folgendes versuchen:">
+<!ENTITY trustviewextension.error.reload                     "Die Seite neu laden.">
+<!ENTITY trustviewextension.error.startcatms                 "Den Trust Views Webserver starten und es erneut versuchen.">
+<!ENTITY trustviewextension.error.configureextension         "Die Trust Views Extension <a href=':preferences'>Einstellungen</a> konfigurieren.">
+<!ENTITY trustviewextension.error.disableextension           "Die Trust Views Erweiterung deaktivieren, wenn Sie sie nicht verwenden möchten.<br/><strong>Warnung:</strong> Das bedeutet Sie würden ohne die zusätzliche Sicherheit des Trust Views System surfen.">
+<!ENTITY trustviewextension.error.mistrust                   "Der Website nicht vertrauen und sie besser nicht besuchen.">
+<!ENTITY trustviewextension.error.visit                      "Die Website trotzdem besuchen. Das würde die Warnung für diese Website deaktivieren, solange diese Sitzung aktiv ist.">
+<!ENTITY trustviewextension.error.trust                      "Die Website trotzdem besuchen und dem Zertifikat zukünftig vertrauen.">
+<!ENTITY trustviewextension.error.changelevel                "Das Sicherheitslevel niedriger setzen und es erneut versuchen.">
+
+<!ENTITY trustviewextension.error.tryagain                   "Nochmal versuchen">
+<!ENTITY trustviewextension.error.forcevisiting              "Ich möchte diese Warnung vorübergehend ignorieren und die Seite besuchen">
+<!ENTITY trustviewextension.error.forcetrusting              "Ich habe die Vertrauenswürdigkeit des Zertifikats verifiziert">
+
+<!ENTITY trustviewextension.error.notaryquery.heading        "Empfehlung durch Notare">
+<!ENTITY trustviewextension.error.notaryquery.description    "Es können <a href=':query-notaries'>externe Validierungsdienste (Notare) angefragt werden</a>, um eine zusätzliche Einschätzung zu erhalten.">
+<!ENTITY trustviewextension.error.notaryquery.querying       "Externe Validierungsdienste (Notare) werden angefragt, um eine zusätzliche Einschätzung zu erhalten&nbsp;…">
+<!ENTITY trustviewextension.error.notaryquery.trusted        "Externe Validierungsdienste (Notare) betrachten das Zertifikat als <strong>vertrauenswürdig</strong>.">
+<!ENTITY trustviewextension.error.notaryquery.untrusted      "Externe Validierungsdienste (Notare) betrachten das Zertifikat als <strong>nicht vertrauenswürdig</strong>.">
+<!ENTITY trustviewextension.error.notaryquery.unknown        "Externe Validierungsdienste (Notare) betrachten die Vertrauenswürdigkeit des Zertifikat als <strong>unbekannt</strong>.">

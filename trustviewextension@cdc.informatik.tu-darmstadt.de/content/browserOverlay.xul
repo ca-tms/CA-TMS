@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css" href="chrome://trustviewextension/skin/toolbarButton.css" ?>
+
+<!DOCTYPE overlay SYSTEM "chrome://trustviewextension/locale/strings.dtd">
+
+<overlay id="trustviewextension-browser-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/javascript">
+        Components.utils.import("chrome://trustviewextension/content/setupNamespace.jsm");
+    </script>
+    <script type="application/javascript" src="chrome://trustviewextension/content/ui.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/certHandler.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/state.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/sslListener.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/catmsCommunicator.js" />
+    <script type="application/javascript" src="chrome://trustviewextension/content/init.js" />
+
+    <toolbarpalette id="BrowserToolbarPalette">
+        <toolbarbutton id="trustviewextension-toolbarbutton" label="&trustviewextension.toolbarbutton.label;" type="menu">
+            <menupopup>
+                <menuitem disabled="true" label="&trustviewextension.menu.secLevel.description;" />
+                <menuitem type="radio" group="trustviewextension-secLevel-group" label="&trustviewextension.menu.secLevel.high;" id="trustviewextension-secLevelMenuitem-high" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'high');" />
+                <menuitem type="radio" group="trustviewextension-secLevel-group" label="&trustviewextension.menu.secLevel.medium;" id="trustviewextension-secLevelMenuitem-medium" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'medium');" />
+                <menuitem type="radio" group="trustviewextension-secLevel-group" label="&trustviewextension.menu.secLevel.low;" id="trustviewextension-secLevelMenuitem-low" persist="checked" oncommand="TVE.Prefs.setCharPref('secLevel', 'low');" />
+                <menuseparator />
+                <menuitem label="&trustviewextension.menu.openpreferences;" oncommand="window.openDialog('chrome://trustviewextension/content/options.xul');" />
+            </menupopup>
+        </toolbarbutton>
+    </toolbarpalette>
+    
+</overlay>

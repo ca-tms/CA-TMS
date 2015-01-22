@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html [
+  <!ENTITY % htmlDTD
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+  %htmlDTD;
+  <!ENTITY % stringsDTD
+    SYSTEM "chrome://trustviewextension/locale/strings.dtd">
+  %stringsDTD;
+]>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title/>
+    <link rel="stylesheet" href="chrome://trustviewextension/skin/error-internal-style.css" type="text/css" />
+    <link rel="icon" type="image/png" href="chrome://global/skin/icons/warning-16.png" />
+  </head>
+
+  <body>
+    <h1 class="unreachable">&trustviewextension.error.heading.unreachable;</h1>
+    <h1 class="unknown">&trustviewextension.error.heading.unknown;</h1>
+    <h1 class="untrusted">&trustviewextension.error.heading.untrusted;</h1>
+
+    <div id="shortDesc">
+      <p class="unreachable">&trustviewextension.error.description.unreachable;</p>
+      <p class="unknown">&trustviewextension.error.description.unknown;</p>
+      <p class="untrusted">&trustviewextension.error.description.untrusted;</p>
+
+      <p class="firstseen">&trustviewextension.error.description.firstseen;</p>
+      <p class="samecavalid">&trustviewextension.error.description.samecavalid;</p>
+      <p class="differentca">&trustviewextension.error.description.differentca;</p>
+      <p class="revoked">&trustviewextension.error.description.revoked;</p>
+    </div>
+
+    <div id="longDesc">
+      <p class="unreachable unknown untrusted">&trustviewextension.error.solutionpreface;</p>
+      <ul>
+        <li class="unreachable unknown untrusted">&trustviewextension.error.reload;</li>
+        <li class="unreachable">&trustviewextension.error.startcatms;</li>
+        <li class="unreachable">&trustviewextension.error.configureextension;</li>
+        <li class="unreachable">&trustviewextension.error.disableextension;</li>
+        <li class="unknown untrusted">&trustviewextension.error.mistrust;</li>
+        <li class="unknown untrusted">&trustviewextension.error.visit;</li>
+        <li class="unknown">&trustviewextension.error.trust;</li>
+        <li class="unknown">&trustviewextension.error.changelevel;</li>
+      </ul>
+    </div>
+
+    <ul id="actions">
+      <li class="unreachable unknown untrusted">
+        <button autocomplete="off" onclick="location.reload()">
+          &trustviewextension.error.tryagain;
+        </button>
+      </li>
+      <li class="unknown untrusted">
+        <button autocomplete="off" onclick="TVE.State.forceVisit(parameters.url)">
+          &trustviewextension.error.forcevisiting;
+        </button>
+      </li>
+      <li class="unknown">
+        <button autocomplete="off" onclick="TVE.State.trustAndVisit(parameters.url)">
+          &trustviewextension.error.forcetrusting;
+        </button>
+      </li>
+    </ul>
+
+    <div id="additionalDesc" class="unknown">
+      <h2>&trustviewextension.error.notaryquery.heading;</h2>
+      <p>&trustviewextension.error.notaryquery.description;</p>
+      <p>&trustviewextension.error.notaryquery.querying;</p>
+      <p>&trustviewextension.error.notaryquery.trusted;</p>
+      <p>&trustviewextension.error.notaryquery.untrusted;</p>
+      <p>&trustviewextension.error.notaryquery.unknown;</p>
+    </div>
+
+    <script type="application/javascript;version=1.7"><![CDATA[
+      "use strict"
+
+      Components.utils.import("chrome://trustviewextension/content/setupNamespace.jsm")
+
+      let ioService = Components.classes["@mozilla.org/network/io-service;1"].
+        getService(Components.interfaces.nsIIOService)
+
+      let docShell = getInterface(Components.interfaces.nsIDocShell)
+
+      function extractPageParameters() {
+        let parameters = {}
+        for each (let arg in location.search.substring(1).split(";")) {
+          let [, key, value] = /^([^=]+)=(.*)|.*$/.exec(arg)
+          if (key)
+            parameters[key] = decodeURIComponent(value)
+        }
+        return parameters
+      }
+  
+      function setAdressBarURL(url) {
+        docShell.setCurrentURI(ioService.newURI(url, null, null))
+      }
+
+      for each (let link in document.querySelectorAll("a[href=':preferences']"))
+        link.onclick = function(event) {
+          window.openDialog("chrome://trustviewextension/content/options.xul", "", "centerscreen")
+          event.preventDefault()
+        }
+
+      for each (let link in document.querySelectorAll("a[href=':query-notaries']"))
+        link.onclick = function(event) {
+          let statusElement = document.querySelector("#additionalDesc")
+          statusElement.className += " querying"
+
+          TVE.CATMSCommunicator.requestRecommendation(
+            parameters["url"],
+            rawCertChain,
+            function(catmsResult) {
+              let state = catmsResult == null ? "" : "query-" + catmsResult.result
+              statusElement.className = statusElement.className.replace("querying", state)
+            })
+        }
+
+      window.parameters = extractPageParameters()
+
+      window.onload = function() {
+        // should run in the onload handler not to remove the tab icon
+        setAdressBarURL(parameters["url"])
+      }
+
+      document.documentElement.id = parameters["id"]
+      document.documentElement.className = parameters["class"]
+      document.title = document.querySelector("h1." + parameters["id"]).textContent
+    ]]></script>
+  </body>
+</html>
