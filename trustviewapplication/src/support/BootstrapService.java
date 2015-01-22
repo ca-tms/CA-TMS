@@ -11,6 +11,8 @@ import data.TrustView;
  *
  * <p>[1] Johannes Braun, Florian Volk, Johannes Buchmann, and Max Mühlhäuser.
  * Trust views for the web pki. 2013.</p>
+ *
+ * @author Pascal Weisenburger
  */
 public interface BootstrapService {
 	/**

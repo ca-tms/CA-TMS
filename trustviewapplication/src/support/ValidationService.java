@@ -5,6 +5,8 @@ import data.TrustCertificate;
 
 /**
  * Represents an external validation service
+ *
+ * @author Pascal Weisenburger
  */
 public interface ValidationService {
 	/**

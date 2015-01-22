@@ -9,6 +9,8 @@ import data.TrustCertificate;
 
 /**
  * Represents an external revocation service
+ *
+ * @author Pascal Weisenburger
  */
 public interface RevocationService<RevocationInfo> {
 	/**

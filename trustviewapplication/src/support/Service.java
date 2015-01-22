@@ -37,6 +37,8 @@ import util.Option;
 
 /**
  * Provides central access point for external services
+ *
+ * @author Pascal Weisenburger
  */
 public final class Service {
 	private Service() { }
