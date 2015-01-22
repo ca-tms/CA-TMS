@@ -1,5 +1,5 @@
 CA Trust Management System (CA-TMS) <br>
-jbraun@cdc.informatik.tu-darmstadt.de <br>
+Contact: jbraun@cdc.informatik.tu-darmstadt.de <br>
 
 
 CA-TMS Team: <br>
