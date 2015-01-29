@@ -10,6 +10,13 @@ Haixin Cai
 Jannik Vieten
 
 
+Downloading the CA-TMS
+======================
+
+Compiled, ready-to-use packages can be found in
+[CA-TMS/releases](https://github.com/ca-tms/CA-TMS/releases).
+
+
 Building the CA-TMS
 ===================
 
